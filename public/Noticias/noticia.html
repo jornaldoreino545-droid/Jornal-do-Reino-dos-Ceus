@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matéria Completa</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="article-header">
+    <a href="index.html" class="back">
+      <i class='bx bx-arrow-back'></i>
+      <span>Voltar para Notícias</span>
+    </a>
+  </header>
+
+  <main class="article-container">
+    <article id="articleContent" class="article-wrapper">
+      <!-- Conteúdo carregado via materias.json -->
+      <div class="article-loading">
+        <div class="loading-spinner"></div>
+        <p>Carregando matéria...</p>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    async function loadArticle(){
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      const container = document.getElementById("articleContent");
+
+      try {
+        // Buscar da API do dashboard-server através do proxy do servidor principal
+        const res = await fetch("/api/site/noticias");
+        if (!res.ok) throw new Error('Erro ao carregar dados');
+        
+        const materias = await res.json();
+        const m = Array.isArray(materias) ? materias.find(x => x.id == parseInt(id)) : null;
+
+        if(!m){
+          container.innerHTML = `
+            <div class="article-error">
+              <i class='bx bx-error-circle'></i>
+              <h2>Matéria não encontrada</h2>
+              <p>A matéria solicitada não foi encontrada.</p>
+              <a href="index.html" class="btn-back">Voltar para Notícias</a>
+            </div>
+          `;
+          return;
+        }
+
+        // Formatar data
+        const dateObj = new Date(m.date);
+        const formattedDate = dateObj.toLocaleDateString('pt-BR', { 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric' 
+        });
+
+        // Capitalizar categoria
+        const categoryCapitalized = m.category ? m.category.charAt(0).toUpperCase() + m.category.slice(1) : 'Geral';
+        const categoryClass = m.category || 'geral';
+
+        container.innerHTML = `
+          <div class="article-header-content">
+            <div class="article-category-badge ${categoryClass}">
+              <span>${categoryCapitalized}</span>
+            </div>
+            <div class="article-meta-info">
+              <div class="meta-date">
+                <i class='bx bx-calendar'></i>
+                <span>${formattedDate}</span>
+              </div>
+              <div class="meta-separator">•</div>
+              <div class="meta-category">${categoryCapitalized}</div>
+            </div>
+          </div>
+
+          <h1 class="article-title">${m.title}</h1>
+
+          ${m.excerpt ? `<p class="article-excerpt">${m.excerpt}</p>` : ''}
+
+          ${m.image ? `
+          <div class="article-hero-wrapper">
+            <div class="article-hero" style="background-image:url('${(() => {
+              let imgUrl = m.image || '../Imagem/placeholder.jpg';
+              if (imgUrl.startsWith('./')) {
+                imgUrl = imgUrl.substring(2);
+              }
+              if (imgUrl.startsWith('/uploads')) {
+                // Manter como está, servido pelo servidor principal
+              } else if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('../')) {
+                if (!imgUrl.startsWith('/')) {
+                  imgUrl = '../' + imgUrl;
+                }
+              }
+              return imgUrl;
+            })()}')">
+              <div class="article-hero-overlay"></div>
+            </div>
+          </div>
+          ` : ''}
+
+          <div class="article-body">
+            ${(() => {
+              const content = m.content || '<p>Conteúdo não disponível.</p>';
+              // Se o conteúdo já for HTML, usar como está
+              // Se não, converter quebras de linha para parágrafos
+              if (content.includes('<') && content.includes('>')) {
+                return content;
+              } else {
+                // Converter quebras de linha duplas em parágrafos
+                return content
+                  .split(/\n\n+/)
+                  .map(para => para.trim())
+                  .filter(para => para.length > 0)
+                  .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+                  .join('');
+              }
+            })()}
+          </div>
+
+          <div class="article-footer">
+            <div class="article-share">
+              <span>Compartilhar:</span>
+              <div class="share-buttons">
+                <button class="share-btn" onclick="shareWhatsApp()" title="Compartilhar no WhatsApp">
+                  <i class='bx bxl-whatsapp'></i>
+                </button>
+                <button class="share-btn" onclick="shareFacebook()" title="Compartilhar no Facebook">
+                  <i class='bx bxl-facebook'></i>
+                </button>
+                <button class="share-btn" onclick="shareTwitter()" title="Compartilhar no Twitter">
+                  <i class='bx bxl-twitter'></i>
+                </button>
+                <button class="share-btn" onclick="copyLink(event)" title="Copiar link">
+                  <i class='bx bx-link'></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Adicionar tratamento de erro para a imagem
+        const heroDiv = container.querySelector('.article-hero');
+        if (heroDiv && m.image) {
+          const img = new Image();
+          img.onerror = function() {
+            heroDiv.style.backgroundImage = "url('../Imagem/placeholder.jpg')";
+          };
+          img.src = m.image;
+        }
+
+      } catch (error) {
+        console.error('Erro ao carregar matéria:', error);
+        container.innerHTML = `
+          <div class="article-error">
+            <i class='bx bx-error-circle'></i>
+            <h2>Erro ao carregar matéria</h2>
+            <p>Ocorreu um erro ao carregar o conteúdo. Por favor, tente novamente.</p>
+            <a href="index.html" class="btn-back">Voltar para Notícias</a>
+          </div>
+        `;
+      }
+    }
+
+    function shareWhatsApp() {
+      const url = encodeURIComponent(window.location.href);
+      const title = encodeURIComponent(document.querySelector('.article-title')?.textContent || '');
+      window.open(`https://wa.me/?text=${title}%20${url}`, '_blank');
+    }
+
+    function shareFacebook() {
+      const url = encodeURIComponent(window.location.href);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+
+    function shareTwitter() {
+      const url = encodeURIComponent(window.location.href);
+      const title = encodeURIComponent(document.querySelector('.article-title')?.textContent || '');
+      window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank');
+    }
+
+    function copyLink(e) {
+      const btn = e ? e.target.closest('.share-btn') : null;
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        if (btn) {
+          const originalHTML = btn.innerHTML;
+          btn.innerHTML = '<i class="bx bx-check"></i>';
+          btn.style.background = '#10b981';
+          btn.style.borderColor = '#10b981';
+          btn.style.color = 'white';
+          setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }, 2000);
+        }
+      }).catch(err => {
+        alert('Erro ao copiar link. Por favor, copie manualmente: ' + window.location.href);
+      });
+    }
+
+    // Carregar matéria quando a página estiver pronta
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadArticle);
+    } else {
+      loadArticle();
+    }
+  </script>
+
+</body>
+</html>

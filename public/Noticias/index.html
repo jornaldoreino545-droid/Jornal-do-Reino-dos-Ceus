@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página de Notícias — Demo</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../reset.css">
+  <link rel="stylesheet" href="../haader,footer-principal/style.css">
+  <link rel="stylesheet" href="../Loanding/Loanding.css" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"rel="stylesheet"/>
+</head>
+<body>
+
+  <div class="preloader" id="preloader">
+    <div class="loader" id="loader"></div>
+  </div>
+
+  
+    <header>
+      <div class="header1">
+        <div class="obra-forte">
+            <h1>Uma obra <strong>forte</strong> para abalar o <strong>Brasil</strong> e o <strong>mundo</strong>. A Igreja Reino dos Céus chegou para você!.</h1>
+        </div>
+        <div class="imagem-principal">
+            <img src="../Imagem/capa-alta-qualidade.png" alt="Imagem-comp" class="imaegm-com" draggable="false">
+            <img src="../Imagem/celular-alta-qualidade.png" alt="Imagem-tab" class="Imagem-tab" draggable="false">
+        </div>
+
+        <div class="cabeçalhocontenerwuit">
+        <div class="cabeçalhocontener">
+
+                <div class="Redes-Social">
+                    <a href="#"><i class='bx bxl-whatsapp'></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61584172030496"><i class='bx bxl-facebook-circle'></i></a>
+                    <a href="https://www.instagram.com/jornaldoreinodosceus/"><i class='bx bxl-instagram-alt' ></i></a>
+                </div>
+
+                <div class="cabeçalho">
+                    <nav class="dropdown">
+                        <h1><i class="icon icon-menu"></i> Menu </h1>
+
+                        <ul>
+                            <li> <a href="../index.html">Jornal</a></li>
+                            <li> <a href="../Noticias/index.html">Notícia </a></li>
+                            <li> <a href="../pag.colunista.html">Colunistas</a></li>
+                            <li> <a href="https://www.oracaodamadrugada.com.br/">Oração</a></li>
+                            <li> <a href="../pag.oferta.html">Oferta</a></li>
+                        </ul>
+                    </nav>
+                </div>
+        </div>
+    </div>
+</div>
+
+      <div class="tools">
+        <div class="search">
+          <i class='bx bx-search search-icon'></i>
+          <input id="searchInput" placeholder="Pesquisar título, conteúdo ou tag..." />
+        </div>
+
+        <div class="filters">
+          <div class="chip" data-filter="all">Todos</div>
+          <div class="chip" data-filter="espiritualidade">Espiritualidade</div>
+          <div class="chip" data-filter="maanaim">Maanaim</div>
+          <div class="chip" data-filter="popular">Popular</div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="results" class="grid"></section>
+      <div id="pager" class="pager"></div>
+      <div id="empty" class="empty">Nenhuma matéria encontrada.</div>
+    </main>
+
+
+    <div id="footer"></div>
+
+    <script>
+      async function loadPart(id, file) {
+        const res = await fetch(file);
+        const html = await res.text();
+        document.getElementById(id).innerHTML = html;
+      }
+      // volta uma pasta com "../"
+      loadPart("footer", "../haader,footer-principal/footer.html");
+    </script>
+
+  <script src="script.js"></script>
+  <script src="../Loanding/Loanding.js"></script>
+</body>
+</html>

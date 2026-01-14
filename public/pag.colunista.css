@@ -1,0 +1,717 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+/*-----------------------Colunistas---------------*/
+main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+main .colunista-do-mes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  text-align: center;
+  padding: 0 20px;
+}
+
+main .colunista-do-mes h1 {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+  font-size: 3rem;
+  color: #00095b;
+  margin-bottom: 0;
+  letter-spacing: -1px;
+  position: relative;
+  display: inline-block;
+}
+
+main .colunista-do-mes h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #00095b, #cf0000, #ffc014);
+  border-radius: 2px;
+}
+
+main .colunista-do-mes h2 {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 1.5rem;
+  color: #00095b;
+  margin-top: 25px;
+  line-height: 1.6;
+}
+
+main .colunistas {
+  margin: 0;
+  padding: 0 20px 4rem;
+}
+
+main .colunistas .todoscolunistas {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  margin-top: 2rem;
+}
+
+/* Card de Colunista - Layout Profissional */
+main .colunistas .todoscolunistas .card-colunistas {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 200px 300px 1fr;
+  gap: 0;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12),
+              0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+main .colunistas .todoscolunistas .card-colunistas::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #00095b 0%, #cf0000 50%, #ffc014 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+main .colunistas .todoscolunistas .card-colunistas:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.18),
+              0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+main .colunistas .todoscolunistas .card-colunistas:hover::before {
+  opacity: 1;
+}
+
+/* Caixa Azul - Título da Coluna (Esquerda) */
+.coluna-title-box {
+  background: linear-gradient(180deg, #00095b 0%, #001a7a 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 30px 20px;
+  position: relative;
+  border-right: 3px solid rgba(255, 255, 255, 0.1);
+  min-height: 100%;
+}
+
+.coluna-label {
+  font-family: "Roboto", sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.coluna-title {
+  font-family: "Roboto", sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: #ffffff;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.coluna-decorative-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.coluna-decorative-icon i {
+  font-size: 2rem;
+  color: #ffc014;
+  opacity: 0.8;
+}
+
+/* Foto do Colunista (Centro) */
+.colunistas .todoscolunistas .card-colunistas .image {
+  width: 300px;
+  height: auto;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colunistas .todoscolunistas .card-colunistas .image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 9, 91, 0.05) 0%, rgba(207, 0, 0, 0.05) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.colunistas .todoscolunistas .card-colunistas .image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 0;
+  min-height: 400px;
+}
+
+.card-colunistas:hover .image img {
+  transform: scale(1.08);
+}
+
+/* Caixa de Texto (Direita) */
+.colunistas .todoscolunistas .card-colunistas .textos {
+  display: flex;
+  flex-direction: column;
+  padding: 40px 35px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #00095b 0%, #cf0000 50%, #ffc014 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-colunistas:hover .textos::before {
+  opacity: 1;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos h1 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 800;
+  color: #00095b;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #00095b, #cf0000);
+  border-radius: 2px;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos p {
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.8;
+  text-align: justify;
+  margin-bottom: 25px;
+  flex: 1;
+  text-align: left;
+}
+
+/* Instagram Link */
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial:hover {
+  transform: translateX(-5px);
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial i {
+  font-size: 1.5rem;
+  color: #aeaeae;
+  transition: all 0.3s ease;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial:hover i {
+  color: #e1306c;
+  transform: scale(1.1);
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial .instagram {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #aeaeae;
+  transition: all 0.3s ease;
+  font-family: "Roboto", sans-serif;
+}
+
+.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial:hover .instagram {
+  color: #e1306c;
+}
+
+/* Social Actions Container */
+.colunistas .todoscolunistas .card-colunistas .textos .social-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Botão de Compartilhar */
+.share-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: "Roboto", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.share-button:hover {
+  background: linear-gradient(135deg, #001a7a 0%, #0025a3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 9, 91, 0.3);
+}
+
+.share-button:active {
+  transform: translateY(0);
+}
+
+.share-button i {
+  font-size: 1.2rem;
+}
+
+/* Menu de Compartilhamento */
+.share-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.share-menu.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.share-menu:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+}
+
+.share-menu-content {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.share-menu:not(.hidden) .share-menu-content {
+  transform: scale(1);
+}
+
+.share-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.share-menu-header h3 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: #00095b;
+  margin: 0;
+}
+
+.close-share-menu {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-share-menu:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #000;
+  transform: rotate(90deg);
+}
+
+.share-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: #f8f8f8;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Roboto", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+}
+
+.share-option:hover {
+  background: #ffffff;
+  border-color: #00095b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 9, 91, 0.15);
+}
+
+.share-option i {
+  font-size: 1.5rem;
+}
+
+.share-option:nth-child(1) i {
+  color: #25D366; /* WhatsApp */
+}
+
+.share-option:nth-child(2) i {
+  color: #1877F2; /* Facebook */
+}
+
+.share-option:nth-child(3) i {
+  color: #1DA1F2; /* Twitter */
+}
+
+.share-option:nth-child(4) i {
+  color: #0077B5; /* LinkedIn */
+}
+
+.share-option:nth-child(5) i {
+  color: #666; /* Copiar Link */
+}
+
+/* Responsive */
+@media screen and (max-width: 1024px) {
+  main .colunistas .todoscolunistas .card-colunistas {
+    grid-template-columns: 180px 280px 1fr;
+  }
+
+  .coluna-title {
+    font-size: 1.2rem;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .image {
+    width: 280px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos {
+    padding: 35px 30px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media screen and (max-width: 884px) {
+  main .colunistas {
+    padding: 0 15px 3rem;
+  }
+
+  main .colunistas .todoscolunistas {
+    gap: 2.5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  main .colunista-do-mes h1 {
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 800;
+    font-style: normal;
+    font-size: 2.5rem;
+    color: #00095b;
+  }
+
+  main .colunista-do-mes h2 {
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 1.1rem;
+    color: #00095b;
+  }
+
+  main .colunistas .todoscolunistas .card-colunistas {
+    grid-template-columns: 1fr;
+    border-radius: 16px;
+  }
+
+  .coluna-title-box {
+    border-right: none;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+    padding: 25px 20px;
+    min-height: auto;
+  }
+
+  .coluna-title {
+    font-size: 1.3rem;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .coluna-label {
+    margin-bottom: 15px;
+  }
+
+  .coluna-decorative-icon {
+    margin-top: 15px;
+    padding-top: 15px;
+    justify-content: flex-start;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .image {
+    width: 100%;
+    max-height: 400px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .image img {
+    min-height: 350px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos {
+    padding: 30px 25px;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos::before {
+    width: 100%;
+    height: 4px;
+    top: 0;
+    left: 0;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos h1 {
+    font-size: 1.6rem;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos p {
+    font-size: 0.95rem;
+    text-align: left;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial {
+    justify-content: center;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos .social-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .share-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .share-menu-content {
+    padding: 25px 20px;
+    max-width: 90%;
+  }
+
+  .share-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 608px) {
+  main .colunista-do-mes {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+    padding: 0 15px;
+  }
+
+  main .colunista-do-mes h1 {
+    font-size: 2rem;
+  }
+
+  main .colunista-do-mes h2 {
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 1.1rem;
+    color: #00095b;
+    margin-top: 20px;
+  }
+
+  main .colunistas {
+    padding: 0 10px 2rem;
+  }
+
+  main .colunistas .todoscolunistas {
+    gap: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .coluna-title-box {
+    padding: 20px 18px;
+  }
+
+  .coluna-title {
+    font-size: 1.1rem;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos {
+    padding: 25px 20px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos h1 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  main .colunista-do-mes h1 {
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 800;
+    font-style: normal;
+    font-size: 1.8rem;
+    color: #00095b;
+  }
+  
+  main .colunista-do-mes h2 {
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 1rem;
+    color: #00095b;
+  }
+
+  .coluna-title {
+    font-size: 1rem;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .image img {
+    min-height: 300px;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos h1 {
+    font-size: 1.3rem;
+  }
+
+  .colunistas .todoscolunistas .card-colunistas .textos p {
+    font-size: 0.85rem;
+  }
+}

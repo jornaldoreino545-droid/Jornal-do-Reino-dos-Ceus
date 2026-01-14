@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornal do Reino - Compra</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./haader,footer-principal/style.css">
+    <link rel="stylesheet" href="./Loanding/Loanding.css">
+    <link rel="icon" href="./Imagem/logo jornal.png">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+        
+        body {
+            font-family: "Roboto", sans-serif;
+            background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .jornal-compra-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+            border-radius: 24px;
+            padding: 60px 50px;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 9, 91, 0.3);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 192, 20, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 50px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-image {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            background: white;
+            padding: 10px;
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
+
+        .hero-text {
+            color: white;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 192, 20, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 192, 20, 0.3);
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .hero-title strong {
+            color: #ffc014;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 9, 91, 0.3);
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00095b;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #666;
+            margin: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 24px;
+            padding: 50px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 50px;
+        }
+
+        .content-intro {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .content-intro h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00095b;
+            margin-bottom: 15px;
+        }
+
+        .content-intro p {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .highlights-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .highlight-item {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .highlight-icon {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #00095b;
+            box-shadow: 0 4px 15px rgba(255, 192, 20, 0.3);
+        }
+
+        .highlight-content h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00095b;
+            margin-bottom: 8px;
+        }
+
+        .highlight-content p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #555;
+            margin: 0;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 24px;
+            padding: 50px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.3);
+            margin-bottom: 50px;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .cta-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 35px;
+            opacity: 0.95;
+        }
+
+        .cta-button {
+            background: white;
+            color: #059669;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 18px 50px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: #f9fafb;
+        }
+
+        /* Info Boxes */
+        .info-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .info-box {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .info-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .info-box-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .info-box:nth-child(2) .info-box-icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .info-box:nth-child(3) .info-box-icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .info-box h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00095b;
+            margin-bottom: 12px;
+        }
+
+        .info-box p {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+            color: #00095b;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 250px 1fr;
+                gap: 40px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .jornal-compra-container {
+                padding: 30px 15px;
+            }
+
+            .hero-section {
+                padding: 40px 30px;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                text-align: center;
+            }
+
+            .hero-image {
+                max-width: 280px;
+                margin: 0 auto;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .main-content {
+                padding: 35px 25px;
+            }
+
+            .content-intro h2 {
+                font-size: 1.6rem;
+            }
+
+            .highlights-list {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .cta-section {
+                padding: 40px 25px;
+            }
+
+            .cta-title {
+                font-size: 1.6rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .hero-section {
+                padding: 30px 20px;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .cta-button {
+                width: 100%;
+                padding: 16px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div class="preloader" id="preloader">
+        <div class="loader" id="loader"></div>
+    </div>
+
+    <!-- Header -->
+    <div id="header"></div>
+
+    <!-- Main Content -->
+    <main>
+        <div class="jornal-compra-container" id="jornalContent">
+            <div class="loading">Carregando informações do jornal...</div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer"></div>
+
+    <!-- Scripts -->
+    <script src="./Loanding/Loanding.js"></script>
+    <script>
+        // Carregar header e footer
+        async function loadPart(id, file) {
+            try {
+                const res = await fetch(file);
+                const html = await res.text();
+                document.getElementById(id).innerHTML = html;
+            } catch (error) {
+                console.error(`Erro ao carregar ${file}:`, error);
+            }
+        }
+
+        loadPart("header", "haader,footer-principal/header.html");
+        loadPart("footer", "haader,footer-principal/footer.html");
+
+        // Carregar dados do jornal
+        async function loadJornalData() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const jornalId = urlParams.get('id');
+                const mes = urlParams.get('mes');
+                const ano = urlParams.get('ano');
+
+                if (!jornalId && !mes && !ano) {
+                    showError('Parâmetros do jornal não encontrados na URL.');
+                    return;
+                }
+
+                const response = await fetch('/api/jornais');
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar jornais');
+                }
+
+                const data = await response.json();
+                const jornais = data.jornais || [];
+
+                let jornal = null;
+
+                if (jornalId) {
+                    jornal = jornais.find(j => j.id === parseInt(jornalId));
+                } else if (mes && ano) {
+                    jornal = jornais.find(j => j.mes === mes && j.ano === parseInt(ano));
+                }
+
+                if (!jornal) {
+                    showError('Jornal não encontrado');
+                    return;
+                }
+
+                renderJornalPage(jornal);
+
+            } catch (error) {
+                console.error('Erro ao carregar dados do jornal:', error);
+                showError('Erro ao carregar informações do jornal. Por favor, tente novamente.');
+            }
+        }
+
+        function renderJornalPage(jornal) {
+            const container = document.getElementById('jornalContent');
+            
+            // Gerar imagem da capa
+            let imagemCapa = jornal.capa || '';
+            if (!imagemCapa || imagemCapa === '') {
+                if (jornal.mes === 'Fevereiro') {
+                    imagemCapa = './JORNAIS CAPAS/JORNAL DE FEVEREIRO.png';
+                } else if (jornal.mes === 'Abril') {
+                    imagemCapa = './JORNAIS CAPAS/JORNAL DE ABRIL (1).png';
+                } else if (jornal.mes === 'Junho') {
+                    imagemCapa = './JORNAIS CAPAS/JOENAL DE JUNHO.png';
+                } else {
+                    imagemCapa = `./JORNAIS CAPAS/JORNAL DE ${jornal.mes ? jornal.mes.toUpperCase() : 'JANEIRO'}.png`;
+                }
+            }
+
+            // Não usar linkCompra do banco, sempre usar rota /checkout
+            const linkCompra = ''; // Sempre usar handleCompra com rota correta
+
+            const html = `
+                <!-- Hero Section -->
+                <div class="hero-section">
+                    <div class="hero-content">
+                        <div class="hero-image">
+                            <img src="${imagemCapa}" alt="${jornal.nome}" onerror="this.style.display='none'">
+                        </div>
+                        <div class="hero-text">
+                            <span class="hero-badge">Edição Especial</span>
+                            <h1 class="hero-title">${jornal.nome} <strong>${jornal.ano}</strong></h1>
+                            <p class="hero-subtitle">
+                                Uma edição especial que traz mensagens poderosas, testemunhos transformadores e direcionamento espiritual para fortalecer sua fé e abrir portas de bênçãos em ${jornal.ano}.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Section -->
+                <div class="cta-section">
+                    <h2 class="cta-title">Adquira sua edição especial</h2>
+                    <p class="cta-subtitle">Comece ${jornal.ano} com fé renovada e propósito claro</p>
+                    <button class="cta-button" onclick="handleCompra(${jornal.id}, '')">
+                        Adquira agora mesmo
+                    </button>
+                </div>
+
+                <!-- Info Boxes -->
+                <div class="info-boxes">
+                    <div class="info-box">
+                        <div class="info-box-icon">
+                            <i class='bx bxs-file-pdf'></i>
+                        </div>
+                        <h3>PDF Digital</h3>
+                        <p>Baixe a versão digital em PDF diretamente da página de download, prática e acessível em qualquer dispositivo.</p>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-box-icon">
+                            <i class='bx bx-check-double'></i>
+                        </div>
+                        <h3>Entrega Imediata</h3>
+                        <p>Após a confirmação do pagamento, você será direcionado para a página de download imediatamente.</p>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-box-icon">
+                            <i class='bx bx-church'></i>
+                        </div>
+                        <h3>Versão Física</h3>
+                        <p>Também disponível presencialmente em nossas igrejas Reino dos Céus em todo o Brasil.</p>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function handleCompra(jornalId, linkCompra) {
+            // Sempre usar a rota correta do checkout, ignorando linkCompra do banco se for caminho antigo
+            // Se linkCompra for uma URL externa (começa com http), usar ela
+            if (linkCompra && linkCompra.trim() !== '' && (linkCompra.startsWith('http://') || linkCompra.startsWith('https://'))) {
+                window.location.href = linkCompra;
+                return;
+            }
+            
+            // Redirecionar para a página de checkout (usando rota correta do servidor principal)
+            const checkoutUrl = `/checkout?product=jornal_${jornalId}`;
+            console.log('Redirecionando para:', checkoutUrl);
+            window.location.href = checkoutUrl;
+        }
+
+        function showError(message) {
+            const container = document.getElementById('jornalContent');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #e74c3c;">
+                    <h2 style="color: #00095b; margin-bottom: 20px;">Erro</h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 30px;">${message}</p>
+                    <button onclick="window.location.href='./index.html'" style="background: #00095b; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+                        Voltar para a página inicial
+                    </button>
+                </div>
+            `;
+        }
+
+        // Carregar dados quando a página estiver pronta
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadJornalData);
+        } else {
+            loadJornalData();
+        }
+    </script>
+</body>
+</html>

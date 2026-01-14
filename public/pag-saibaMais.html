@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./reset.css" />
+    <link rel="stylesheet" href="./index.css?v=2.0" />
+    <link rel="stylesheet" href="./pag-saibaMais.css" />
+    <link rel="stylesheet" href="./Loanding/Loanding.css" />
+    <style>
+      /* Estilos para garantir que os cards apareçam com o mesmo design da página inicial */
+      .todoscard {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+        gap: 32px !important;
+        padding: 0 20px !important;
+        max-width: 1320px;
+        margin: 3rem auto 0;
+      }
+      .todoscard .card {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 300px !important;
+        min-height: 520px !important;
+        background: linear-gradient(180deg, #00095b 0%, #001a7a 100%) !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        box-shadow: 0 10px 30px rgba(0, 9, 91, 0.25), 0 5px 15px rgba(0, 0, 0, 0.15) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .todoscard .card:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 15px 40px rgba(0, 9, 91, 0.35), 0 8px 20px rgba(0, 0, 0, 0.2) !important;
+      }
+      .todoscard .card .card-image-wrapper {
+        position: relative !important;
+        width: 100% !important;
+        height: 400px !important;
+        overflow: hidden !important;
+      }
+      .todoscard .card .card-image-wrapper img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+      }
+      .todoscard .card .card-content {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 24px 20px !important;
+      }
+      .todoscard .card h1 {
+        color: #ffffff !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        margin: 0 !important;
+      }
+      .todoscard .card button {
+        background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%) !important;
+        color: #000000 !important;
+        border-radius: 12px !important;
+        padding: 16px 24px !important;
+        border: none !important;
+        cursor: pointer !important;
+      }
+      .todoscard .card button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 192, 20, 0.5);
+      }
+      
+      /* Estilos para seções por ano */
+      .ano-section {
+        margin-bottom: 4rem;
+        scroll-margin-top: 120px;
+      }
+      
+      .ano-header {
+        background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+        padding: 30px 40px;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 24px rgba(0, 9, 91, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .ano-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ffc014, #cf0000, #ffc014);
+      }
+      
+      .ano-header h2 {
+        font-family: "Roboto", sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #ffffff;
+        margin: 0;
+        text-align: center;
+        letter-spacing: -1px;
+      }
+      
+      .ano-header .ano-count {
+        font-family: "Roboto", sans-serif;
+        font-weight: 400;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+        margin-top: 8px;
+      }
+      
+      /* Menu de navegação por anos */
+      .anos-navegacao {
+        position: sticky;
+        top: 80px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        margin: 2rem auto;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 1320px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .anos-navegacao-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      
+      .anos-label {
+        font-family: "Roboto", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #00095b;
+        white-space: nowrap;
+      }
+      
+      .anos-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .ano-btn {
+        padding: 10px 24px;
+        background: #f5f5f5;
+        border: 2px solid transparent;
+        border-radius: 25px;
+        font-family: "Roboto", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+      
+      .ano-btn:hover {
+        background: #e8e8e8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      
+      .ano-btn.active {
+        background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+        color: #ffffff;
+        border-color: #00095b;
+        box-shadow: 0 4px 12px rgba(0, 9, 91, 0.3);
+      }
+      
+      @keyframes fadeInSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @media (max-width: 768px) {
+        .ano-header {
+          padding: 20px 25px;
+        }
+        
+        .ano-header h2 {
+          font-size: 2rem;
+        }
+        
+        .anos-navegacao {
+          top: 60px;
+          padding: 15px;
+        }
+        
+        .anos-navegacao-container {
+          flex-direction: column;
+          gap: 15px;
+        }
+        
+        .anos-label {
+          font-size: 0.9rem;
+        }
+        
+        .ano-btn {
+          padding: 8px 20px;
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+
+    <link rel="icon" href="./Imagem/logo jornal.png">
+    <title>Igreja Reino dos Céus</title>
+  </head>
+  <body>
+    <!-- Loanding-->
+
+    <div class="preloader" id="preloader">
+      <div class="loader" id="loader"></div>
+    </div>
+
+    <header>
+      <div id="header"></div>
+
+      <script>
+        async function loadPart(id, file) {
+          const res = await fetch(file);
+          const html = await res.text();
+          document.getElementById(id).innerHTML = html;
+        }
+        // volta uma pasta com "../"
+        loadPart("header", "haader,footer-principal/header.html");
+        loadPart("footer", "haader,footer-principal/footer.html");
+      </script>
+    </header>
+
+    <main>
+      <section class="primeira-parte">
+        <div class="container-do-jornal">
+        <div class="jornal-titulo">
+          <h1>
+            JORNAIS REINO DOS CÉUS
+          </h1>
+          <h2>
+            Edições especiais, mês a mês, 
+            com mensagens de fé, esperança e direção 
+            espiritual
+          </h2>
+        </div>
+        
+        <!-- Menu de Navegação por Anos -->
+        <div class="anos-navegacao" id="anosNavegacao" style="display: none;">
+          <div class="anos-navegacao-container">
+            <span class="anos-label">Navegar por ano:</span>
+            <div class="anos-buttons" id="anosButtons">
+              <!-- Botões serão gerados dinamicamente -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Container principal para todas as seções de anos -->
+        <div id="jornaisPorAno">
+          <!-- Seções de jornais por ano serão geradas dinamicamente aqui -->
+          <div class="loading" style="text-align: center; padding: 40px; color: #00095b;">
+            Carregando todos os jornais...
+          </div>
+        </div>
+      </div>
+      </section>
+
+      <section class="informaçoes">
+        <div class="todasinformação">
+          <div class="informaçao">
+            <i class="bx bxs-file-pdf"></i>
+            <h1>Receba em PDF no seu e-mail</h1>
+            <p>
+              Ao adquirir o Jornal Reino dos Céus, você receberá uma versão 
+              digital em PDF, prática e acessível para ler em qualquer 
+              dispositivo. Um conteúdo exclusivo, preparado com carinho 
+              para fortalecer sua fé e edificar sua vida.
+            </p>
+          </div>
+
+          <div class="informaçao">
+            <i class="bx bx-check-double"></i>
+            <h1>Entrega rápida e garantida</h1>
+            <p>
+              Assim que o pagamento for confirmado, você será direcionado 
+              para uma página de download, onde poderá baixar o jornal em 
+              PDF imediatamente. Você terá acesso rápido ao conteúdo, sem 
+              precisar esperar dias para receber.
+            </p>
+          </div>
+
+          <div class="informaçao">
+            <i class="bx bx-church"></i>
+            <h1>Disponível também nos santuários</h1>
+            <p>
+              Se preferir, você pode adquirir o jornal presencialmente 
+              em nossas igrejas Reino dos Céus. Uma oportunidade de ter 
+              o exemplar físico em mãos e compartilhar esse momento de 
+              fé com sua família e comunidade.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="./Loanding/Loanding.js"></script>
+    
+    <!-- Script para carregar TODOS os jornais dinamicamente organizados por ano -->
+    <script>
+      (function() {
+        'use strict';
+        
+        // Função para gerar HTML de um card de jornal
+        function gerarCardJornal(jornal, index) {
+          // Gerar link de compra
+          let linkCompra = jornal.linkCompra || `./jornal-compra.html?id=${jornal.id}`;
+          
+          // Ajustar caminho da imagem
+          let imagemCapa = jornal.capa || '';
+          if (!imagemCapa || imagemCapa === '') {
+            const nomeCapa = `JORNAL DE ${jornal.mes ? jornal.mes.toUpperCase() : 'JANEIRO'}.png`;
+            if (jornal.mes === 'Fevereiro') {
+              imagemCapa = './JORNAIS CAPAS/JORNAL DE FEVEREIRO.png';
+            } else if (jornal.mes === 'Abril') {
+              imagemCapa = './JORNAIS CAPAS/JORNAL DE ABRIL (1).png';
+            } else if (jornal.mes === 'Junho') {
+              imagemCapa = './JORNAIS CAPAS/JOENAL DE JUNHO.png';
+            } else {
+              imagemCapa = `./JORNAIS CAPAS/${nomeCapa}`;
+            }
+          }
+          
+          // Calcular se é novo
+          const dataCriacao = jornal.dataCriacao ? new Date(jornal.dataCriacao) : null;
+          const diasDesdeCriacao = dataCriacao ? Math.floor((new Date() - dataCriacao) / (1000 * 60 * 60 * 24)) : null;
+          const isNovo = diasDesdeCriacao !== null && diasDesdeCriacao <= 30;
+          
+          // Formatar data
+          const dataFormatada = dataCriacao ? dataCriacao.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '';
+          
+          // Verificar se está ativo
+          const isAtivo = jornal.ativo !== false;
+          
+          return `
+            <div class="card effect loaded" style="opacity: 1 !important; visibility: visible !important; display: flex !important; animation: fadeInSlideUp 0.6s ease-out forwards ${index * 0.05}s;">
+              <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);">
+                <img src="${imagemCapa}" 
+                     alt="${jornal.nome}"
+                     style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease; filter: brightness(0.95) contrast(1.05);"
+                     onerror="if(this.src.indexOf('/uploads/') !== -1) { this.src='./JORNAIS CAPAS/JORNAL DE ${jornal.mes ? jornal.mes.toUpperCase() : 'JANEIRO'}.png'; } else { this.style.display='none'; }">
+                
+                <!-- Badges no canto superior -->
+                <div class="card-badges" style="position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 3;">
+                  ${isNovo ? '<span class="badge badge-novo" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Novo</span>' : ''}
+                  ${jornal.ordem && jornal.ordem <= 3 ? '<span class="badge badge-destaque" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Destaque</span>' : ''}
+                </div>
+                
+                <!-- Data no canto superior direito -->
+                ${dataFormatada ? `<div class="card-date" style="position: absolute; top: 12px; right: 12px; background: rgba(0, 9, 91, 0.95); backdrop-filter: blur(10px); padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); font-family: 'Roboto', sans-serif; font-size: 0.8rem; font-weight: 600; color: #ffc014; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); z-index: 3;">${dataFormatada}</div>` : ''}
+                
+                <!-- Overlay com descrição no hover -->
+                ${jornal.descricao ? `<div class="card-overlay-info" style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0, 9, 91, 0.95), rgba(0, 9, 91, 0.7), transparent); padding: 20px 16px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;">
+                  <p style="color: white; font-size: 0.85rem; line-height: 1.5; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${jornal.descricao.length > 100 ? jornal.descricao.substring(0, 100) + '...' : jornal.descricao}</p>
+                </div>` : ''}
+              </div>
+              
+              <div class="card-content" style="flex: 1; display: flex; flex-direction: column; padding: 24px 20px; gap: 16px; position: relative;">
+                <!-- Indicador de ordem -->
+                ${jornal.ordem ? `<div class="card-order-indicator" style="position: absolute; top: -12px; right: 20px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); border: 3px solid #00095b; z-index: 2;">#${jornal.ordem}</div>` : ''}
+                
+                <h1 style="margin: 0; font-family: 'Roboto', sans-serif; font-weight: 700; color: #ffffff; font-size: 1.5rem; line-height: 1.4; text-align: center; letter-spacing: 0.3px; min-height: 60px; display: flex; align-items: center; justify-content: center; padding: 12px 0; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);">${jornal.nome}</h1>
+                
+                <!-- Meta informações -->
+                <div class="card-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                  <span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
+                    <span>${jornal.mes || ''} ${jornal.ano || ''}</span>
+                  </span>
+                  ${jornal.pdf ? `<span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
+                    <span>PDF</span>
+                  </span>` : ''}
+                  ${isAtivo ? `<span style="display: flex; align-items: center; gap: 6px; color: #10b981; font-size: 0.85rem; font-weight: 600;">
+                    <span>Disponível</span>
+                  </span>` : '<span style="display: flex; align-items: center; gap: 6px; color: #ef4444; font-size: 0.85rem; font-weight: 600;"><span>Indisponível</span></span>'}
+                </div>
+                
+                <!-- Botão de compra -->
+                <button style="outline: none; cursor: ${isAtivo ? 'pointer' : 'not-allowed'}; border: none; width: 100%; margin-top: auto; padding: 16px 24px; position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.8px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(255, 192, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); font-weight: 600; opacity: ${isAtivo ? '1' : '0.6'};" ${!isAtivo ? 'disabled' : ''}>
+                  <a href="${linkCompra}" style="color: #000000; font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1rem; text-decoration: none; position: relative; z-index: 10; text-align: center; width: 100%; display: block;" ${!isAtivo ? 'onclick="return false;"' : ''}>
+                    ${isAtivo ? 'ADQUIRA O SEU' : 'Indisponível'}
+                  </a>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+        
+        async function carregarTodosJornais() {
+          try {
+            console.log('Carregando todos os jornais organizados por ano...');
+            const response = await fetch('/api/jornais');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const todosJornais = data.jornais || [];
+            const container = document.getElementById('jornaisPorAno');
+            const navContainer = document.getElementById('anosNavegacao');
+            const navButtons = document.getElementById('anosButtons');
+            
+            if (!container) {
+              console.error('Container de jornais não encontrado!');
+              return;
+            }
+            
+            if (todosJornais.length === 0) {
+              container.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal disponível no momento.</div>';
+              return;
+            }
+            
+            // Filtrar apenas jornais ativos
+            const jornaisAtivos = todosJornais.filter(j => j.ativo !== false);
+            
+            // Agrupar jornais por ano
+            const jornaisPorAno = {};
+            jornaisAtivos.forEach(jornal => {
+              const ano = jornal.ano || 'Sem Ano';
+              if (!jornaisPorAno[ano]) {
+                jornaisPorAno[ano] = [];
+              }
+              jornaisPorAno[ano].push(jornal);
+            });
+            
+            // Ordenar anos (do mais recente para o mais antigo)
+            const anosOrdenados = Object.keys(jornaisPorAno).sort((a, b) => {
+              if (a === 'Sem Ano') return 1;
+              if (b === 'Sem Ano') return -1;
+              return parseInt(b) - parseInt(a);
+            });
+            
+            // Gerar botões de navegação
+            if (anosOrdenados.length > 1 && navButtons) {
+              navButtons.innerHTML = anosOrdenados.map(ano => {
+                const count = jornaisPorAno[ano].length;
+                return `<a href="#ano-${ano}" class="ano-btn">${ano} (${count})</a>`;
+              }).join('');
+              
+              // Mostrar menu de navegação
+              if (navContainer) {
+                navContainer.style.display = 'block';
+              }
+              
+              // Adicionar scroll suave aos botões
+              navButtons.querySelectorAll('.ano-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  const targetId = btn.getAttribute('href').substring(1);
+                  const target = document.getElementById(targetId);
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Atualizar botão ativo
+                    navButtons.querySelectorAll('.ano-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                  }
+                });
+              });
+            }
+            
+            // Gerar HTML das seções por ano
+            let htmlCompleto = '';
+            let cardIndexGlobal = 0;
+            
+            anosOrdenados.forEach(ano => {
+              const jornaisAno = jornaisPorAno[ano];
+              
+              // Ordenar jornais dentro do ano (por mês, do mais recente para o mais antigo)
+              const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                           'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+              
+              jornaisAno.sort((a, b) => {
+                // Primeiro por ordem, se existir
+                if (a.ordem && b.ordem) {
+                  return a.ordem - b.ordem;
+                }
+                // Depois por mês (mais recente primeiro)
+                const indexA = meses.indexOf(a.mes || '');
+                const indexB = meses.indexOf(b.mes || '');
+                if (indexA !== -1 && indexB !== -1) {
+                  return indexB - indexA;
+                }
+                // Por último por data de criação
+                if (a.dataCriacao && b.dataCriacao) {
+                  return new Date(b.dataCriacao) - new Date(a.dataCriacao);
+                }
+                return 0;
+              });
+              
+              // Gerar HTML dos cards do ano
+              const cardsAno = jornaisAno.map((jornal, index) => {
+                return gerarCardJornal(jornal, cardIndexGlobal++);
+              }).join('');
+              
+              // Criar seção do ano
+              htmlCompleto += `
+                <div class="ano-section" id="ano-${ano}">
+                  <div class="ano-header">
+                    <h2>Jornais de ${ano}</h2>
+                    <div class="ano-count">${jornaisAno.length} ${jornaisAno.length === 1 ? 'jornal disponível' : 'jornais disponíveis'}</div>
+                  </div>
+                  <div class="todoscard">
+                    ${cardsAno}
+                  </div>
+                </div>
+              `;
+            });
+            
+            // Inserir HTML no container
+            container.innerHTML = htmlCompleto;
+            
+            // Configurar eventos de hover e animações
+            const cardsInseridos = container.querySelectorAll('.card');
+            cardsInseridos.forEach((card, idx) => {
+              card.style.opacity = '1';
+              card.style.visibility = 'visible';
+              card.style.display = 'flex';
+              card.style.flexDirection = 'column';
+              
+              // Adicionar efeito hover na imagem e overlay
+              const imgWrapper = card.querySelector('.card-image-wrapper');
+              if (imgWrapper) {
+                const imgEl = imgWrapper.querySelector('img');
+                const overlayEl = imgWrapper.querySelector('.card-overlay-info');
+                
+                if (imgEl && overlayEl) {
+                  imgWrapper.addEventListener('mouseenter', () => {
+                    imgEl.style.transform = 'scale(1.05)';
+                    overlayEl.style.transform = 'translateY(0)';
+                  });
+                  
+                  imgWrapper.addEventListener('mouseleave', () => {
+                    imgEl.style.transform = 'scale(1)';
+                    overlayEl.style.transform = 'translateY(100%)';
+                  });
+                }
+              }
+            });
+            
+            console.log(`Jornais organizados por ano carregados com sucesso! Total: ${jornaisAtivos.length} jornais em ${anosOrdenados.length} ${anosOrdenados.length === 1 ? 'ano' : 'anos'}`);
+            
+          } catch (error) {
+            console.error('Erro ao carregar jornais:', error);
+            const container = document.getElementById('jornaisPorAno');
+            if (container) {
+              container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                  <p>Erro ao carregar jornais.</p>
+                  <p>Por favor, tente novamente mais tarde.</p>
+                </div>
+              `;
+            }
+          }
+        }
+        
+        // Carregar jornais quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', carregarTodosJornais);
+        } else {
+          carregarTodosJornais();
+        }
+      })();
+    </script>
+    
+    <style>
+      @keyframes fadeInSlideUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      /* Efeitos adicionais para os cards */
+      .todoscard .card .card-image-wrapper:hover .card-overlay-info {
+        transform: translateY(0) !important;
+      }
+      
+      .todoscard .card .card-image-wrapper:hover img {
+        transform: scale(1.05) !important;
+      }
+    </style>
+  </body>
+</html>

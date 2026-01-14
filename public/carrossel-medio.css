@@ -1,0 +1,254 @@
+/* ==================== CARROSSEL MÉDIO - IMPLEMENTAÇÃO INDEPENDENTE ==================== */
+.carrossel-medio {
+  background: linear-gradient(135deg, rgba(128, 0, 0, 0.1) 0%, rgba(0, 26, 122, 0.1) 100%);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.carrossel-medio::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(128, 0, 0, 0.3) 0%, 
+    rgba(255, 208, 0, 0.5) 50%, 
+    rgba(0, 26, 122, 0.3) 100%);
+  z-index: 1;
+}
+
+.carrossel-medio-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+}
+
+.carrossel-medio-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.carrossel-medio-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 450px;
+  border-radius: 16px;
+}
+
+.carrossel-medio-track {
+  display: flex;
+  position: relative;
+  height: 100%;
+  gap: 20px;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carrossel-medio-item {
+  flex: 0 0 calc(33.333% - 14px);
+  height: 100%;
+  min-width: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  opacity: 1;
+  visibility: visible;
+}
+
+.carrossel-medio-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.carrossel-medio-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.carrossel-medio-nav {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+  color: #ffc014;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 9, 91, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.carrossel-medio-nav:hover {
+  background: linear-gradient(135deg, #001a7a 0%, #00095b 100%);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 9, 91, 0.4);
+}
+
+.carrossel-medio-nav:active {
+  transform: scale(0.95);
+}
+
+.carrossel-medio-nav svg {
+  width: 24px;
+  height: 24px;
+}
+
+.carrossel-medio-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2rem;
+  padding: 0 1rem;
+  flex-wrap: wrap;
+}
+
+.carrossel-medio-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00095b;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.carrossel-medio-dot:hover {
+  opacity: 0.8;
+  transform: scale(1.2);
+}
+
+.carrossel-medio-dot.ativo {
+  background: #ffc014;
+  opacity: 1;
+  transform: scale(1.3);
+  box-shadow: 0 0 8px rgba(255, 192, 20, 0.5);
+}
+
+.carrossel-medio-loading,
+.carrossel-medio-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .carrossel-medio-container {
+    padding: 0 1.5rem;
+  }
+  
+  .carrossel-medio-viewport {
+    height: 400px;
+  }
+  
+  .carrossel-medio-item {
+    flex: 0 0 calc(50% - 10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .carrossel-medio {
+    padding: 3rem 0;
+  }
+
+  .carrossel-medio-container {
+    padding: 0 1rem;
+  }
+  
+  .carrossel-medio-wrapper {
+    gap: 15px;
+  }
+
+  .carrossel-medio-viewport {
+    height: 350px;
+  }
+  
+  .carrossel-medio-track {
+    gap: 15px;
+  }
+  
+  .carrossel-medio-item {
+    flex: 0 0 calc(100% - 0px);
+  }
+
+  .carrossel-medio-nav {
+    width: 45px;
+    height: 45px;
+  }
+
+  .carrossel-medio-nav svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .carrossel-medio-indicators {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .carrossel-medio {
+    padding: 2rem 0;
+  }
+
+  .carrossel-medio-wrapper {
+    gap: 10px;
+  }
+
+  .carrossel-medio-viewport {
+    height: 280px;
+  }
+  
+  .carrossel-medio-track {
+    gap: 10px;
+  }
+  
+  .carrossel-medio-item {
+    flex: 0 0 calc(100% - 0px);
+    border-radius: 12px;
+  }
+
+  .carrossel-medio-nav {
+    width: 40px;
+    height: 40px;
+  }
+
+  .carrossel-medio-nav svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .carrossel-medio-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .carrossel-medio-indicators {
+    margin-top: 1rem;
+    gap: 8px;
+  }
+}

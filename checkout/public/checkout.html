@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Jornal do Reino dos Céus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/checkout/styles/checkout.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Processando pagamento...</p>
+            <small>Por favor, aguarde</small>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="checkout-header">
+        <div class="header-container">
+            <a href="/" class="back-link">
+                <i class='bx bx-arrow-back'></i>
+                <span>Voltar</span>
+            </a>
+            <div class="header-logo">
+                <h1>Jornal do Reino dos Céus</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="checkout-main">
+        <div class="checkout-container">
+            <!-- Left Side - Product Info -->
+            <div class="product-section">
+                <div class="product-card">
+                    <div class="product-badge">
+                        <i class='bx bx-book-open'></i>
+                        <span>Edição Especial</span>
+                    </div>
+                    
+                    <div class="product-image-wrapper">
+                        <div class="product-image-placeholder" id="productImagePlaceholder">
+                            <i class='bx bx-image'></i>
+                        </div>
+                        <img id="productImage" class="product-image" src="" alt="Capa do Jornal" style="display: none;">
+                    </div>
+                    
+                    <div class="product-info">
+                        <h1 id="productName" class="product-name">Carregando informações do jornal...</h1>
+                        <p id="productDescription" class="product-description">Aguarde enquanto carregamos as informações do produto.</p>
+                        
+                        <div class="product-features">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class='bx bx-check-circle'></i>
+                                </div>
+                                <div class="feature-text">
+                                    <strong>PDF Digital</strong>
+                                    <span>Acesso imediato</span>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class='bx bx-check-circle'></i>
+                                </div>
+                                <div class="feature-text">
+                                    <strong>Entrega Imediata</strong>
+                                    <span>Após confirmação</span>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class='bx bx-check-circle'></i>
+                                </div>
+                                <div class="feature-text">
+                                    <strong>Acesso Completo</strong>
+                                    <span>Todas as páginas</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-price">
+                            <span class="price-label">Valor Total</span>
+                            <span class="price-value" id="productPrice">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Checkout Form -->
+            <div class="checkout-section">
+                <div class="checkout-card">
+                    <div class="checkout-header-card">
+                        <h2 class="checkout-title">Finalizar Compra</h2>
+                        <p class="checkout-subtitle">Preencha os dados abaixo para concluir sua compra</p>
+                    </div>
+                    
+                    <div id="errorMessage" class="error-message-general" style="display: none;"></div>
+                    
+                    <form id="checkoutForm">
+                        <div class="form-group">
+                            <label for="nome">
+                                <i class='bx bx-user'></i>
+                                Nome Completo
+                            </label>
+                            <input type="text" id="nome" name="nome" required placeholder="Digite seu nome completo" autocomplete="name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">
+                                <i class='bx bx-envelope'></i>
+                                E-mail
+                            </label>
+                            <input type="email" id="email" name="email" required placeholder="seu@email.com" autocomplete="email">
+                            <small class="form-hint">Você será direcionado para a página de download após o pagamento</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cardElement">
+                                <i class='bx bx-credit-card'></i>
+                                Dados do Cartão
+                            </label>
+                            <div id="cardElement" class="card-element">
+                                <!-- Stripe Elements será inserido aqui -->
+                            </div>
+                            <div id="cardErrors" class="error-message" role="alert"></div>
+                        </div>
+
+                        <button type="submit" id="submitButton" class="submit-button">
+                            <span class="button-content">
+                                <span class="button-text">Finalizar Pagamento</span>
+                                <span class="button-amount" id="buttonAmount">R$ 0,00</span>
+                            </span>
+                            <i class='bx bx-lock-alt button-icon'></i>
+                        </button>
+                    </form>
+
+                    <div class="security-info">
+                        <div class="security-header">
+                            <i class='bx bx-shield-quarter'></i>
+                            <span>Pagamento 100% Seguro</span>
+                        </div>
+                        <div class="security-items">
+                            <div class="security-item">
+                                <i class='bx bx-check-double'></i>
+                                <span>Processado pela Stripe</span>
+                            </div>
+                            <div class="security-item">
+                                <i class='bx bx-lock-alt'></i>
+                                <span>Criptografia SSL</span>
+                            </div>
+                            <div class="security-item">
+                                <i class='bx bx-time'></i>
+                                <span>Entrega imediata</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/checkout/scripts/checkout.js"></script>
+</body>
+</html>

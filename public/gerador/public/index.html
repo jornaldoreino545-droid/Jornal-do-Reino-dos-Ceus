@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎁 Surpresa Premiada 🎁</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #2600ff, #09b5ee);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+    overflow: hidden;
+    font-size: 1rem;
+  }
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    gap: 1rem;
+  }
+
+  .container .imagem{ width: 30rem; }
+  .container img{ width:100%; }
+
+  .container .conteudo{ margin: 0px 10px; }
+  .container .conteudo h2{
+    font-size: 2rem;
+    margin-top: 0rem;
+    margin-bottom: 0px;
+  }
+  .container .conteudo p{
+    font-size: 1rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px 0px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 16px;
+  }
+  button {
+    background: #ffcc00;
+    color: black;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+    transition: 0.3s;
+    font-size: 1rem;
+  }
+  button:hover { background: #fffb00; }
+
+  .login-admin .btm-entrar { margin-bottom: 10px; margin-top: 10px; }
+
+  .resultado {
+    margin-top: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .admin {
+    margin-top: 10px;
+    font-size: 1rem;
+    opacity: 0.8;
+    cursor: pointer;
+    padding: 10px;
+    background-color: #4290ff;
+  }
+
+  .login-admin .itens-do-Administrador{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 30rem;
+  }
+
+  .painel-admin .itens-do-painel{ width: 30rem; }
+  .painel-admin, .login-admin {
+    display: none;
+    background: rgba(0, 0, 0, 0.85);
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    color: white;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .confete {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: cair 3s linear forwards;
+}
+
+@keyframes cair {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confete {
+  z-index: 999999;
+}
+
+body, html {
+  overflow: hidden;
+}
+
+@media screen and (max-width: 1073px){ 
+  .container { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-direction: row; 
+    background: rgba(255, 255, 255, 0.15); 
+    padding: 10px; 
+    border-radius: 10px; 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4); 
+    backdrop-filter: blur(10px); 
+    gap: 1rem; 
+    margin: 0 1rem; 
+  } 
+  }
+
+  @media screen and (max-width: 746px){ 
+    .container { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      flex-direction: column; 
+      background: rgba(255, 255, 255, 0.15); 
+      padding: 10px; 
+      border-radius: 10px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4); 
+      backdrop-filter: blur(10px); 
+      gap: 1rem; 
+      margin: 0 1rem; 
+    } 
+  }
+
+  @media screen and (max-width: 528px){ 
+    .container .imagem{ 
+      width: 100%; 
+    } 
+    
+    .login-admin .itens-do-Administrador { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      flex-direction: column; 
+      width: 100%; 
+      margin: 0 1rem; 
+      padding: 0rem 1rem; 
+    } 
+    
+    .itens-do-Administrador{ 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      flex-direction: column; 
+      width: 100%; 
+    } 
+    
+    .painel-admin .itens-do-painel { 
+      width: 100%; 
+    } }
+
+  .painel-admin input { width: 100%; }
+  .painel-admin button { margin-top: 5px; }
+
+</style>
+</head>
+<body>
+
+<div id="premio">
+<div class="container">
+  <div class="imagem">
+    <img src="./Camada 1 (1).png" alt="imagem">
+  </div>
+  <div class="conteudo">
+    <h2> DESCUBRA QUAL É O SEU PRÊMIO </h2>
+    <p>Digite o código que você achou o seu jornal e veja seu prêmio:</p>
+    <input type="text" id="codigoInput" placeholder="Ex: ABC123">
+    <button onclick="verificarCodigo()">Verificar</button>
+    <div id="resultado" class="resultado"></div>
+    <div class="admin" onclick="abrirLogin()">⚙️ Área do Administrador</div>
+  </div>
+</div>
+
+<!-- TELA LOGIN -->
+<div class="login-admin" id="loginAdmin">
+  <div class="itens-do-Administrador">
+      <h2>Login do Administrador</h2>
+      <input type="text" id="usuarioAdmin" placeholder="Usuário">
+      <input type="password" id="senhaAdmin" placeholder="Senha">
+      <button class="btm-entrar" onclick="fazerLogin()">Entrar</button>
+      <button class="btm-fechar" onclick="fecharLogin()">Fechar</button>
+   </div>
+</div>
+
+<!-- PAINEL ADMIN -->
+<div class="painel-admin" id="painelAdmin">
+  <div class="itens-do-painel">
+      <h2>Painel do Administrador</h2>
+      <input type="text" id="novoCodigo" placeholder="Novo código">
+      <button onclick="adicionarCodigo()">Adicionar Código</button>
+      <button onclick="apagarUsados()">Apagar Códigos Usados</button>
+      <button onclick="limparCodigos()">Limpar Todos os Códigos</button>
+      <button onclick="fecharAdmin()">Fechar Painel</button>
+      <p id="listaCodigos"></p>
+  </div>
+</div>
+
+</div>
+
+<!-- Sons -->
+<audio id="somGanhou" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3"></audio>
+<audio id="somPerdeu" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+
+
+<script>
+
+async function verificarCodigo() {
+    const codigo = document.getElementById("codigoInput").value.trim().toUpperCase();
+    const resultado = document.getElementById("resultado");
+    const somGanhou = document.getElementById("somGanhou");
+    const somPerdeu = document.getElementById("somPerdeu");
+
+    if (!codigo) {
+        resultado.textContent = "Digite um código válido!";
+        resultado.style.color = "#fff";
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/verificar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo })
+        });
+
+        // Se não for JSON válido cai no catch
+        const data = await res.json();
+
+        if (data.status === "usado") {
+            resultado.textContent = "⚠️ Este código já foi usado!";
+            resultado.style.color = "#ffcc00";
+            somPerdeu.play();
+            return;
+        }
+
+        if (data.status === "ganhou") {
+        resultado.textContent = "🎉 Parabéns! Você ganhou o prêmio!";
+        resultado.style.color = "#00ffb3";
+
+        try { somGanhou.play(); } catch(e) { console.warn("Erro ao tocar som:", e); }
+        try { somPerdeu.play(); } catch(e) { console.warn("Erro ao tocar som:", e); }
+
+        criarConfetes();
+
+        setTimeout(() => {
+        window.location.href = "ganhador.html";
+        }, 2000);
+
+        return;
+}
+
+function criarConfetes() {
+  for (let i = 0; i < 100; i++) {
+    const confete = document.createElement("div");
+    confete.classList.add("confete");
+    confete.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+    confete.style.left = Math.random() * 100 + "vw";
+    confete.style.animationDuration = 2 + Math.random() * 3 + "s";
+    document.body.appendChild(confete);
+
+    setTimeout(() => confete.remove(), 3000);
+  }
+}
+
+
+        if (data.status === "nao") {
+            resultado.textContent = "😔 Não foi dessa vez... tente outro código!";
+            resultado.style.color = "#ff5555";
+            somPerdeu.play();
+            return;
+        }
+
+        // caso inesperado
+        resultado.textContent = "Erro inesperado. Tente novamente.";
+        resultado.style.color = "#fff";
+
+    } catch (err) {
+        console.error(err);
+        alert("Erro de conexão com o servidor");
+    }
+}
+
+
+  // LOGIN
+  function abrirLogin(){ document.getElementById("loginAdmin").style.display="flex"; }
+  function fecharLogin(){ document.getElementById("loginAdmin").style.display="none"; }
+
+  async function fazerLogin(){
+      const user = document.getElementById("usuarioAdmin").value;
+      const pass = document.getElementById("senhaAdmin").value;
+
+      try{
+        const res = await fetch("/api/login",{
+            method:"POST",
+            credentials:"include",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify({ user, pass })
+        });
+
+        const data = await res.json();
+        if(res.ok && data.ok){
+            fecharLogin();
+            abrirAdmin();
+        } else {
+            alert(data.error || "Erro ao entrar");
+        }
+      }catch(err){
+        alert("Erro de conexão");
+      }
+  }
+
+  // ABRIR ADMIN E CARREGAR LISTA
+  function abrirAdmin(){
+      document.getElementById("painelAdmin").style.display="flex";
+      listarCodigos();
+  }
+  function fecharAdmin(){
+      document.getElementById("painelAdmin").style.display="none";
+  }
+
+  // 🔥 AQUI ESTÁ A FUNÇÃO CERTA!
+  async function adicionarCodigo() {
+      const novoCodigo = document.getElementById("novoCodigo").value.trim().toUpperCase();
+
+      if (!novoCodigo) {
+          alert("Digite um código!");
+          return;
+      }
+
+      try {
+          const res = await fetch('/api/admin/adicionar', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ novoCodigo })
+          });
+
+          const data = await res.json();
+
+          if (data.ok) {
+              alert("Código adicionado!");
+              document.getElementById("novoCodigo").value="";
+              listarCodigos();
+          } else {
+              alert(data.error || "Erro ao adicionar");
+          }
+      } catch (err) {
+          alert("Erro de conexão");
+      }
+  }
+
+  // LISTAR CÓDIGOS DO BANCO
+  async function listarCodigos(){
+      const res = await fetch("/api/admin/codigos", { credentials:"include" });
+      const data = await res.json();
+
+      const lista = document.getElementById("listaCodigos");
+      lista.innerHTML =
+        `<strong>Códigos ativos:</strong><br>${data.codigosPremiados.join(", ")}`;
+  }
+
+  async function limparCodigos() {
+    if (!confirm("Apagar TODOS os códigos cadastrados?")) return;
+
+    try {
+        const res = await fetch('/api/admin/limpar-tudo', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+            alert("🚫 Todos os códigos foram apagados no servidor!");
+            listarCodigos(); // atualiza na tela
+        } else {
+            alert(data.error || "Erro ao limpar códigos");
+        }
+
+    } catch (err) {
+        alert("Erro de conexão");
+        console.error(err);
+    }
+
+}
+
+
+</script>
+
+</body>
+</html>

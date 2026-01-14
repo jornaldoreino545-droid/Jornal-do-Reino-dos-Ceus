@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./reset.css" />
+    <link rel="stylesheet" href="./pag.colunista.css" />
+    <link rel="stylesheet" href="./Loanding/Loanding.css" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+    <link rel="icon" href="./Imagem/logo jornal.png">
+    <title>Igreja Reino dos Céus</title>
+  </head>
+  <body>
+    <!-- Loanding-->
+
+    <div class="preloader" id="preloader">
+      <div class="loader" id="loader"></div>
+    </div>
+
+    <header>
+      <div id="header"></div>
+
+      <script>
+        async function loadPart(id, file) {
+          const res = await fetch(file);
+          const html = await res.text();
+          document.getElementById(id).innerHTML = html;
+        }
+        // volta uma pasta com "../"
+        loadPart("header", "haader,footer-principal/header.html");
+        loadPart("footer", "haader,footer-principal/footer.html");
+      </script>
+    </header>
+
+    <main>
+      <div class="colunista-do-mes">
+        <h1>COLUNISTAS DO MÊS</h1>
+        <h2>Colunistas escolhitos para fala em nome do Reino</h2>
+      </div>
+
+      <section class="colunistas">
+        <div data-aos="fade-up" class="todoscolunistas" id="colunistasContainer">
+          <!-- Os colunistas serão carregados dinamicamente aqui -->
+          <div style="text-align: center; padding: 3rem; color: #64748b;">
+            <p>Carregando colunistas...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Script para carregar colunistas dinamicamente -->
+    <script>
+      async function loadColunistas() {
+        try {
+          const response = await fetch('/api/site/colunistas');
+          if (!response.ok) {
+            throw new Error('Erro ao carregar colunistas');
+          }
+          
+          const data = await response.json();
+          const colunistas = data.colunistas || [];
+          
+          const container = document.getElementById('colunistasContainer');
+          if (!container) return;
+          
+          if (colunistas.length === 0) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 3rem; color: #64748b;">
+                <p>Nenhum colunista disponível no momento.</p>
+              </div>
+            `;
+            return;
+          }
+          
+          // Ordenar por ordem
+          const sortedColunistas = [...colunistas].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+          
+          // Função para normalizar caminho da imagem
+          const getImageUrl = (imagem) => {
+            if (!imagem) return '';
+            if (imagem.startsWith('http://') || imagem.startsWith('https://')) {
+              return imagem;
+            }
+            if (imagem.startsWith('./')) {
+              return imagem.replace('./', './');
+            }
+            if (imagem.startsWith('/')) {
+              return imagem;
+            }
+            return `./${imagem}`;
+          };
+          
+          container.innerHTML = sortedColunistas.map((colunista, index) => {
+            const imageUrl = getImageUrl(colunista.imagem);
+            const delay = (index + 1) * 100;
+            
+            return `
+          <div class="card-colunistas" data-aos="fade-up" data-aos-delay="${delay}">
+            <!-- Caixa Azul - Título da Coluna -->
+            <div class="coluna-title-box">
+              <span class="coluna-label">Coluna:</span>
+              <div class="coluna-title">${colunista.coluna || ''}</div>
+              <div class="coluna-decorative-icon">
+                <i class='bx bxs-book-open'></i>
+              </div>
+            </div>
+            
+            <!-- Foto do Colunista -->
+            <div class="image">
+              <img src="${imageUrl || './Colunistas/placeholder.png'}" alt="${colunista.nome || 'Colunista'}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27400%27%3E%3Crect fill=%27%23e0e7ff%27 width=%27300%27 height=%27400%27/%3E%3Ctext fill=%27%2364748b%27 font-family=%27sans-serif%27 font-size=%2716%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3ESem Foto%3C/text%3E%3C/svg%3E';" />
+            </div>
+            
+            <!-- Informações e Texto -->
+            <div class="textos">
+              <h1>${colunista.nome || 'Colunista'}</h1>
+              <p>${colunista.conteudo || 'Conteúdo não disponível.'}</p>
+              <div class="social-actions">
+                ${colunista.instagram ? `
+                <div class="icon-redessocial">
+                  <i class='bx bxl-instagram'></i>
+                  <a href="${colunista.instagram.startsWith('http') ? colunista.instagram : '#'}" target="_blank" rel="noopener noreferrer">
+                    <span class="instagram">${colunista.instagram}</span>
+                  </a>
+                </div>
+                ` : ''}
+                <button class="share-button" onclick="openShareMenu(this)" data-colunista="${colunista.nome || ''}" data-coluna="${colunista.coluna || ''}">
+                  <i class='bx bx-share-alt'></i>
+                  <span>Compartilhar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+            `;
+          }).join('');
+          
+          // Reinicializar AOS após carregar conteúdo
+          if (typeof AOS !== 'undefined') {
+            AOS.refresh();
+          }
+          
+        } catch (error) {
+          console.error('Erro ao carregar colunistas:', error);
+          const container = document.getElementById('colunistasContainer');
+          if (container) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 3rem; color: #ef4444;">
+                <p>Erro ao carregar colunistas. Por favor, recarregue a página.</p>
+              </div>
+            `;
+          }
+        }
+      }
+      
+      // Carregar colunistas quando a página estiver pronta
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadColunistas);
+      } else {
+        loadColunistas();
+      }
+    </script>
+
+    <!-- Menu de Compartilhamento -->
+    <div id="shareMenu" class="share-menu hidden">
+      <div class="share-menu-content">
+        <div class="share-menu-header">
+          <h3>Compartilhar Coluna</h3>
+          <button class="close-share-menu" onclick="closeShareMenu()">
+            <i class='bx bx-x'></i>
+          </button>
+        </div>
+        <div class="share-options">
+          <button class="share-option" onclick="shareOnWhatsApp()">
+            <i class='bx bxl-whatsapp'></i>
+            <span>WhatsApp</span>
+          </button>
+          <button class="share-option" onclick="shareOnFacebook()">
+            <i class='bx bxl-facebook'></i>
+            <span>Facebook</span>
+          </button>
+          <button class="share-option" onclick="shareOnTwitter()">
+            <i class='bx bxl-twitter'></i>
+            <span>Twitter</span>
+          </button>
+          <button class="share-option" onclick="shareOnLinkedIn()">
+            <i class='bx bxl-linkedin'></i>
+            <span>LinkedIn</span>
+          </button>
+          <button class="share-option" onclick="copyLinkToClipboard()">
+            <i class='bx bx-link'></i>
+            <span>Copiar Link</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div id="footer"></div>
+    </footer>
+
+    <script src="./Loanding/Loanding.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
+
+    <script>
+      // Variáveis globais para compartilhamento
+      let currentColunista = '';
+      let currentColuna = '';
+      let currentUrl = '';
+
+      // Abrir menu de compartilhamento
+      function openShareMenu(button) {
+        currentColunista = button.getAttribute('data-colunista');
+        currentColuna = button.getAttribute('data-coluna');
+        currentUrl = window.location.href;
+        
+        const shareMenu = document.getElementById('shareMenu');
+        shareMenu.classList.remove('hidden');
+        
+        // Atualizar título do menu se necessário
+        const menuTitle = shareMenu.querySelector('.share-menu-header h3');
+        if (menuTitle) {
+          menuTitle.textContent = `Compartilhar: ${currentColuna}`;
+        }
+      }
+
+      // Fechar menu de compartilhamento
+      function closeShareMenu() {
+        const shareMenu = document.getElementById('shareMenu');
+        shareMenu.classList.add('hidden');
+      }
+
+      // Fechar menu ao clicar fora
+      document.addEventListener('click', function(event) {
+        const shareMenu = document.getElementById('shareMenu');
+        const shareMenuContent = document.querySelector('.share-menu-content');
+        
+        if (shareMenu && !shareMenuContent.contains(event.target) && !event.target.closest('.share-button')) {
+          closeShareMenu();
+        }
+      });
+
+      // Compartilhar no WhatsApp
+      function shareOnWhatsApp() {
+        const text = `Confira a coluna "${currentColuna}" por ${currentColunista} no Jornal do Reino dos Céus: ${currentUrl}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(whatsappUrl, '_blank');
+        closeShareMenu();
+      }
+
+      // Compartilhar no Facebook
+      function shareOnFacebook() {
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+        window.open(facebookUrl, '_blank', 'width=600,height=400');
+        closeShareMenu();
+      }
+
+      // Compartilhar no Twitter
+      function shareOnTwitter() {
+        const text = `Confira a coluna "${currentColuna}" por ${currentColunista} no Jornal do Reino dos Céus`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentUrl)}`;
+        window.open(twitterUrl, '_blank', 'width=600,height=400');
+        closeShareMenu();
+      }
+
+      // Compartilhar no LinkedIn
+      function shareOnLinkedIn() {
+        const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
+        window.open(linkedinUrl, '_blank', 'width=600,height=400');
+        closeShareMenu();
+      }
+
+      // Copiar link para área de transferência
+      function copyLinkToClipboard() {
+        const textToCopy = currentUrl;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(textToCopy).then(function() {
+            showCopyNotification('Link copiado para a área de transferência!');
+            closeShareMenu();
+          }).catch(function(err) {
+            console.error('Erro ao copiar:', err);
+            fallbackCopyTextToClipboard(textToCopy);
+          });
+        } else {
+          fallbackCopyTextToClipboard(textToCopy);
+        }
+      }
+
+      // Método alternativo para copiar (compatibilidade com navegadores antigos)
+      function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            showCopyNotification('Link copiado para a área de transferência!');
+            closeShareMenu();
+          } else {
+            showCopyNotification('Erro ao copiar link. Tente novamente.');
+          }
+        } catch (err) {
+          console.error('Erro ao copiar:', err);
+          showCopyNotification('Erro ao copiar link. Tente novamente.');
+        }
+        
+        document.body.removeChild(textArea);
+      }
+
+      // Mostrar notificação de cópia
+      function showCopyNotification(message) {
+        // Remover notificação existente se houver
+        const existingNotification = document.querySelector('.copy-notification');
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+
+        // Criar notificação
+        const notification = document.createElement('div');
+        notification.className = 'copy-notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // Mostrar notificação
+        setTimeout(() => {
+          notification.classList.add('show');
+        }, 10);
+
+        // Remover notificação após 3 segundos
+        setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => {
+            notification.remove();
+          }, 300);
+        }, 3000);
+      }
+    </script>
+
+    <style>
+      /* Estilo para notificação de cópia */
+      .copy-notification {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #00095b;
+        color: #ffffff;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-family: "Roboto", sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        z-index: 10001;
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+
+      .copy-notification.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    </style>
+  </body>
+</html>

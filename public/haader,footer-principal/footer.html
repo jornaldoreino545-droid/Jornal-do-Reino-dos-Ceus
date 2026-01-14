@@ -1,0 +1,78 @@
+<link rel="stylesheet" href="../haader,footer-principal/style.css">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+
+<footer>
+    <div class="footer-top-line"></div>
+    <div class="footeres">
+        <div class="totosfooter">
+            <div class="sobrenos">
+                <h1>Sobre nós</h1>
+                <p>O jornal da igreja é dedicado a fortalecer a fé e manter nossa comunidade conectada através de conteúdos inspiradores e mensagens de esperança.</p>
+            </div>
+
+            <div class="sobrenos efeito">
+                <h1>Links Rápidos</h1>
+                <nav>
+                    <ul>
+                        <li><a href="#">Jornal</a></li>
+                        <li><a href="#">Notícias</a></li>
+                        <li><a href="#">Colunistas</a></li>
+                        <li><a href="#">Oração</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sobrenos">
+                <h1>Contato</h1>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <a href="mailto:jornalreinodoseus@gmail.com">jornalreinodoseus@gmail.com</a>
+                    </div>
+                    <div class="contact-item">
+                        <a href="tel:+5511981739716">(11) 98173-9716</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sobrenos">
+                <h1>Redes Sociais</h1>
+                <div class="social-media">
+                    <a href="https://www.instagram.com/jornaldoreino_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-icon instagram">
+                        <i class="bx bxl-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="https://www.youtube.com/@tvreino" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="social-icon youtube">
+                        <i class="bx bxl-youtube"></i>
+                        <span>YouTube</span>
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61584172030496" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-icon facebook">
+                        <i class="bx bxl-facebook"></i>
+                        <span>Facebook</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="linha"></div>
+        <div class="partefinal">
+            <small>&copy; 2025 Jornal da Igreja Reino dos Céus. Todos os direitos reservados.</small> 
+            <button id="scrollToTop" aria-label="Voltar ao topo">
+                <span>Subir para cima</span>
+            </button>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Scroll to top functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollBtn = document.getElementById('scrollToTop');
+        if (scrollBtn) {
+            scrollBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+    });
+</script>

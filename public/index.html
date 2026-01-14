@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"rel="stylesheet"/>
+
+    <link rel="stylesheet" href="./reset.css" />
+    <link rel="stylesheet" href="./index.css?v=2.0" />
+    <link rel="stylesheet" href="./Loanding/Loanding.css" />
+    <style>
+      /* Estilos críticos para garantir que os cards apareçam */
+      .todoscard {
+        display: flex !important;
+        gap: 32px !important;
+        padding: 0 20px !important;
+      }
+      .todoscard .card {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 300px !important;
+        min-height: 520px !important;
+        background: linear-gradient(180deg, #00095b 0%, #001a7a 100%) !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        box-shadow: 0 10px 30px rgba(0, 9, 91, 0.25), 0 5px 15px rgba(0, 0, 0, 0.15) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      .todoscard .card img {
+        width: 100% !important;
+        height: 400px !important;
+        object-fit: cover !important;
+        display: block !important;
+      }
+      .todoscard .card h1 {
+        color: #ffffff !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+      }
+      .todoscard .card button {
+        background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%) !important;
+        color: #000000 !important;
+        border-radius: 12px !important;
+        padding: 16px 24px !important;
+      }
+      .todoscard .card .badge {
+        display: inline-block !important;
+      }
+      .todoscard .card .card-overlay-info {
+        display: block !important;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="./Carrosselpagina1/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="./modal.css">
+    <link rel="stylesheet" href="./carrossel-medio.css">
+    
+    <link rel="icon" href="./Imagem/logo jornal.png">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <title>Igreja Reino dos Céus</title>
+  </head>
+  <body>
+    <!-- Loanding-->
+
+<!--============================================================================
+============================================================================
+---- LOANDING... DA PAGINA 
+============================================================================
+============================================================================ -->
+
+    <div class="preloader" id="preloader">
+      <div class="loader" id="loader"></div>
+    </div>
+
+<!--============================================================================
+============================================================================
+----EFEITO MODAL DA PAGINA
+============================================================================
+============================================================================ -->
+
+      <div class="overlay" id="overlay">
+        <div class="modal">
+          <span class="close-btn" id="closeModal">&times;</span>
+          <a id="bannerModalLink" href="#">
+            <img id="bannerModalImagem" class="modal-banner" src="./Imagem/banner-do-jornal-modal.jpg" alt="Banner Modal">
+          </a>
+        </div>
+      </div>
+
+
+<!--============================================================================
+============================================================================
+----HEADER COMPLETO JAVASCRIP
+============================================================================
+============================================================================ -->
+    <header>
+      <div id="header"></div>
+
+      <script>
+        async function loadPart(id, file) {
+          const res = await fetch(file);
+          const html = await res.text();
+          document.getElementById(id).innerHTML = html;
+        }
+        // volta uma pasta com "../"
+        loadPart("header", "haader,footer-principal/header.html");
+        loadPart("footer", "haader,footer-principal/footer.html");
+      </script>
+    </header>
+
+<!--============================================================================
+============================================================================
+---- CARROSEL DE MATERIAS
+============================================================================
+============================================================================ -->
+    <main>
+      <!-- Swiper -->
+      <div class="swiper mySwiper">
+        <div class="swiper-wrapper" id="carrosselWrapper">
+          <!-- Carrossel será carregado dinamicamente aqui -->
+          <div class="swiper-slide">
+            <div style="text-align: center; padding: 40px; color: #7f8c8d;">Carregando carrossel...</div>
+          </div>
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+
+<!--============================================================================
+============================================================================
+---- PARTE DO VIDEO
+============================================================================
+============================================================================ -->
+      <section class="video">
+        <div data-aos="fade-down" class="jornal-titulo">
+          <h1 id="videoTituloContainer">
+            JORNAL CONSAGRADO PARA LEVAR A PALAVRA
+          </h1>
+          <h2 id="videoSubtituloContainer">
+            O Bispo Rodrigo e os pastores consagram o Jornais das Igrejas
+          </h2>
+        </div>
+
+        <video id="videoPlayer" controls data-aos="fade-up" style="display: none;">
+          <source id="videoSource" src="" type="video/mp4" />
+          Seu navegador não suporta o elemento de vídeo.
+        </video>
+        <div id="videoLoading" style="text-align: center; padding: 40px; color: #7f8c8d;">Carregando vídeo...</div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----PRIMEIRA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+      <section class="primeira-parte">
+        <div class="container-do-jornal">
+        <div class="jornal-titulo">
+          <h1 id="jornalAnoTitulo">
+            JORNAIS REINO DOS CÉUS 2025
+          </h1>
+          <h2>
+            Doze edições especiais, mês a mês, 
+            com mensagens de fé, esperança e direção 
+            espiritual
+          </h2>
+        </div>
+        <div class="todoscard effecs-contan" id="jornaisContainer">
+          <!-- Jornais serão carregados dinamicamente aqui -->
+          <div class="loading" style="text-align: center; padding: 40px;">
+            Carregando jornais...
+          </div>
+        </div>
+
+        <div class="buttonsaibamais">
+          <button>
+            <a href="./pag-saibaMais.html">Conheça mais</a>
+          </button>
+        </div>
+      </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----SEGUNDA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+      <section class="segunda-parte">
+        <div class="tudosobrejornal">
+          <div data-aos="fade-right" class="jornalsobretitulo" id="jornalTituloContainer">
+            <h1>
+              CONHEÇA A ESSÊNCIA DO NOSSO JORNAL
+            </h1>
+            <h2>
+              Conteúdos que abordam fé, esperança e 
+              transformação para fortalecer sua caminhada 
+              espiritual
+            </h2>
+          </div>
+
+          <div class="sobreojornal">
+            <div class="foto-do-jornal">
+              <img id="jornalImagemContainer" src="Imagem/testesimagem.gif" alt="Imagem do Jornal" />
+            </div>
+            <p id="jornalConteudoContainer">
+              <strong> O Jornal do Reino dos Céus – Uma Voz de Esperança e Transformação</strong><br>
+
+O Jornal do Reino dos Céus é muito mais do que um simples informativo. Ele é um instrumento poderoso nas mãos de Deus para alcançar vidas, restaurar famílias e levar luz aos corações que estão em meio à escuridão. A cada edição, suas páginas carregam mensagens inspiradoras, ensinamentos profundos, testemunhos reais e palavras de fé que têm o poder de transformar realidades.
+
+Em um mundo cada vez mais marcado pela dor, pela solidão, pela desesperança e pelos desafios diários, o Jornal do Reino dos Céus surge como uma resposta divina ao clamor dos que sofrem. Ele chega às mãos de quem perdeu a fé, de quem não vê mais saída, de quem luta contra vícios, doenças, traumas e problemas familiares — e mostra que ainda há solução, que Deus continua operando milagres e que o impossível pode se tornar possível.
+
+<br><br><strong>Um canal de fé e salvação</strong><br>
+Por meio de suas matérias e testemunhos, o jornal anuncia a Palavra de Deus de forma clara e acessível, revelando que existe um caminho de cura, libertação e recomeço. Cada história publicada é uma prova viva de que o poder do Evangelho transforma vidas — pessoas que estavam presas ao vício foram libertas, doentes foram curados, lares foram restaurados e sonhos antes impossíveis se tornaram realidade.
+
+<br><br><strong>Um guia espiritual em tempos difíceis</strong><br>
+O Jornal do Reino dos Céus também é um guia de fortalecimento espiritual. Ele ensina princípios valiosos da fé, mostra como vencer as batalhas diárias e conduz o leitor a um relacionamento mais profundo com Deus. Em meio ao caos do mundo moderno, ele renova a esperança e lembra que não estamos sozinhos — o Senhor está ao nosso lado, pronto para nos levantar e mudar nossa história.
+
+<br><br><strong>Transformando vidas com amor e propósito</strong><br>
+Mais do que informar, o jornal tem a missão de alcançar vidas. Cada edição é preparada com amor e propósito, com a intenção de chegar até os corações aflitos e mostrar que existe um Deus que cura, liberta, restaura e salva. É uma ferramenta missionária que atravessa cidades e estados, alcançando até os lugares mais distantes, levando consigo a mensagem mais poderosa de todas: "Para Deus nada é impossível."
+
+<br><br><strong>Uma semente de fé em cada página</strong><br>
+Quando alguém lê o Jornal do Reino dos Céus, não está apenas folheando notícias — está recebendo sementes de fé, ânimo e esperança. Está sendo convidado a crer novamente, a lutar com coragem e a confiar que Deus tem um plano perfeito para sua vida.
+
+Por isso, o Jornal do Reino dos Céus é tão importante: porque ele não apenas conta histórias, ele escreve novas histórias. Ele não apenas fala de milagres, ele inspira milagres. Ele não apenas anuncia a Palavra, ele leva a presença de Deus até onde a dor parece ter vencido.
+
+<br><br><span>Onde há sofrimento, o Jornal do Reino dos Céus leva consolo. </span><br>
+<span>Onde há dúvida, ele leva fé. </span><br>
+<span>Onde há escuridão, ele leva a luz do Evangelho. </span><br>
+
+<br>Porque cada página é um lembrete de que Deus ainda está no controle — e com Ele, sempre há esperança!
+            </p>
+          </div>
+        </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----CARROSSEL MEDIO ENTRE VERMELHO E AZUL
+============================================================================
+============================================================================ -->
+
+      <section class="carrossel-medio" id="carrossel-medio">
+        <div class="carrossel-medio-container">
+          <div class="carrossel-medio-wrapper">
+            <button class="carrossel-medio-nav carrossel-medio-nav-anterior" id="carrossel-medio-btn-anterior" aria-label="Slide anterior">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            <div class="carrossel-medio-viewport">
+              <div class="carrossel-medio-track" id="carrossel-medio-slides">
+                <!-- Slides serão carregados dinamicamente aqui -->
+                <div class="carrossel-medio-loading">Carregando...</div>
+              </div>
+            </div>
+            
+            <button class="carrossel-medio-nav carrossel-medio-nav-proximo" id="carrossel-medio-btn-proximo" aria-label="Próximo slide">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="carrossel-medio-indicators" id="carrossel-medio-indicators">
+            <!-- Indicadores serão gerados dinamicamente -->
+          </div>
+        </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----TERCEIRA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+      <section class="terceiraparte">
+        <div class="sobreaigreja">
+          <div data-aos="fade-right" class="quemsomos" id="igrejaTituloContainer">
+            <h1>CONHEÇA A IGREJA REINO DOS CÉUS</h1>
+            <h2>Igreja Reino dos Céus – um lugar de fé, esperança e transformação</h2>
+          </div>
+
+          <div class="quemsomosfundo">
+            <div class="imagemsomosfundo">
+              <img
+                id="igrejaImagemContainer"
+                src="./Imagem/igreja-.png"
+                alt="imaegm"
+                class="primeira-imagem"
+              />
+              <img
+                src="./Imagem/tablePrancheta-1.png"
+                alt="imagem"
+                class="table"
+              />
+            </div>
+            <p id="igrejaConteudoContainer">
+              A Igreja Reino dos Céus não é apenas um templo — é um lugar onde o céu toca a terra e onde o poder de Deus se manifesta de forma viva e transformadora. Em cada culto, cada oração e cada ato de fé, pessoas têm suas vidas completamente mudadas: famílias são restauradas, enfermos são curados, vícios são quebrados e sonhos são trazidos de volta à vida. Aqui, quem chega em lágrimas sai com um novo propósito e quem chega em ruínas encontra um novo começo em Cristo.
+
+              <br><br><strong>Uma missão nascida no coração de Deus</strong><br>
+Desde a sua fundação, a missão do Reino dos Céus é clara: levar salvação, libertação e transformação a todos os povos, mostrando que o poder de Deus continua operando hoje com a mesma intensidade dos tempos bíblicos. Cada mensagem pregada e cada ato profético realizado têm o objetivo de resgatar vidas do sofrimento, curar feridas profundas e conduzir as pessoas ao verdadeiro propósito para o qual foram criadas.
+
+<br><br><strong>Apóstolo Primaz Adelino de Carvalho – Um profeta para esta geração</strong><br>
+À frente dessa grande obra está o Apóstolo Primaz Adelino de Carvalho, um homem chamado por Deus para ser instrumento de cura e transformação nesta geração. Há mais de quatro décadas ele dedica sua vida a pregar o Evangelho e a levar a mensagem do Reino a todos os cantos do Brasil e do mundo. Com autoridade espiritual, unção e revelação profética, tem sido canal de milagres impressionantes e libertações profundas, mostrando ao mundo que o Deus do impossível ainda realiza maravilhas.
+
+<br><br><strong>Apóstola Sol Daniela Carvalho – Uma mulher de fé e intercessão</strong><br>
+Ao lado do Apóstolo, a Apóstola Sol Daniela Carvalho tem exercido um ministério marcado por amor, entrega e intercessão. Sua sensibilidade espiritual e sua paixão pelas almas têm levado consolo a milhares de pessoas, restaurando vidas e reacendendo a fé de quem havia desistido. Através de sua palavra e de sua oração, muitos testemunham curas, reconciliações e milagres extraordinários.
+
+<br><br><strong>Monte Maanaim – O Lugar dos Grandes Milagres de Deus</strong><br>
+Entre os lugares mais marcantes do ministério está o Monte Maanaim, um território sagrado e profético onde o céu se abre e o sobrenatural acontece. Ali, multidões sobem movidas pela fé, e milhares de testemunhos de cura, libertação e restauração são contados a cada encontro. Pessoas com doenças incuráveis são curadas, vidas destruídas pelos vícios são transformadas, causas impossíveis são resolvidas e famílias inteiras são restauradas pela presença poderosa de Deus.
+
+No Monte Maanaim, cada oração tem um propósito e cada clamor gera resultados. É um lugar onde o Espírito Santo se move com liberdade, trazendo renovo, milagres e revelações profundas. Muitos dizem que subir ao Monte Maanaim é viver uma experiência celestial — e de fato é: um encontro real com o Deus vivo que transforma destinos.
+
+<br><br><strong>Milagres que transformam histórias</strong><br>
+Na Igreja Reino dos Céus, milagres não são apenas histórias antigas — eles acontecem todos os dias. Pessoas libertas de vícios após décadas de escravidão, curas instantâneas de enfermidades incuráveis, portas de emprego que se abrem, causas impossíveis resolvidas na justiça, famílias restauradas e novos começos são apenas alguns dos inúmeros testemunhos que nascem desse ministério.
+
+<br><br><strong>Uma família espiritual que acolhe e transforma</strong><br>
+Mais do que uma igreja, o Reino dos Céus é uma grande família onde todos são acolhidos com amor e respeito, independentemente de sua história. Aqui, você encontra direção espiritual, apoio, propósito e um ambiente onde sua fé pode crescer e florescer.
+
+<br><br><span>"Porque o Reino de Deus não consiste em palavras, mas em poder." – 1 Coríntios 4:20</span><br>
+
+Se você está em busca de um milagre, de um recomeço ou de uma experiência verdadeira com o Deus vivo, a Igreja Reino dos Céus e o Monte Maanaim são lugares onde a fé se torna realidade. Aqui, você não apenas ouve falar sobre milagres — você vive milagres. Aqui, você não apenas conhece Deus — você o encontra face a face.
+            </p>
+          </div>
+        </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----QUARTA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+      <section class="quartaparte">
+        <div data-aos="fade-up"class="quemsomos">
+          <h1>CONHEÇA OS RESPONSÁVEIS</h1>
+          <h2>Conheça a equipe que leva informação até você</h2>
+        </div>
+
+        <div class="todoselementos" id="responsaveisContainer">
+          <!-- Responsáveis serão carregados dinamicamente aqui -->
+        </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----QUINTA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+
+<iframe src="gerador/public/index.html" width="100%" height="800px" style="border:0;"></iframe>
+
+
+
+      <section class="formulario">
+        <div class="elementosdoformulario">
+          <div data-aos="fade-up" class="formulario-titulos">
+            <h1>ENTRE EM CONTATO CONOSCO</h1>
+            <h2></h2>
+          </div>
+
+          <!-- Complete form with reCAPTCHA and custom fields -->
+          <form action="https://api.staticforms.xyz/submit" method="POST">
+            <!-- Required: Your Static Forms API key -->
+            <input
+              type="hidden"
+              name="apiKey"
+              value="sf_6kj56blimlb4hd13fafhc9m8"
+            />
+
+            <!-- Enable reply-to functionality -->
+            <input type="hidden" name="replyTo" value="@" />
+
+            <!-- Anti-spam honeypot field -->
+            <input
+              type="text"
+              name="honeypot"
+              style="display: none"
+              tabindex="-1"
+              autocomplete="off"
+            />
+
+            <!-- Form fields -->
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Digite seu nome"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Digite seu Email"
+                required
+              />
+            </div>
+
+            <!-- Custom field with $ prefix -->
+            <div class="form-group">
+              <label for="phone">Telefone:</label>
+              <input
+                type="tel"
+                id="tel"
+                name="telefone"
+                placeholder="(99) 99999-9999"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="message">Messagem:</label>
+              <textarea
+                id="message"
+                name="message"
+                placeholder="Digite sua mensagem"
+                required
+              ></textarea>
+            </div>
+
+            <input
+              type="hidden"
+              name="redirectTo"
+              value="https://www.testeigreja.store/pag-Obrigado.html"
+            />
+
+            <button type="submit">Envie menssagem</button>
+          </form>
+        </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----SETIMA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+      <section class="setimaparte">
+        <div class="perguntas-frequentes">
+          <div data-aos="fade-up" class="formulario-titulos">
+            <h1>PRECISA DE AJUDA?</h1>
+            <h2>Tire suas dúvidas de forma simples e rápida</h2>
+          </div>
+          <ul class="faq" id="faqContainer">
+            <!-- FAQ será carregado dinamicamente aqui -->
+          </ul>
+
+          </ul>
+        </div>
+      </section>
+
+<!--============================================================================
+============================================================================
+----OITAVA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+
+      <section class="slide-eighth">
+        
+        <div class="eighth-elemet">
+        <div data-aos="fade-down"class="eighth-titulos">
+          <h1>CONHEÇA MAIS SOBRE NOSSO IGREJA</h1>
+          <h2>Tire suas dúvidas de forma simples e rápida</h2>
+        </div>
+
+        <div data-aos="fade-up" class="todos-site-igreja">
+          
+          <div class="site">
+            <div class="imagem">
+              <a href="https://rededocoracao.com.br/"><img src="./Imagem/rede do coração.webp" alt="imagem-rede-do-coração"></a>
+            </div>
+          </div>
+
+
+          <div class="site">
+            <div class="imagem">
+              <a href="https://www.oracaodamadrugada.com.br/"><img src="./Imagem/oração.webp" alt="imagem-oração"></a>
+            </div>
+          </div>
+
+
+          <div class="site">
+            <div class="imagem">
+              <a href="https://santuarioreinodosceus.com.br/"><img src="./Imagem/download.jpg" alt="imagem-igrejareino dos céus"></a>
+            </div>
+          </div>
+
+          
+          <div class="site">
+            <div class="imagem">
+              <a href="https://turminhadamadrinha.com.br/?fbclid=PAZXh0bgNhZW0CMTEAAaeJJscsdlRHd5MQ7TzZ1z14up_TeCj_UGJU3vqOg507_SDj1jkvxD0ajz39dw_aem_PQrpuukLSm5grJbSZQZOEw"><img src="./Imagem/loja da turminha.webp" alt="imagem-turminha da madrinha"></a>
+            </div>
+          </div>
+
+          
+        </div>
+      </div>
+      </section>
+    </main>
+<!--============================================================================
+============================================================================
+----PRIMEIRA PARTE DA PAGINA
+============================================================================
+============================================================================ -->
+
+    <div id="footer"></div>
+
+    <script src="./gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+    <script src="./style_efeitos.js"></script>
+
+    
+    <script src="./java.modal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Script para carregar carrossel dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarCarrossel() {
+          try {
+            console.log('Iniciando carregamento do carrossel...');
+            const response = await fetch('/api/site/carrossel');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const carrosselItems = await response.json();
+            console.log('Itens do carrossel recebidos:', carrosselItems);
+            
+            const wrapper = document.getElementById('carrosselWrapper');
+            
+            if (!wrapper) {
+              console.error('Wrapper do carrossel não encontrado!');
+              return;
+            }
+            
+            if (!carrosselItems || carrosselItems.length === 0) {
+              console.log('Nenhum item no carrossel');
+              wrapper.innerHTML = '<div class="swiper-slide"><div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum item no carrossel no momento.</div></div>';
+              // Inicializar Swiper mesmo sem itens
+              inicializarSwiper();
+              return;
+            }
+            
+            // Filtrar apenas itens ativos e ordenar
+            const itensAtivos = carrosselItems
+              .filter(item => item.ativo !== false)
+              .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+            
+            console.log('Itens ativos do carrossel:', itensAtivos.length);
+            
+            // Gerar slides do carrossel
+            wrapper.innerHTML = itensAtivos.map(item => {
+              // Normalizar caminho da imagem
+              let imagemUrl = item.imagem || '';
+              
+              // Se começa com /uploads, manter (arquivo enviado pelo dashboard)
+              if (imagemUrl.startsWith('/uploads/')) {
+                // Já está correto
+              }
+              // Se começa com http, manter (URL externa)
+              else if (imagemUrl.startsWith('http')) {
+                // Já está correto
+              }
+              // Se começa com ./, remover
+              else if (imagemUrl.startsWith('./')) {
+                imagemUrl = imagemUrl.substring(2);
+              }
+              // Se é um caminho relativo da pasta public, adicionar / no início
+              else if (imagemUrl.includes('Carrosselpagina1') || imagemUrl.includes('Imagem') || imagemUrl.includes('CapadeNoticias')) {
+                if (!imagemUrl.startsWith('/')) {
+                  imagemUrl = '/' + imagemUrl;
+                }
+              }
+              // Caso contrário, assumir que está em /uploads/materias/
+              else {
+                imagemUrl = '/uploads/materias/' + imagemUrl;
+              }
+              
+              return `
+                <div class="swiper-slide">
+                  <img src="${imagemUrl}" alt="Carrossel" onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">
+                </div>
+              `;
+            }).join('');
+            
+            // Inicializar Swiper após carregar conteúdo dinâmico
+            inicializarSwiper();
+            
+            console.log('✅ Carrossel carregado e Swiper inicializado');
+          } catch (error) {
+            console.error('Erro ao carregar carrossel:', error);
+            const wrapper = document.getElementById('carrosselWrapper');
+            if (wrapper) {
+              wrapper.innerHTML = '<div class="swiper-slide"><div style="text-align: center; padding: 40px; color: #ef4444;">Erro ao carregar carrossel. Verifique o console.</div></div>';
+            }
+            // Tentar inicializar Swiper mesmo com erro
+            inicializarSwiper();
+          }
+        }
+        
+        function inicializarSwiper() {
+          if (typeof Swiper !== 'undefined') {
+            // Destruir instância anterior se existir
+            if (window.carrosselSwiper) {
+              window.carrosselSwiper.destroy(true, true);
+            }
+            
+            // Criar nova instância
+            window.carrosselSwiper = new Swiper(".mySwiper", {
+              spaceBetween: 30,
+              centeredSlides: true,
+              autoplay: {
+                delay: 2500,
+                disableOnInteraction: false,
+              },
+              pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+              },
+              navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+              },
+            });
+          } else {
+            console.error('Swiper não está disponível!');
+          }
+        }
+        
+        // Carregar carrossel quando a página carregar
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', carregarCarrossel);
+        } else {
+          carregarCarrossel();
+        }
+      })();
+    </script>
+
+    <!-- Script do Carrossel Médio -->
+    <script src="./carrossel-medio.js"></script>
+
+    <script src="./Loanding/Loanding.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
+
+    <!-- Script para carregar jornais dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarJornais() {
+          try {
+            console.log('Iniciando carregamento de jornais...');
+            const response = await fetch('/api/jornais');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Dados recebidos:', data);
+            
+            // Obter o ano atual
+            const anoAtual = new Date().getFullYear();
+            console.log(`Ano atual: ${anoAtual}`);
+            
+            // Atualizar o título com o ano atual
+            const tituloAno = document.getElementById('jornalAnoTitulo');
+            if (tituloAno) {
+              tituloAno.textContent = `JORNAIS REINO DOS CÉUS ${anoAtual}`;
+            }
+            
+            const todosJornais = data.jornais || [];
+            const container = document.getElementById('jornaisContainer');
+            
+            if (!container) {
+              console.error('Container de jornais não encontrado!');
+              return;
+            }
+            
+            if (todosJornais.length === 0) {
+              container.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal disponível no momento.</div>';
+              console.log('Nenhum jornal encontrado');
+              return;
+            }
+            
+            // Filtrar apenas jornais ativos do ano atual e ordenar
+            const jornaisAtivos = todosJornais
+              .filter(j => j.ativo !== false && j.ano === anoAtual)
+              .sort((a, b) => {
+                // 1. Ordenar por ordem (se existir) - menor ordem primeiro
+                if (a.ordem && b.ordem) {
+                  return a.ordem - b.ordem;
+                }
+                if (a.ordem && !b.ordem) return -1;
+                if (!a.ordem && b.ordem) return 1;
+                
+                // 2. Se não tiver ordem, ordenar por ano e mês (mais recente primeiro)
+                if (a.ano && b.ano) {
+                  if (a.ano !== b.ano) {
+                    return b.ano - a.ano; // Ano mais recente primeiro
+                  }
+                  // Mesmo ano, ordenar por mês
+                  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                  const indexA = meses.indexOf(a.mes);
+                  const indexB = meses.indexOf(b.mes);
+                  if (indexA !== -1 && indexB !== -1) {
+                    return indexB - indexA; // Mês mais recente primeiro
+                  }
+                }
+                
+                // 3. Por último, ordenar por data de criação (mais recente primeiro)
+                if (a.dataCriacao && b.dataCriacao) {
+                  return new Date(b.dataCriacao) - new Date(a.dataCriacao);
+                }
+                
+                return 0;
+              });
+            
+            // LIMITAR A APENAS 12 JORNAIS NA PÁGINA INICIAL
+            // Os demais jornais podem ser vistos na página "Conheça mais"
+            const jornais = jornaisAtivos.slice(0, 12);
+            
+            console.log(`Total de jornais no banco: ${todosJornais.length}`);
+            console.log(`Jornais ativos do ano ${anoAtual}: ${jornaisAtivos.length}`);
+            console.log(`Mostrando ${jornais.length} jornais na página inicial (máximo 12)`);
+            if (jornaisAtivos.length > 12) {
+              console.log(`💡 Dica: Para ver todos os ${jornaisAtivos.length} jornais de ${anoAtual}, clique no botão "Conheça mais" abaixo`);
+            }
+            if (jornaisAtivos.length === 0) {
+              console.log(`⚠️ Nenhum jornal publicado em ${anoAtual} no momento`);
+              container.innerHTML = `<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal publicado em ${anoAtual} no momento.</div>`;
+              return;
+            }
+            
+            // Gerar HTML dos jornais (máximo 12)
+            const htmlJornais = jornais.map((jornal, index) => {
+              // Gerar link de compra baseado no nome do jornal ou usar linkCompra se existir
+              let linkCompra = jornal.linkCompra;
+              
+              // Se não tiver linkCompra, gerar link para a página de compra dinâmica
+              if (!linkCompra || linkCompra === '') {
+                // Usar a página dinâmica de compra com ID do jornal
+                linkCompra = `./jornal-compra.html?id=${jornal.id}`;
+              }
+              
+              // Ajustar caminho da imagem
+              let imagemCapa = jornal.capa || '';
+              
+              // Se não tiver capa definida, tentar encontrar pelo nome do jornal
+              if (!imagemCapa || imagemCapa === '') {
+                const nomeCapa = `JORNAL DE ${jornal.mes.toUpperCase()}.png`;
+                // Verificar variações comuns
+                if (jornal.mes === 'Fevereiro') {
+                  imagemCapa = './JORNAIS CAPAS/JORNAL DE FEVEREIRO.png';
+                } else if (jornal.mes === 'Abril') {
+                  imagemCapa = './JORNAIS CAPAS/JORNAL DE ABRIL (1).png';
+                } else if (jornal.mes === 'Junho') {
+                  imagemCapa = './JORNAIS CAPAS/JOENAL DE JUNHO.png';
+                } else {
+                  imagemCapa = `./JORNAIS CAPAS/${nomeCapa}`;
+                }
+              } else if (imagemCapa.startsWith('/uploads/')) {
+                // Manter o caminho /uploads/ para ser servido pelo Express
+                imagemCapa = imagemCapa;
+              }
+              
+              // Calcular se é novo (criado nos últimos 30 dias)
+              const dataCriacao = jornal.dataCriacao ? new Date(jornal.dataCriacao) : null;
+              const diasDesdeCriacao = dataCriacao ? Math.floor((new Date() - dataCriacao) / (1000 * 60 * 60 * 24)) : null;
+              const isNovo = diasDesdeCriacao !== null && diasDesdeCriacao <= 30;
+              
+              // Formatar data
+              const dataFormatada = dataCriacao ? dataCriacao.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '';
+              
+              // Verificar se está ativo
+              const isAtivo = jornal.ativo !== false;
+              
+              const classeEffect = index === 0 ? 'card effect card01 loaded' : 'card effect loaded';
+              
+              return `
+                <div class="${classeEffect}" style="opacity: 1 !important; visibility: visible !important; display: flex !important;">
+                  <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);">
+                    <img src="${imagemCapa}" 
+                         alt="${jornal.nome}"
+                         style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease; filter: brightness(0.95) contrast(1.05);"
+                         onerror="if(this.src.indexOf('/uploads/') !== -1) { this.src='./JORNAIS CAPAS/JORNAL DE ${jornal.mes.toUpperCase()}.png'; } else { this.style.display='none'; }">
+                    
+                    <!-- Badges no canto superior -->
+                    <div class="card-badges" style="position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 3;">
+                      ${isNovo ? '<span class="badge badge-novo" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Novo</span>' : ''}
+                      ${jornal.ordem <= 3 ? '<span class="badge badge-destaque" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Destaque</span>' : ''}
+                    </div>
+                    
+                    <!-- Data no canto superior direito -->
+                    ${dataFormatada ? `<div class="card-date" style="position: absolute; top: 12px; right: 12px; background: rgba(0, 9, 91, 0.95); backdrop-filter: blur(10px); padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); font-family: 'Roboto', sans-serif; font-size: 0.8rem; font-weight: 600; color: #ffc014; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); z-index: 3;">${dataFormatada}</div>` : ''}
+                    
+                    <!-- Overlay com descrição no hover -->
+                    ${jornal.descricao ? `<div class="card-overlay-info" style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0, 9, 91, 0.95), rgba(0, 9, 91, 0.7), transparent); padding: 20px 16px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;">
+                      <p style="color: white; font-size: 0.85rem; line-height: 1.5; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${jornal.descricao.length > 100 ? jornal.descricao.substring(0, 100) + '...' : jornal.descricao}</p>
+                    </div>` : ''}
+                  </div>
+                  
+                  <div class="card-content" style="flex: 1; display: flex; flex-direction: column; padding: 24px 20px; gap: 16px; position: relative;">
+                    <!-- Indicador de ordem -->
+                    ${jornal.ordem ? `<div class="card-order-indicator" style="position: absolute; top: -12px; right: 20px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); border: 3px solid #00095b; z-index: 2;">#${jornal.ordem}</div>` : ''}
+                    
+                    <h1 style="margin: 0; font-family: 'Roboto', sans-serif; font-weight: 700; color: #ffffff; font-size: 1.5rem; line-height: 1.4; text-align: center; letter-spacing: 0.3px; min-height: 60px; display: flex; align-items: center; justify-content: center; padding: 12px 0; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4); transition: color 0.3s ease;">${jornal.nome}</h1>
+                    
+                    <!-- Meta informações -->
+                    <div class="card-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                      <span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
+                        <span>${jornal.mes} ${jornal.ano}</span>
+                      </span>
+                      ${jornal.pdf ? `<span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
+                        <span>PDF</span>
+                      </span>` : ''}
+                      ${isAtivo ? `<span style="display: flex; align-items: center; gap: 6px; color: #10b981; font-size: 0.85rem; font-weight: 600;">
+                        <span>Disponível</span>
+                      </span>` : '<span style="display: flex; align-items: center; gap: 6px; color: #ef4444; font-size: 0.85rem; font-weight: 600;"><span>Indisponível</span></span>'}
+                    </div>
+                    
+                    <button style="outline: none; cursor: pointer; border: none; width: 100%; margin-top: auto; padding: 16px 24px; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.8px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(255, 192, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); font-weight: 600;" ${!isAtivo ? 'disabled' : ''}>
+                      <a href="${linkCompra}" style="color: #000000; font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1rem; text-decoration: none; position: relative; z-index: 10;">
+                        ${isAtivo ? 'Adquira o seu' : 'Indisponível'}
+                      </a>
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+            
+            // Limpar container e inserir HTML
+            container.innerHTML = htmlJornais;
+            
+            // Garantir que o container está visível
+            container.style.display = 'flex';
+            container.style.opacity = '1';
+            container.style.visibility = 'visible';
+            
+            // Verificar se os elementos foram inseridos e garantir que estão visíveis
+            const cardsInseridos = container.querySelectorAll('.card');
+            console.log(`HTML gerado: ${htmlJornais.length} caracteres`);
+            console.log(`Cards inseridos no DOM: ${cardsInseridos.length}`);
+            
+            // Garantir que todos os cards estão visíveis e aplicar animações
+            cardsInseridos.forEach((card, idx) => {
+              card.style.opacity = '1';
+              card.style.visibility = 'visible';
+              card.style.display = 'flex';
+              card.style.flexDirection = 'column';
+              
+              // Adicionar animação de entrada escalonada
+              card.style.animation = `fadeInUp 0.6s ease-out ${idx * 0.1}s both`;
+              card.style.animationFillMode = 'both';
+              
+              // Aplicar estilos inline adicionais
+              const img = card.querySelector('img');
+              if (img) {
+                img.style.width = '100%';
+                img.style.height = '400px';
+                img.style.objectFit = 'cover';
+                img.style.display = 'block';
+              }
+              
+              const h1 = card.querySelector('h1');
+              if (h1) {
+                h1.style.color = '#ffffff';
+                h1.style.fontSize = '1.5rem';
+                h1.style.fontWeight = '700';
+              }
+              
+              const button = card.querySelector('button');
+              if (button) {
+                button.style.background = 'linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%)';
+                button.style.color = '#000000';
+              }
+              
+              // Garantir visibilidade dos badges e overlays
+              const badges = card.querySelectorAll('.badge');
+              badges.forEach(badge => {
+                badge.style.display = 'inline-block';
+                badge.style.opacity = '1';
+                badge.style.visibility = 'visible';
+              });
+              
+              const overlayInfo = card.querySelector('.card-overlay-info');
+              if (overlayInfo) {
+                overlayInfo.style.display = 'block';
+              }
+              
+              console.log(`Card ${idx + 1} configurado:`, card.className);
+            });
+            
+            console.log('Jornais renderizados com sucesso!');
+            
+            // Forçar reflow para garantir que os estilos sejam aplicados
+            void container.offsetHeight;
+          } catch (error) {
+            console.error('Erro ao carregar jornais:', error);
+            const container = document.getElementById('jornaisContainer');
+            if (container) {
+              container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                  <p>Erro ao carregar jornais.</p>
+                  <p style="font-size: 12px; margin-top: 10px;">${error.message}</p>
+                  <button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Recarregar Página
+                  </button>
+                </div>
+              `;
+            }
+          }
+        }
+        
+        // Função para garantir que o container existe antes de carregar
+        function tentarCarregarJornais() {
+          const container = document.getElementById('jornaisContainer');
+          if (container) {
+            console.log('Container encontrado, carregando jornais...');
+            carregarJornais();
+            return true;
+          } else {
+            console.log('Container ainda não encontrado, tentando novamente...');
+            return false;
+          }
+        }
+        
+        // Carregar jornais quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            if (!tentarCarregarJornais()) {
+              setTimeout(tentarCarregarJornais, 100);
+            }
+          });
+        } else {
+          // DOM já está pronto
+          if (!tentarCarregarJornais()) {
+            setTimeout(tentarCarregarJornais, 100);
+          }
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => tentarCarregarJornais(), 500);
+        setTimeout(() => tentarCarregarJornais(), 1000);
+        setTimeout(() => tentarCarregarJornais(), 2000);
+      })();
+    </script>
+
+    <!-- Script para carregar responsáveis dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarResponsaveis() {
+          try {
+            console.log('Iniciando carregamento de responsáveis...');
+            const response = await fetch('/api/site/responsaveis');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const responsaveis = await response.json();
+            console.log('Responsáveis recebidos:', responsaveis);
+            
+            const container = document.getElementById('responsaveisContainer');
+            
+            if (!container) {
+              console.error('Container de responsáveis não encontrado!');
+              return;
+            }
+            
+            if (!Array.isArray(responsaveis) || responsaveis.length === 0) {
+              console.log('Nenhum responsável encontrado');
+              return;
+            }
+            
+            // Filtrar apenas responsáveis ativos e ordenar por ordem
+            const responsaveisAtivos = responsaveis
+              .filter(r => r.ativo !== false)
+              .sort((a, b) => {
+                // Ordenar por ordem (se existir) - menor ordem primeiro
+                if (a.ordem && b.ordem) {
+                  return a.ordem - b.ordem;
+                }
+                if (a.ordem && !b.ordem) return -1;
+                if (!a.ordem && b.ordem) return 1;
+                return 0;
+              });
+            
+            console.log(`Total de responsáveis: ${responsaveis.length}`);
+            console.log(`Responsáveis ativos: ${responsaveisAtivos.length}`);
+            
+            // Gerar HTML dos responsáveis
+            const htmlResponsaveis = responsaveisAtivos.map((resp) => {
+              // Normalizar caminho da imagem
+              let imagemUrl = resp.imagem || '';
+              
+              // Se começar com ./ ou for um caminho relativo da pasta public
+              if (imagemUrl.startsWith('./')) {
+                imagemUrl = imagemUrl.substring(2); // Remove ./
+              }
+              
+              // Se não começar com /uploads/ ou http, assumir que é da pasta public
+              if (imagemUrl && !imagemUrl.startsWith('/uploads/') && !imagemUrl.startsWith('http')) {
+                // Se não começar com /, adicionar
+                if (!imagemUrl.startsWith('/')) {
+                  imagemUrl = '/' + imagemUrl;
+                }
+                // Se for um caminho da pasta public (Imagem, Carrosselpagina1, etc), manter como está
+                // O servidor já serve a pasta public na raiz
+              }
+              
+              // Capitalizar primeira letra do cargo
+              const cargo = resp.cargo || 'Produção';
+              const cargoCapitalizado = cargo.charAt(0).toUpperCase() + cargo.slice(1).toLowerCase();
+              
+              return `
+                <div class="responsavel">
+                  <div class="circulo">
+                    <img
+                      src="${imagemUrl || './Imagem/apostolo.png'}"
+                      alt="${resp.nome || 'Responsável'}"
+                      onerror="this.onerror=null; this.src='./Imagem/apostolo.png';"
+                    />
+                  </div>
+                  <div class="nomesresponsavel">
+                    <h1>${resp.nome || 'Nome não informado'}</h1>
+                    <h2>${cargoCapitalizado}</h2>
+                  </div>
+                </div>
+              `;
+            }).join('');
+            
+            container.innerHTML = htmlResponsaveis;
+            console.log('✅ Responsáveis carregados com sucesso!');
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar responsáveis:', error);
+            const container = document.getElementById('responsaveisContainer');
+            if (container) {
+              // Não mostrar erro ao usuário, apenas manter o HTML padrão se houver
+            }
+          }
+        }
+        
+        // Função para garantir que o container existe antes de carregar
+        function tentarCarregarResponsaveis() {
+          const container = document.getElementById('responsaveisContainer');
+          if (container) {
+            console.log('Container de responsáveis encontrado, carregando...');
+            carregarResponsaveis();
+            return true;
+          } else {
+            console.log('Container de responsáveis ainda não encontrado, tentando novamente...');
+            return false;
+          }
+        }
+        
+        // Carregar responsáveis quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            if (!tentarCarregarResponsaveis()) {
+              setTimeout(tentarCarregarResponsaveis, 100);
+            }
+          });
+        } else {
+          // DOM já está pronto
+          if (!tentarCarregarResponsaveis()) {
+            setTimeout(tentarCarregarResponsaveis, 100);
+          }
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => tentarCarregarResponsaveis(), 500);
+        setTimeout(() => tentarCarregarResponsaveis(), 1000);
+        setTimeout(() => tentarCarregarResponsaveis(), 2000);
+      })();
+    </script>
+
+    <!-- Script para carregar Textos (Sobre o Jornal) dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarTextos() {
+          try {
+            console.log('Iniciando carregamento de textos...');
+            const response = await fetch('/api/site/textos');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const textos = await response.json();
+            console.log('Textos recebidos:', textos);
+            
+            // Atualizar título e subtítulo
+            const tituloContainer = document.getElementById('jornalTituloContainer');
+            if (tituloContainer && textos.sobreJornal) {
+              const h1 = tituloContainer.querySelector('h1');
+              const h2 = tituloContainer.querySelector('h2');
+              if (h1 && textos.sobreJornal.titulo) {
+                h1.textContent = textos.sobreJornal.titulo;
+              }
+              if (h2 && textos.sobreJornal.subtitulo) {
+                h2.textContent = textos.sobreJornal.subtitulo;
+              }
+            }
+            
+            // Atualizar imagem
+            const imagemContainer = document.getElementById('jornalImagemContainer');
+            if (imagemContainer && textos.sobreJornal?.imagem) {
+              let imagemUrl = textos.sobreJornal.imagem;
+              
+              // Normalizar caminho da imagem
+              if (imagemUrl.startsWith('./')) {
+                imagemUrl = imagemUrl.substring(2); // Remove ./
+              }
+              
+              // Se começar com /uploads, usar a rota do servidor principal (que serve os uploads do dashboard-server)
+              if (imagemUrl.startsWith('/uploads')) {
+                // O servidor principal já serve /uploads como static do dashboard-server
+                imagemUrl = imagemUrl; // Manter como está, será servido por /uploads
+              } else if (!imagemUrl.startsWith('http')) {
+                // Se não começar com /, adicionar
+                if (!imagemUrl.startsWith('/')) {
+                  imagemUrl = '/' + imagemUrl;
+                }
+              }
+              
+              imagemContainer.src = imagemUrl;
+              imagemContainer.alt = 'Imagem do Jornal';
+              imagemContainer.onerror = function() {
+                this.onerror = null;
+                this.src = './Imagem/testesimagem.gif';
+              };
+            }
+            
+            // Atualizar conteúdo
+            const conteudoContainer = document.getElementById('jornalConteudoContainer');
+            if (conteudoContainer && textos.sobreJornal?.conteudo) {
+              // Converter quebras de linha para <br>
+              const conteudo = textos.sobreJornal.conteudo
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+              conteudoContainer.innerHTML = conteudo;
+            }
+            
+            console.log('✅ Textos carregados com sucesso!');
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar textos:', error);
+            // Manter conteúdo padrão se houver erro
+          }
+        }
+        
+        // Função para garantir que os containers existem antes de carregar
+        function tentarCarregarTextos() {
+          const tituloContainer = document.getElementById('jornalTituloContainer');
+          const imagemContainer = document.getElementById('jornalImagemContainer');
+          const conteudoContainer = document.getElementById('jornalConteudoContainer');
+          
+          if (tituloContainer && imagemContainer && conteudoContainer) {
+            console.log('Containers de textos encontrados, carregando...');
+            carregarTextos();
+            return true;
+          } else {
+            console.log('Containers de textos ainda não encontrados, tentando novamente...');
+            return false;
+          }
+        }
+        
+        // Carregar textos quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            if (!tentarCarregarTextos()) {
+              setTimeout(tentarCarregarTextos, 100);
+            }
+          });
+        } else {
+          // DOM já está pronto
+          if (!tentarCarregarTextos()) {
+            setTimeout(tentarCarregarTextos, 100);
+          }
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => tentarCarregarTextos(), 500);
+        setTimeout(() => tentarCarregarTextos(), 1000);
+        setTimeout(() => tentarCarregarTextos(), 2000);
+        
+        // Função para carregar seção "Sobre a Igreja"
+        async function carregarTextoIgreja() {
+          try {
+            console.log('Iniciando carregamento de texto da igreja...');
+            const response = await fetch('/api/site/textos');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const textos = await response.json();
+            console.log('Textos da igreja recebidos:', textos);
+            
+            // Atualizar título e subtítulo
+            const tituloContainer = document.getElementById('igrejaTituloContainer');
+            if (tituloContainer && textos.sobreIgreja) {
+              const h1 = tituloContainer.querySelector('h1');
+              const h2 = tituloContainer.querySelector('h2');
+              if (h1 && textos.sobreIgreja.titulo) {
+                h1.textContent = textos.sobreIgreja.titulo;
+              }
+              if (h2 && textos.sobreIgreja.subtitulo) {
+                h2.textContent = textos.sobreIgreja.subtitulo;
+              }
+            }
+            
+            // Atualizar imagem
+            const imagemContainer = document.getElementById('igrejaImagemContainer');
+            if (imagemContainer && textos.sobreIgreja?.imagem) {
+              let imagemUrl = textos.sobreIgreja.imagem;
+              
+              // Normalizar caminho da imagem
+              if (imagemUrl.startsWith('./')) {
+                imagemUrl = imagemUrl.substring(2); // Remove ./
+              }
+              
+              // Se começar com /uploads, usar a rota do servidor principal (que serve os uploads do dashboard-server)
+              if (imagemUrl.startsWith('/uploads')) {
+                // O servidor principal já serve /uploads como static do dashboard-server
+                imagemUrl = imagemUrl; // Manter como está, será servido por /uploads
+              } else if (!imagemUrl.startsWith('http')) {
+                // Se não começar com /, adicionar
+                if (!imagemUrl.startsWith('/')) {
+                  imagemUrl = '/' + imagemUrl;
+                }
+              }
+              
+              imagemContainer.src = imagemUrl;
+              imagemContainer.alt = 'Imagem da Igreja';
+              imagemContainer.onerror = function() {
+                this.onerror = null;
+                this.src = './Imagem/igreja-.png';
+              };
+            }
+            
+            // Atualizar conteúdo
+            const conteudoContainer = document.getElementById('igrejaConteudoContainer');
+            if (conteudoContainer && textos.sobreIgreja?.conteudo) {
+              // Converter quebras de linha para <br>
+              const conteudo = textos.sobreIgreja.conteudo
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+              conteudoContainer.innerHTML = conteudo;
+            }
+            
+            console.log('✅ Texto da igreja carregado com sucesso!');
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar texto da igreja:', error);
+            // Manter conteúdo padrão se houver erro
+          }
+        }
+        
+        // Função para garantir que os containers da igreja existem antes de carregar
+        function tentarCarregarTextoIgreja() {
+          const tituloContainer = document.getElementById('igrejaTituloContainer');
+          const imagemContainer = document.getElementById('igrejaImagemContainer');
+          const conteudoContainer = document.getElementById('igrejaConteudoContainer');
+          
+          if (tituloContainer && imagemContainer && conteudoContainer) {
+            console.log('Containers de texto da igreja encontrados, carregando...');
+            carregarTextoIgreja();
+            return true;
+          } else {
+            console.log('Containers de texto da igreja ainda não encontrados, tentando novamente...');
+            return false;
+          }
+        }
+        
+        // Carregar texto da igreja quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            if (!tentarCarregarTextoIgreja()) {
+              setTimeout(tentarCarregarTextoIgreja, 100);
+            }
+          });
+        } else {
+          // DOM já está pronto
+          if (!tentarCarregarTextoIgreja()) {
+            setTimeout(tentarCarregarTextoIgreja, 100);
+          }
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => tentarCarregarTextoIgreja(), 500);
+        setTimeout(() => tentarCarregarTextoIgreja(), 1000);
+        setTimeout(() => tentarCarregarTextoIgreja(), 2000);
+      })();
+    </script>
+
+    <!-- Script para carregar Banner Modal dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarBannerModal() {
+          try {
+            console.log('Iniciando carregamento de banner modal...');
+            const response = await fetch('/api/site/banner-modal');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const banner = await response.json();
+            console.log('Banner modal recebido:', banner);
+            
+            // Verificar se o banner está ativo
+            if (!banner || banner.ativo === false) {
+              console.log('Banner modal está desativado, não exibindo');
+              const overlay = document.getElementById('overlay');
+              if (overlay) {
+                overlay.style.display = 'none';
+              }
+              return;
+            }
+            
+            // Atualizar imagem do banner
+            const imagemContainer = document.getElementById('bannerModalImagem');
+            if (imagemContainer && banner.imagem) {
+              let imagemUrl = banner.imagem;
+              
+              // Normalizar caminho da imagem
+              if (imagemUrl.startsWith('./')) {
+                imagemUrl = imagemUrl.substring(2); // Remove ./
+              }
+              
+              // Se começar com /uploads, usar a rota do servidor principal (que serve os uploads do dashboard-server)
+              if (imagemUrl.startsWith('/uploads')) {
+                // O servidor principal já serve /uploads como static do dashboard-server
+                imagemUrl = imagemUrl; // Manter como está, será servido por /uploads
+              } else if (!imagemUrl.startsWith('http')) {
+                // Se não começar com /, adicionar
+                if (!imagemUrl.startsWith('/')) {
+                  imagemUrl = '/' + imagemUrl;
+                }
+              }
+              
+              imagemContainer.src = imagemUrl;
+              imagemContainer.alt = 'Banner Modal';
+              imagemContainer.onerror = function() {
+                console.error('Erro ao carregar imagem do banner modal:', imagemUrl);
+                this.onerror = null;
+                this.src = './Imagem/banner-do-jornal-modal.jpg';
+              };
+            }
+            
+            // Atualizar link do banner
+            const linkContainer = document.getElementById('bannerModalLink');
+            if (linkContainer && banner.link) {
+              linkContainer.href = banner.link;
+            } else if (linkContainer) {
+              // Se não houver link, remover o href ou manter vazio
+              linkContainer.href = '#';
+              linkContainer.onclick = function(e) {
+                e.preventDefault();
+                return false;
+              };
+            }
+            
+            console.log('✅ Banner modal carregado com sucesso!');
+            
+            // Exibir o modal apenas se estiver ativo
+            const overlay = document.getElementById('overlay');
+            if (overlay && banner.ativo !== false) {
+              // Função para exibir o modal
+              const exibirModal = function() {
+                console.log('Exibindo banner modal');
+                overlay.classList.add('active');
+              };
+              
+              // Aguardar o carregamento da imagem antes de exibir
+              if (imagemContainer && imagemContainer.src) {
+                // Se a imagem já estiver carregada
+                if (imagemContainer.complete && imagemContainer.naturalHeight !== 0) {
+                  setTimeout(exibirModal, 500); // Pequeno delay para garantir que tudo está pronto
+                } else {
+                  imagemContainer.onload = function() {
+                    console.log('Imagem do banner modal carregada, exibindo modal');
+                    setTimeout(exibirModal, 500);
+                  };
+                  imagemContainer.onerror = function() {
+                    console.log('Erro ao carregar imagem, exibindo modal mesmo assim');
+                    setTimeout(exibirModal, 500);
+                  };
+                }
+              } else {
+                // Se não houver imagem, exibir mesmo assim após um delay
+                setTimeout(exibirModal, 500);
+              }
+            } else {
+              console.log('Banner modal não está ativo ou não foi encontrado');
+            }
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar banner modal:', error);
+            // Manter comportamento padrão se houver erro
+            const overlay = document.getElementById('overlay');
+            if (overlay) {
+              overlay.classList.add('active');
+            }
+          }
+        }
+        
+        // Carregar banner modal quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(carregarBannerModal, 100);
+          });
+        } else {
+          // DOM já está pronto
+          setTimeout(carregarBannerModal, 100);
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => carregarBannerModal(), 500);
+        setTimeout(() => carregarBannerModal(), 1000);
+      })();
+    </script>
+
+    <!-- Script para carregar FAQ dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarFAQ() {
+          try {
+            console.log('Iniciando carregamento de FAQ...');
+            const response = await fetch('/api/site/faq');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const faqs = await response.json();
+            console.log('FAQ recebido:', faqs);
+            
+            const container = document.getElementById('faqContainer');
+            
+            if (!container) {
+              console.error('Container de FAQ não encontrado!');
+              return;
+            }
+            
+            if (!Array.isArray(faqs) || faqs.length === 0) {
+              console.log('Nenhuma pergunta FAQ encontrada');
+              return;
+            }
+            
+            // Filtrar apenas FAQs ativos e ordenar por ordem
+            const faqsAtivos = faqs
+              .filter(faq => faq.ativo !== false)
+              .sort((a, b) => {
+                // Ordenar por ordem (se existir) - menor ordem primeiro
+                if (a.ordem && b.ordem) {
+                  return a.ordem - b.ordem;
+                }
+                if (a.ordem && !b.ordem) return -1;
+                if (!a.ordem && b.ordem) return 1;
+                return 0;
+              });
+            
+            console.log(`Total de FAQs: ${faqs.length}`);
+            console.log(`FAQs ativos: ${faqsAtivos.length}`);
+            
+            // Gerar HTML dos FAQs (acordeon)
+            const htmlFAQ = faqsAtivos.map((faq, index) => {
+              // IDs únicos para cada item do acordeon
+              const itemId = `faq-${faq.id || index}`;
+              // Classe "espaco" apenas no último item
+              const espacoClass = index === faqsAtivos.length - 1 ? ' class="espaco"' : '';
+              
+              return `
+                <li${espacoClass}>
+                  <input type="radio" name="acordeon" id="${itemId}" />
+                  <label for="${itemId}">
+                    <span>${index + 1}</span>${faq.pergunta || 'Pergunta não informada'}
+                  </label>
+                  <div class="resposta">
+                    <p>${faq.resposta || 'Resposta não informada'}</p>
+                  </div>
+                </li>
+              `;
+            }).join('');
+            
+            container.innerHTML = htmlFAQ;
+            console.log('✅ FAQ carregado com sucesso!');
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar FAQ:', error);
+            const container = document.getElementById('faqContainer');
+            if (container) {
+              // Não mostrar erro ao usuário, apenas manter vazio se houver erro
+            }
+          }
+        }
+        
+        // Função para garantir que o container existe antes de carregar
+        function tentarCarregarFAQ() {
+          const container = document.getElementById('faqContainer');
+          if (container) {
+            console.log('Container de FAQ encontrado, carregando...');
+            carregarFAQ();
+            return true;
+          } else {
+            console.log('Container de FAQ ainda não encontrado, tentando novamente...');
+            return false;
+          }
+        }
+        
+        // Carregar FAQ quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            if (!tentarCarregarFAQ()) {
+              setTimeout(tentarCarregarFAQ, 100);
+            }
+          });
+        } else {
+          // DOM já está pronto
+          if (!tentarCarregarFAQ()) {
+            setTimeout(tentarCarregarFAQ, 100);
+          }
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => tentarCarregarFAQ(), 500);
+        setTimeout(() => tentarCarregarFAQ(), 1000);
+        setTimeout(() => tentarCarregarFAQ(), 2000);
+      })();
+    </script>
+
+    <!-- Script para carregar Vídeo dinamicamente -->
+    <script>
+      (function() {
+        'use strict';
+        
+        async function carregarVideo() {
+          try {
+            console.log('Iniciando carregamento de vídeo...');
+            const response = await fetch('/api/site/video');
+            
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const video = await response.json();
+            console.log('Vídeo recebido:', video);
+            
+            // Verificar se o vídeo está ativo
+            if (!video || video.ativo === false || !video.url) {
+              console.log('Vídeo não está ativo ou não possui URL');
+              const videoSection = document.querySelector('.video');
+              if (videoSection) {
+                videoSection.style.display = 'none';
+              }
+              return;
+            }
+            
+            // Atualizar título e subtítulo
+            const tituloContainer = document.getElementById('videoTituloContainer');
+            if (tituloContainer && video.titulo) {
+              tituloContainer.textContent = video.titulo;
+            }
+            
+            const subtituloContainer = document.getElementById('videoSubtituloContainer');
+            if (subtituloContainer && video.subtitulo) {
+              subtituloContainer.textContent = video.subtitulo;
+            }
+            
+            // Atualizar vídeo
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoSource = document.getElementById('videoSource');
+            const videoLoading = document.getElementById('videoLoading');
+            
+            if (videoPlayer && videoSource && video.url) {
+              let videoUrl = video.url;
+              
+              console.log('URL original do vídeo:', videoUrl);
+              
+              // Normalizar caminho do vídeo
+              if (videoUrl.startsWith('./')) {
+                videoUrl = videoUrl.substring(2);
+              }
+              
+              // Se começar com /uploads, usar a rota do servidor
+              if (videoUrl.startsWith('/uploads/')) {
+                // Já está correto, será servido por /uploads
+                videoUrl = videoUrl;
+              } else if (!videoUrl.startsWith('http')) {
+                // Se não começar com /, adicionar
+                if (!videoUrl.startsWith('/')) {
+                  videoUrl = '/' + videoUrl;
+                }
+              }
+              
+              console.log('URL normalizada do vídeo:', videoUrl);
+              
+              // Determinar tipo MIME baseado na extensão
+              const ext = videoUrl.split('.').pop().toLowerCase();
+              const mimeTypes = {
+                'mp4': 'video/mp4',
+                'webm': 'video/webm',
+                'ogg': 'video/ogg',
+                'mov': 'video/quicktime',
+                'avi': 'video/x-msvideo',
+                'wmv': 'video/x-ms-wmv',
+                'flv': 'video/x-flv'
+              };
+              const videoType = mimeTypes[ext] || 'video/mp4';
+              
+              videoSource.src = videoUrl;
+              videoSource.type = videoType;
+              
+              // Esconder loading e mostrar vídeo quando carregar
+              videoPlayer.style.display = 'block';
+              if (videoLoading) {
+                videoLoading.style.display = 'none';
+              }
+              
+              // Recarregar o vídeo para aplicar o novo source
+              videoPlayer.load();
+              
+              videoPlayer.onerror = function() {
+                console.error('Erro ao carregar vídeo:', videoUrl);
+                console.error('Detalhes do erro:', videoPlayer.error);
+                if (videoLoading) {
+                  let errorMsg = 'Erro ao carregar vídeo.';
+                  if (videoPlayer.error) {
+                    const errorCode = videoPlayer.error.code;
+                    if (errorCode === 4) {
+                      errorMsg = 'Formato de vídeo não suportado ou arquivo corrompido.';
+                    } else if (errorCode === 3) {
+                      errorMsg = 'Erro ao decodificar o vídeo.';
+                    } else if (errorCode === 2) {
+                      errorMsg = 'Erro de rede ao carregar o vídeo.';
+                    } else if (errorCode === 1) {
+                      errorMsg = 'Vídeo não encontrado ou acesso negado.';
+                    }
+                  }
+                  videoLoading.innerHTML = `<p>${errorMsg} URL: ${videoUrl}</p>`;
+                  videoLoading.style.display = 'block';
+                }
+                videoPlayer.style.display = 'none';
+              };
+              
+              // Quando o vídeo carregar com sucesso
+              videoPlayer.onloadeddata = function() {
+                console.log('✅ Vídeo carregado com sucesso!');
+                if (videoLoading) {
+                  videoLoading.style.display = 'none';
+                }
+              };
+              
+              // Handler adicional para quando o vídeo começar a tocar
+              videoPlayer.oncanplay = function() {
+                console.log('✅ Vídeo pronto para reprodução!');
+              };
+              
+            } else {
+              console.error('Elementos de vídeo não encontrados no DOM');
+            }
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar vídeo:', error);
+            console.error('Stack:', error.stack);
+            const videoLoading = document.getElementById('videoLoading');
+            if (videoLoading) {
+              videoLoading.innerHTML = `<p>Erro ao carregar vídeo: ${error.message}. Verifique o console para mais detalhes.</p>`;
+            }
+          }
+        }
+        
+        // Carregar vídeo quando a página estiver pronta
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(carregarVideo, 100);
+          });
+        } else {
+          // DOM já está pronto
+          setTimeout(carregarVideo, 100);
+        }
+        
+        // Tentar após delays progressivos para garantir
+        setTimeout(() => carregarVideo(), 500);
+        setTimeout(() => carregarVideo(), 1000);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,311 @@
+{
+  "carrosselMaterias": [
+    {
+      "id": 1,
+      "imagem": "/uploads/materias/materia-1768244713926-948038373.png",
+      "ordem": 1,
+      "ativo": true
+    },
+    {
+      "id": 2,
+      "imagem": "/uploads/materias/materia-1768244722808-561056671.png",
+      "ordem": 2,
+      "ativo": true
+    },
+    {
+      "id": 3,
+      "imagem": "/uploads/materias/materia-1768244730411-537875051.png",
+      "ordem": 3,
+      "ativo": true
+    },
+    {
+      "id": 4,
+      "imagem": "/uploads/materias/materia-1768244738476-729337065.png",
+      "ordem": 4,
+      "ativo": true
+    },
+    {
+      "id": 5,
+      "imagem": "/uploads/materias/materia-1768244749945-417901558.png",
+      "ordem": 5,
+      "ativo": true
+    },
+    {
+      "id": 6,
+      "imagem": "/uploads/materias/materia-1768244760627-133205527.png",
+      "ordem": 6,
+      "ativo": true
+    },
+    {
+      "id": 7,
+      "imagem": "/uploads/materias/materia-1768244772922-822907639.png",
+      "ordem": 7,
+      "ativo": true
+    },
+    {
+      "id": 8,
+      "imagem": "/uploads/materias/materia-1768244780750-193962902.png",
+      "ordem": 8,
+      "ativo": true
+    }
+  ],
+  "videoPrincipal": {
+    "url": "/uploads/videos/video-1768348937376-761808051.mp4",
+    "titulo": "JORNAL CONSAGRADO PARA LEVAR A PALAVRA",
+    "subtitulo": "O Bispo Rodrigo e os pastores consagram o Jornais das Igrejas",
+    "ativo": true
+  },
+  "responsaveis": [
+    {
+      "id": 1,
+      "nome": "Apóstolo Adelino de Carvalho",
+      "cargo": "Produção",
+      "imagem": "./Imagem/apostolo.png",
+      "ordem": 1,
+      "ativo": true
+    },
+    {
+      "id": 2,
+      "nome": "Apóstola Sol Daniela Carvalho",
+      "cargo": "Produção",
+      "imagem": "./Imagem/apostola sol.jpg",
+      "ordem": 2,
+      "ativo": true
+    },
+    {
+      "id": 3,
+      "nome": "Bispo Rodrigo de Carvalho",
+      "cargo": "Produção",
+      "imagem": "./Imagem/bispo-rodrigo-80px.png",
+      "ordem": 3,
+      "ativo": true
+    },
+    {
+      "id": 4,
+      "nome": "Primaz Glória Mariana de Alcântara",
+      "cargo": "Produção",
+      "imagem": "./Imagem/bispa gloria.png",
+      "ordem": 4,
+      "ativo": true
+    },
+    {
+      "id": 5,
+      "nome": "Missionária Evelyn Mariana de Alcântara",
+      "cargo": "Produção",
+      "imagem": "./Imagem/evelyn-80px.png",
+      "ordem": 5,
+      "ativo": true
+    },
+    {
+      "id": 6,
+      "nome": "Missionário Jailson Moreira",
+      "cargo": "Produção",
+      "imagem": "./Imagem/jailson-80px.png",
+      "ordem": 6,
+      "ativo": true
+    },
+    {
+      "id": 7,
+      "nome": "Bispo Gilberto Gomes",
+      "cargo": "Produção",
+      "imagem": "./Imagem/gilberto-80px.png",
+      "ordem": 7,
+      "ativo": true
+    },
+    {
+      "id": 8,
+      "nome": "Bispa Suzana de Paiva",
+      "cargo": "Produção",
+      "imagem": "./Imagem/bispa-suzana-80px.png",
+      "ordem": 8,
+      "ativo": true
+    }
+  ],
+  "faq": [
+    {
+      "id": 1,
+      "pergunta": "Como recebo o jornal após a compra?",
+      "resposta": "Assim que o pagamento for confirmado, você será direcionado para uma página de download, onde poderá baixar o jornal em formato PDF imediatamente. O download é imediato.",
+      "ordem": 1,
+      "ativo": true
+    },
+    {
+      "id": 2,
+      "pergunta": "Quais formas de pagamento vocês aceitam?",
+      "resposta": "Atualmente aceitamos PIX, cartão de crédito e cartão de débito.",
+      "ordem": 2,
+      "ativo": true
+    },
+    {
+      "id": 3,
+      "pergunta": "Preciso pagar frete para receber o jornal?",
+      "resposta": "Não! O jornal é totalmente digital em PDF, disponível para download imediato na página de download, sem custos extras.",
+      "ordem": 3,
+      "ativo": true
+    },
+    {
+      "id": 4,
+      "pergunta": "E se eu não conseguir acessar a página de download?",
+      "resposta": "Após o pagamento confirmado, você será direcionado automaticamente para a página de download. Caso tenha problemas, entre em contato conosco que resolveremos sem custo.",
+      "ordem": 4,
+      "ativo": true
+    },
+    {
+      "id": 5,
+      "pergunta": "Posso acessar o jornal em qualquer dispositivo?",
+      "resposta": "Sim! O PDF pode ser aberto em celulares, computadores e tablets, sem precisar instalar nada além de um leitor de PDF.",
+      "ordem": 5,
+      "ativo": true
+    }
+  ],
+  "sitesIgreja": [
+    {
+      "id": 1,
+      "nome": "Rede do Coração",
+      "url": "https://rededocoracao.com.br/",
+      "imagem": "./Imagem/rede do coração.webp",
+      "ordem": 1,
+      "ativo": true
+    },
+    {
+      "id": 2,
+      "nome": "Oração da Madrugada",
+      "url": "https://www.oracaodamadrugada.com.br/",
+      "imagem": "./Imagem/oração.webp",
+      "ordem": 2,
+      "ativo": true
+    },
+    {
+      "id": 3,
+      "nome": "Santuário Reino dos Céus",
+      "url": "https://santuarioreinodosceus.com.br/",
+      "imagem": "./Imagem/download.jpg",
+      "ordem": 3,
+      "ativo": true
+    },
+    {
+      "id": 4,
+      "nome": "Turminha da Madrinha",
+      "url": "https://turminhadamadrinha.com.br/",
+      "imagem": "./Imagem/loja da turminha.webp",
+      "ordem": 4,
+      "ativo": true
+    }
+  ],
+  "textos": {
+    "sobreJornal": {
+      "titulo": "CONHEÇA A ESSÊNCIA DO NOSSO JORNAL",
+      "subtitulo": "Conteúdos que abordam fé, esperança e transformação para fortalecer sua caminhada espiritual",
+      "imagem": "/uploads/materias/materia-1768350399804-408366642.png",
+      "conteudo": "O Jornal do Reino dos Céus é muito mais do que um simples informativo. Ele é um instrumento poderoso nas mãos de Deus para alcançar vidas, restaurar famílias e levar luz aos corações que estão em meio à escuridão. A cada edição, suas páginas carregam mensagens inspiradoras, ensinamentos profundos, testemunhos reais e palavras de fé que têm o poder de transformar realidades.\r\n\r\nEm um mundo cada vez mais marcado pela dor, pela solidão, pela desesperança e pelos desafios diários, o Jornal do Reino dos Céus surge como uma resposta divina ao clamor dos que sofrem. Ele chega às mãos de quem perdeu a fé, de quem não vê mais saída, de quem luta contra vícios, doenças, traumas e problemas familiares — e mostra que ainda há solução, que Deus continua operando milagres e que o impossível pode se tornar possível.\r\n\r\nUm canal de fé e salvação\r\nPor meio de suas matérias e testemunhos, o jornal anuncia a Palavra de Deus de forma clara e acessível, revelando que existe um caminho de cura, libertação e recomeço. Cada história publicada é uma prova viva de que o poder do Evangelho transforma vidas — pessoas que estavam presas ao vício foram libertas, doentes foram curados, lares foram restaurados e sonhos antes impossíveis se tornaram realidade.\r\n\r\nUm guia espiritual em tempos difíceis\r\nO Jornal do Reino dos Céus também é um guia de fortalecimento espiritual. Ele ensina princípios valiosos da fé, mostra como vencer as batalhas diárias e conduz o leitor a um relacionamento mais profundo com Deus. Em meio ao caos do mundo moderno, ele renova a esperança e lembra que não estamos sozinhos — o Senhor está ao nosso lado, pronto para nos levantar e mudar nossa história.\r\n\r\nTransformando vidas com amor e propósito\r\nMais do que informar, o jornal tem a missão de alcançar vidas. Cada edição é preparada com amor e propósito, com a intenção de chegar até os corações aflitos e mostrar que existe um Deus que cura, liberta, restaura e salva. É uma ferramenta missionária que atravessa cidades e estados, alcançando até os lugares mais distantes, levando consigo a mensagem mais poderosa de todas: \"Para Deus nada é impossível.\"\r\n\r\nUma semente de fé em cada página\r\nQuando alguém lê o Jornal do Reino dos Céus, não está apenas folheando notícias — está recebendo sementes de fé, ânimo e esperança. Está sendo convidado a crer novamente, a lutar com coragem e a confiar que Deus tem um plano perfeito para sua vida.\r\n\r\nPor isso, o Jornal do Reino dos Céus é tão importante: porque ele não apenas conta histórias, ele escreve novas histórias. Ele não apenas fala de milagres, ele inspira milagres. Ele não apenas anuncia a Palavra, ele leva a presença de Deus até onde a dor parece ter vencido.\r\n\r\nOnde há sofrimento, o Jornal do Reino dos Céus leva consolo.\r\nOnde há dúvida, ele leva fé.\r\nOnde há escuridão, ele leva a luz do Evangelho.\r\n\r\nPorque cada página é um lembrete de que Deus ainda está no controle — e com Ele, sempre há esperança!"
+    },
+    "sobreIgreja": {
+      "titulo": "CONHEÇA A IGREJA REINO DOS CÉUS",
+      "subtitulo": "Igreja Reino dos Céus – um lugar de fé, esperança e transformação",
+      "conteudo": "A Igreja Reino dos Céus não é apenas um templo — é um lugar onde o céu toca a terra e onde o poder de Deus se manifesta de forma viva e transformadora. Em cada culto, cada oração e cada ato de fé, pessoas têm suas vidas completamente mudadas: famílias são restauradas, enfermos são curados, vícios são quebrados e sonhos são trazidos de volta à vida. Aqui, quem chega em lágrimas sai com um novo propósito e quem chega em ruínas encontra um novo começo em Cristo.\r\n\r\nUma missão nascida no coração de Deus\r\nDesde a sua fundação, a missão do Reino dos Céus é clara: levar salvação, libertação e transformação a todos os povos, mostrando que o poder de Deus continua operando hoje com a mesma intensidade dos tempos bíblicos. Cada mensagem pregada e cada ato profético realizado têm o objetivo de resgatar vidas do sofrimento, curar feridas profundas e conduzir as pessoas ao verdadeiro propósito para o qual foram criadas.\r\n\r\nApóstolo Primaz Adelino de Carvalho – Um profeta para esta geração\r\nÀ frente dessa grande obra está o Apóstolo Primaz Adelino de Carvalho, um homem chamado por Deus para ser instrumento de cura e transformação nesta geração. Há mais de quatro décadas ele dedica sua vida a pregar o Evangelho e a levar a mensagem do Reino a todos os cantos do Brasil e do mundo. Com autoridade espiritual, unção e revelação profética, tem sido canal de milagres impressionantes e libertações profundas, mostrando ao mundo que o Deus do impossível ainda realiza maravilhas.\r\n\r\nApóstola Sol Daniela Carvalho – Uma mulher de fé e intercessão\r\nAo lado do Apóstolo, a Apóstola Sol Daniela Carvalho tem exercido um ministério marcado por amor, entrega e intercessão. Sua sensibilidade espiritual e sua paixão pelas almas têm levado consolo a milhares de pessoas, restaurando vidas e reacendendo a fé de quem havia desistido. Através de sua palavra e de sua oração, muitos testemunham curas, reconciliações e milagres extraordinários.\r\n\r\nMonte Maanaim – O Lugar dos Grandes Milagres de Deus\r\nEntre os lugares mais marcantes do ministério está o Monte Maanaim, um território sagrado e profético onde o céu se abre e o sobrenatural acontece. Ali, multidões sobem movidas pela fé, e milhares de testemunhos de cura, libertação e restauração são contados a cada encontro. Pessoas com doenças incuráveis são curadas, vidas destruídas pelos vícios são transformadas, causas impossíveis são resolvidas e famílias inteiras são restauradas pela presença poderosa de Deus.\r\n\r\nNo Monte Maanaim, cada oração tem um propósito e cada clamor gera resultados. É um lugar onde o Espírito Santo se move com liberdade, trazendo renovo, milagres e revelações profundas. Muitos dizem que subir ao Monte Maanaim é viver uma experiência celestial — e de fato é: um encontro real com o Deus vivo que transforma destinos.\r\n\r\nMilagres que transformam histórias\r\nNa Igreja Reino dos Céus, milagres não são apenas histórias antigas — eles acontecem todos os dias. Pessoas libertas de vícios após décadas de escravidão, curas instantâneas de enfermidades incuráveis, portas de emprego que se abrem, causas impossíveis resolvidas na justiça, famílias restauradas e novos começos são apenas alguns dos inúmeros testemunhos que nascem desse ministério.\r\n\r\nUma família espiritual que acolhe e transforma\r\nMais do que uma igreja, o Reino dos Céus é uma grande família onde todos são acolhidos com amor e respeito, independentemente de sua história. Aqui, você encontra direção espiritual, apoio, propósito e um ambiente onde sua fé pode crescer e florescer.\r\n\r\n\"Porque o Reino de Deus não consiste em palavras, mas em poder.\" – 1 Coríntios 4:20\r\n\r\nSe você está em busca de um milagre, de um recomeço ou de uma experiência verdadeira com o Deus vivo, a Igreja Reino dos Céus e o Monte Maanaim são lugares onde a fé se torna realidade. Aqui, você não apenas ouve falar sobre milagres — você vive milagres. Aqui, você não apenas conhece Deus — você o encontra face a face.",
+      "imagem": "/uploads/materias/materia-1767992511168-41871437.png"
+    }
+  },
+  "bannerModal": {
+    "imagem": "/uploads/materias/materia-1767993637066-853868420.jpg",
+    "link": "http://localhost:3000/jornal-compra.html?id=8",
+    "ativo": true
+  },
+  "formularioContato": {
+    "apiKey": "sf_6kj56blimlb4hd13fafhc9m8",
+    "redirectTo": "https://www.testeigreja.store/pag-Obrigado.html",
+    "ativo": true
+  },
+  "carrosselMedio": [
+    {
+      "id": 1,
+      "imagem": "/uploads/materias/materia-1768261529027-427613895.png",
+      "ordem": 1,
+      "ativo": true
+    },
+    {
+      "id": 2,
+      "imagem": "/uploads/materias/materia-1768261536396-291307647.png",
+      "ordem": 2,
+      "ativo": true
+    },
+    {
+      "id": 3,
+      "imagem": "/uploads/materias/materia-1768261547842-194198261.png",
+      "ordem": 3,
+      "ativo": true
+    },
+    {
+      "id": 4,
+      "imagem": "/uploads/materias/materia-1768354656489-155442215.jpeg",
+      "ordem": 4,
+      "ativo": true
+    },
+    {
+      "id": 5,
+      "imagem": "/uploads/materias/materia-1768354669220-669977782.jpeg",
+      "ordem": 5,
+      "ativo": true
+    },
+    {
+      "id": 6,
+      "imagem": "/uploads/materias/materia-1768354685830-726517464.jpeg",
+      "ordem": 6,
+      "ativo": true
+    },
+    {
+      "id": 7,
+      "imagem": "/uploads/materias/materia-1768354698908-932679413.jpeg",
+      "ordem": 7,
+      "ativo": true
+    },
+    {
+      "id": 8,
+      "imagem": "/uploads/materias/materia-1768354710153-408106357.jpeg",
+      "ordem": 8,
+      "ativo": true
+    },
+    {
+      "id": 9,
+      "imagem": "/uploads/materias/materia-1768354720476-612817657.jpeg",
+      "ordem": 9,
+      "ativo": true
+    },
+    {
+      "id": 10,
+      "imagem": "/uploads/materias/materia-1768354738972-491169755.jpeg",
+      "ordem": 10,
+      "ativo": true
+    },
+    {
+      "id": 11,
+      "imagem": "/uploads/materias/materia-1768354757213-876789570.jpeg",
+      "ordem": 11,
+      "ativo": true
+    },
+    {
+      "id": 12,
+      "imagem": "/uploads/materias/materia-1768354768966-174453460.jpeg",
+      "ordem": 12,
+      "ativo": true
+    },
+    {
+      "id": 13,
+      "imagem": "/uploads/materias/materia-1768354777552-811131479.jpeg",
+      "ordem": 13,
+      "ativo": true
+    },
+    {
+      "id": 14,
+      "imagem": "/uploads/materias/materia-1768354790512-296029169.jpeg",
+      "ordem": 14,
+      "ativo": true
+    },
+    {
+      "id": 15,
+      "imagem": "/uploads/materias/materia-1768354806765-188961232.jpeg",
+      "ordem": 15,
+      "ativo": true
+    }
+  ]
+}

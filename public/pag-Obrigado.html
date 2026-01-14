@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./pag-Obrigado.css">
+
+    <link rel="icon" href="./Imagem/logo jornal.png">
+    <title>Igreja Reino dos Céus</title>
+</head>
+<body>
+    <header>
+        <div id="header"></div>
+
+      <script>
+        async function loadPart(id, file) {
+          const res = await fetch(file);
+          const html = await res.text();
+          document.getElementById(id).innerHTML = html;
+        }
+        // volta uma pasta com "../"
+        loadPart("header", "./header,footer-segundo/header.html");
+        loadPart("footer", "../../haader,footer-principal/footer.html");
+      </script>
+
+    </header>
+
+
+    <main>
+        <section class="agradecimento">
+            
+            <div class="elementos">
+            <div class="textos">
+                <h1>Recebemos sua mensagem.&#128526</h1>
+                <p>Agora é só relaxar que, em breve,
+                entraremos em contato com você. Não
+                sabe relaxar? Vishhh, então que tal
+                gastar essa energia para aprender
+                coisas novas?</p>
+                <a href=".https://www.testeigreja.store/index.html"><button>Voltar para a paginal inicial</button></a>
+            </div>
+
+            <div class="img">
+                <i class='bx bx-envelope-open'></i>
+            </div>
+            </div>
+
+            
+        </section>
+    </main>
+</body>
+</html>

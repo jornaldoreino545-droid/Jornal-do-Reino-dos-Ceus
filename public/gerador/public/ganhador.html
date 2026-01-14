@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎉 Parabéns, Ganhador! 🎉</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #2600ff, #09b5ee);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    max-width: 400px;
+  }
+
+  .container .titulo h1{
+    margin: 0px;
+    color: #10e900;
+    font-size: 4.5rem;
+  }
+
+    .container .titulo p{
+    margin: 0px;
+    color: #ffff00;
+  }
+
+  .container p{
+  margin: 5px;
+  }
+
+
+  img {
+    border: solid #fff 4px;
+    width: 100%;
+    border-radius: 15px;
+    margin: 15px 0;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  }
+
+.container h3{
+  margin: 0px;
+  margin-bottom: 10px;
+  }
+
+  .titulo {
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .manual {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: left;
+    font-size: 15px;
+  }
+  a.botao {
+    display: inline-block;
+    background: #39c800;
+    color: #f8f8f8;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  a.botao:hover {
+    background: #33ff00;
+  }
+  footer {
+    margin-top: 25px;
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+
+  @media screen and (max-width: 489px){
+
+    body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #2600ff, #09b5ee);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    min-height: 100vh;
+    margin: 0 1rem;
+    padding: 20px;
+}
+
+.container .titulo h1 {
+    margin: 0px;
+    color: #10e900;
+    font-size: 2.5rem;
+}
+
+    .container {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    width: 100%;
+    margin: 0 1rem;
+
+}
+  }
+
+
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="titulo"> 
+      <h1>
+        Parabéns!
+      </h1> 
+      <p>
+        Você é o ganhador!
+      </p>
+    </div>
+    <p>Seu código premiado foi: <strong id="codigoGanhador"></strong></p>
+    <img src="./Retângulo 1 copiar 2.png" alt="Prêmio">
+
+    <h3>Manual para receber seu prêmio:</h3>
+    <div class="manual">
+      <ol>
+        <li>Tire uma <strong>foto do jornal</strong> onde você encontrou o código.</li>
+        <li>Tire uma <strong>foto sua</strong> segurando o jornal (vamos usar na divulgação).</li>
+        <li>Envie as duas fotos para nossa equipe junto com o <strong>código premiado</strong>.</li>
+      </ol>
+      <p>Assim que confirmarmos, entraremos em contato para a entrega do prêmio. 🏆</p>
+    </div>
+
+    <!-- Link para enviar via WhatsApp (substitua o número abaixo pelo seu) -->
+    <a class="botao" href="https://wa.me/5599999999999?text=Olá!%20Sou%20o%20ganhador%20do%20código%20premiado!%20Estou%20enviando%20minhas%20fotos." target="_blank">Enviar fotos pelo WhatsApp</a>
+  </div>
+
+  <script>
+    // Captura o código que veio pela URL
+    const params = new URLSearchParams(window.location.search);
+    const codigo = params.get("codigo");
+    document.getElementById("codigoGanhador").textContent = codigo ? codigo : "Desconhecido";
+  </script>
+</body>
+</html>

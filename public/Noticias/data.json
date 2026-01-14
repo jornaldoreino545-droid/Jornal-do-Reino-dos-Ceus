@@ -1,0 +1,120 @@
+[
+  {
+    "id": 1,
+    "title": "Lançamento do novo livro da Apóstola Sol Daniela Carvalho",
+    "date": "2025-11-12",
+    "category": "politica",
+    "excerpt": "Novo pacote inclui redução de impostos e facilidades de crédito.",
+    "image": "./img/lançamento.png",
+    "content": "<p>O governo apresentou um conjunto de medidas voltadas para micro e pequenas empresas, incluindo redução tributária e linhas de crédito com juros reduzidos. O objetivo é apoiar empreendedores e estimular a economia local nos próximos meses.</p>"
+  },
+  {
+    "id": 2,
+    "title": "Nova tecnologia promete dobrar a velocidade da internet residencial",
+    "date": "2025-10-05",
+    "category": "tecnologia",
+    "excerpt": "Fabricantes divulgam nova geração de roteadores inteligentes.",
+    "image": "https://images.unsplash.com/photo-1581092334505-f7221feb1f5b",
+    "content": "<p>Com suporte para redes de próxima geração, os novos roteadores conseguem analisar o ambiente e distribuir sinal com maior eficiência, reduzindo interferências e aumentando a velocidade real entregue ao usuário.</p>"
+  },
+  {
+    "id": 3,
+    "title": "Confeitaria artesanal ganha destaque em festival gastronômico",
+    "date": "2025-09-18",
+    "category": "culinaria",
+    "excerpt": "Doces caseiros surpreendem jurados e encantam visitantes.",
+    "image": "https://images.unsplash.com/photo-1525755662778-989d0524087e",
+    "content": "<p>A confeitaria 'Delícias da Vila' conquistou o prêmio de melhor sobremesa do festival, com uma torta artesanal baseada em receita de família. O evento teve recorde de público e participação de chefs renomados.</p>"
+  },
+  {
+    "id": 4,
+    "title": "Carros elétricos já representam 20% das novas vendas no país",
+    "date": "2025-07-22",
+    "category": "tecnologia",
+    "excerpt": "Mercado cresce com incentivos e novos modelos populares.",
+    "image": "https://images.unsplash.com/photo-1617814071576-2c9349402fcb",
+    "content": "<p>Com uma gama mais ampla de modelos e incentivos governamentais, os veículos elétricos seguem em crescimento acelerado no país. Especialistas acreditam que até 2030 eles representarão mais da metade das vendas nacionais.</p>"
+    
+  },
+  {
+    "id": 5,
+    "title": "Obras de revitalização do centro histórico entram na fase final",
+    "date": "2025-06-10",
+    "category": "politica",
+    "excerpt": "Prefeitura promete entrega completa até o final do ano.",
+    "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b",
+    "content": "<p>A revitalização do centro histórico está próxima da conclusão. O projeto inclui melhorias nas fachadas, calçadas, iluminação e segurança, buscando resgatar o turismo cultural e valorizar a região.</p>"
+  },
+  {
+    "id": 6,
+    "title": "Chef revela receita secreta de pão de mel que viralizou nas redes",
+    "date": "2025-05-28",
+    "category": "culinaria",
+    "excerpt": "Receita promete ser fácil e saborosa, com ingredientes simples.",
+    "image": "https://images.unsplash.com/photo-1509440159598-07c3b3a7a4f0",
+    "content": "<p>A confeiteira Larissa Lima divulgou a receita do pão de mel que conquistou milhões de visualizações nas redes sociais. Segundo ela, o segredo está no tempo de descanso da massa e no toque especial de especiarias.</p>"
+  },
+  {
+    "id": 7,
+    "title": "Nova lei de mobilidade urbana prevê mais ciclovias em cidades grandes",
+    "date": "2025-04-19",
+    "category": "politica",
+    "excerpt": "Projeto deve beneficiar milhares de ciclistas diariamente.",
+    "image": "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
+    "content": "<p>Com o objetivo de incentivar meios de transporte sustentáveis, a nova legislação prevê investimentos em ciclovias, bicicletários e segurança viária. A expectativa é reduzir o trânsito e melhorar a qualidade de vida nos grandes centros.</p>"
+  },
+  {
+    "id": 8,
+    "title": "Aplicativo brasileiro de organização pessoal bate recorde de downloads",
+    "date": "2025-03-14",
+    "category": "tecnologia",
+    "excerpt": "Ferramenta ajuda usuários a melhorar produtividade no dia a dia.",
+    "image": "https://images.unsplash.com/photo-1526378722484-cc1ab70a1f82",
+    "content": "<p>O aplicativo 'FocusMe' registrou mais de 10 milhões de downloads em apenas três meses. Ele utiliza inteligência artificial para criar rotinas personalizadas e acompanhar metas pessoais.</p>"
+  },
+  {
+    "id": 9,
+    "title": "Festival de comidas típicas reúne milhares de pessoas",
+    "date": "2025-02-20",
+    "category": "culinaria",
+    "excerpt": "Edição deste ano trouxe pratos de mais de 15 países.",
+    "image": "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
+    "content": "<p>O festival gastronômico internacional atraiu visitantes de toda a região. Entre os pratos mais procurados estavam as massas italianas artesanais e os doces latino-americanos.</p>"
+  },
+  {
+    "id": 10,
+    "title": "Empresas investem em IA para automatizar atendimento ao cliente",
+    "date": "2025-01-29",
+    "category": "tecnologia",
+    "excerpt": "Chatbots agora respondem com maior naturalidade e eficiência.",
+    "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+    "content": "<p>A adoção de IA no atendimento ao cliente está crescendo rapidamente. As novas tecnologias permitem respostas mais fluídas, reduzindo tempo de espera e aumentando a satisfação dos consumidores.</p>"
+  },
+  {
+    "id": 11,
+    "title": "Prefeitura inicia campanha de conscientização ambiental",
+    "date": "2025-01-10",
+    "category": "politica",
+    "excerpt": "Campanha foca na redução de lixo e incentivo à reciclagem.",
+    "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+    "content": "<p>A ação pretende envolver escolas, comércios e moradores na redução de resíduos descartáveis. Além disso, serão instalados novos ecopontos pela cidade.</p>"
+  },
+  {
+    "id": 12,
+    "title": "Padaria tradicional lança linha de sobremesas premium",
+    "date": "2024-12-25",
+    "category": "culinaria",
+    "excerpt": "Novos sabores foram inspirados em sobremesas francesas.",
+    "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+    "content": "<p>A padaria 'Sabor Antigo' apresentou uma linha de sobremesas gourmet, incluindo éclairs, tartes e mousses artesanais. O lançamento atraiu clientes em busca de sabores refinados.</p>"
+  },
+    {
+    "id": 12,
+    "title": "Padaria tradicional lança linha de sobremesas premium",
+    "date": "2024-12-25",
+    "category": "culinaria",
+    "excerpt": "Novos sabores foram inspirados em sobremesas francesas.",
+    "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+    "content": "<p>A padaria 'Sabor Antigo' apresentou uma linha de sobremesas gourmet, incluindo éclairs, tartes e mousses artesanais. O lançamento atraiu clientes em busca de sabores refinados.</p>"
+  }
+]

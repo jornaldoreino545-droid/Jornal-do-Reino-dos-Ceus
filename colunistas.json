@@ -1,0 +1,76 @@
+{
+  "colunistas": [
+    {
+      "id": 1,
+      "nome": "Bispo Rodrigo de Carvalho",
+      "coluna": "CULTURA DO REINO",
+      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
+      "instagram": "@Instagram",
+      "ordem": 1,
+      "ativo": true,
+      "imagem": "./Colunistas/capa-culuna-Bispo-Rodrigo.png",
+      "dataCriacao": "2024-01-01T00:00:00.000Z",
+      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "nome": "Bispo Gilberto Gomes",
+      "coluna": "FÉ E JUSTIÇA",
+      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
+      "instagram": "@Instagram",
+      "ordem": 2,
+      "ativo": true,
+      "imagem": "./Colunistas/capa-culuna-Bispo-Gilberto.png",
+      "dataCriacao": "2024-01-01T00:00:00.000Z",
+      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "nome": "Bispo Dom Luiz de Carvalho",
+      "coluna": "SUBMISSÃO À AUTORIDADE",
+      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
+      "instagram": "@Instagram",
+      "ordem": 3,
+      "ativo": true,
+      "imagem": "./Colunistas/capa-culuna-Bispo-Dom-luiz.png",
+      "dataCriacao": "2024-01-01T00:00:00.000Z",
+      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "nome": "Bispo Welligton Ribeiro",
+      "coluna": "RIO SAGRADO",
+      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
+      "instagram": "@Instagram",
+      "ordem": 4,
+      "ativo": true,
+      "imagem": "./Colunistas/capa-culuna-Bispo-weligton.png",
+      "dataCriacao": "2024-01-01T00:00:00.000Z",
+      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "nome": "Missionário Lucas Gomes",
+      "coluna": "FÉ E MISSÃO",
+      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
+      "instagram": "@Instagram",
+      "ordem": 5,
+      "ativo": true,
+      "imagem": "./Colunistas/heliatam.png",
+      "dataCriacao": "2024-01-01T00:00:00.000Z",
+      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "nome": "Presbítero Mesquita",
+      "coluna": "PALAVRA E SABEDORIA",
+      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
+      "instagram": "@Instagram",
+      "ordem": 6,
+      "ativo": true,
+      "imagem": "./Colunistas/capa-culuna-Bispo-presbitero.png",
+      "dataCriacao": "2024-01-01T00:00:00.000Z",
+      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

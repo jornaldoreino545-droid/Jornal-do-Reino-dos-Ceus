@@ -1,0 +1,366 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+header .obra-forte {
+  background-color: rgb(207, 0, 0);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 0px;
+}
+
+
+.obra-forte h1 {
+  color: aliceblue;
+  font-size: 2rem;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+
+.obra-forte h1 strong {
+  color: aliceblue;
+  font-size: 2rem;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+}
+
+
+.imagem-principal .imaegm-com {
+  display: block;
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  margin-top: auto;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+}
+
+
+.imagem-principal .Imagem-tab{
+    display: none;
+}
+
+
+.imagem-principal .Imagem-cel{
+    display: none;
+}
+
+
+
+
+footer {
+  background-color: #2b2b2b;
+}
+
+footer .footeres {
+  max-width: 1920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+}
+
+footer .footeres .totosfooter {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5rem;
+  padding: 0 1rem;
+}
+
+footer .footeres .totosfooter .sobrenos {
+  width: 200px;
+}
+
+footer .footeres .totosfooter .sobrenos h1 {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+  font-size: 1.5rem;
+  color: #f0f0f0;
+  margin-bottom: 1rem;
+}
+
+footer .footeres .totosfooter .sobrenos h2 {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 1rem;
+  color: #f0f0f0;
+  margin-bottom: 10px;
+}
+
+footer .footeres .totosfooter .sobrenos h2 a {
+  text-decoration: none;
+  color: #f0f0f0;
+}
+
+footer .footeres .totosfooter .efeito h2 a {
+  background-color: #2b2b2b;
+  padding: 2px 10px;
+  transition: all 0.5s;
+}
+
+footer .footeres .totosfooter .efeito h2 a:hover {
+  background-color: #626262;
+  padding: 2px 10px;
+  transition: all 0.5s;
+  border-radius: 10px;
+}
+
+footer .footeres .linha {
+  width: 100%;
+  height: 1px;
+  background-color: #ffffff;
+  margin-bottom: 2rem;
+}
+
+footer .footeres .partefinal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+footer .footeres .partefinal small {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 0.8rem;
+  color: #f0f0f0;
+}
+
+footer .footeres .partefinal button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 30px;
+  border-radius: 10px;
+  border: none;
+  background-color: #ffc014;
+  transition: all 0.5s;
+  cursor: pointer;
+}
+
+footer .footeres .partefinal button:hover {
+  transition: all 0.5s;
+  background-color: #ffdb3c;
+}
+
+footer .footeres .partefinal button a {
+  color: #000000;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+
+
+/*------------------- responsivo para celular ---------------*/
+
+@media screen and (max-width: 884px) {
+    .obra-forte h1 {
+    font-size: 1.30rem;
+  }
+
+   .obra-forte h1 strong {
+    font-size: 1.30rem;
+  }
+
+  footer .footeres {
+    margin: 0px 0px;
+    flex-direction: column;
+    padding: 15px;
+  }
+}
+
+
+@media screen and (max-width: 840px) {
+
+  footer .footeres {
+    margin: 0px 0px;
+    flex-direction: column;
+    padding: 15px;
+  }
+}
+
+@media screen and (max-width: 834px) {
+  /*ok*/
+}
+@media screen and (max-width: 820px) {
+  /*ok*/
+}
+@media screen and (max-width: 800px) {
+  header .obra-forte h1 {
+    font-size: 1.10rem;
+  }
+
+  header .obra-forte h1 strong {
+    font-size: 1.10rem;
+
+  }
+
+}
+
+@media screen and (max-width: 768px) {
+
+  footer .footeres {
+    margin: 0px 0px;
+    flex-direction: column;
+    padding: 15px;
+  }
+}
+
+@media screen and (max-width: 608px) {
+
+    header .obra-forte {
+    padding: 10px 0px;
+}
+
+    header .obra-forte h1 {
+    font-size: 1rem;
+  }
+
+  header .obra-forte h1 strong {
+
+    font-size: 1rem;
+
+  }
+
+  footer .footeres {
+    padding: 0px 10px;
+    margin: 0px 10px;
+    flex-direction: column;
+    padding: 15px;
+  }
+}
+
+@media screen and (max-width: 581px) {
+
+  header .obra-forte h1 {
+    font-size: 1.20rem;
+  }
+
+  header .obra-forte h1 strong {
+
+    font-size: 1.20rem;
+
+  }
+  header .imagem-principal .imaegm-com{
+    display: none;
+  }
+
+  header .imagem-principal .Imagem-tab{
+  display: block;
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  margin-top: auto;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+  }
+
+  header .imagem-principal .Imagem-cel{
+    display: none;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 573px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 542px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 526px) {
+/*ok*/
+}
+
+@media screen and (max-width: 480px) {
+/*ok*/
+}
+
+@media screen and (max-width: 468px) {
+/*ok*/
+}
+
+@media screen and (max-width: 440px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 430px) {
+/*ok*/
+}
+
+@media screen and (max-width: 428px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 427px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 414px) {
+/**/
+}
+
+@media screen and (max-width: 393px) {
+    header .obra-forte h1 {
+    font-size: 1rem;
+    padding: 0px 5px;
+  }
+
+  header .obra-forte h1 strong {
+    font-size: 1rem;
+
+  }
+}
+
+@media screen and (max-width: 390px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 379px) {
+  /*ok*/
+}
+
+@media screen and (max-width: 375px) {
+  /*ok*/
+}
+
+
+@media screen and (max-width: 371px){
+  /*ok*/
+}
+
+@media screen and (max-width: 360px){
+    /*ok*/
+
+}
+
+@media screen and (max-width: 320px){
+    /*ok*/
+
+}
+
