@@ -6,6 +6,22 @@ const { requireAuth } = require('../middleware/auth');
 const { uploadCapa, uploadCapaOptional, uploadMateria, uploadJornalFiles, uploadVideo } = require('../config/upload');
 const pool = require('../config/database');
 
+console.log('📦 Módulo de rotas do dashboard carregado');
+console.log('🔐 Rota POST /login será registrada');
+
+// Middleware de debug para TODAS as requisições
+router.use((req, res, next) => {
+  // Log TODAS as requisições para debug
+  if (req.method === 'POST') {
+    console.log('\n🔍 MIDDLEWARE DO ROUTER - Requisição POST detectada!');
+    console.log('📥 Método:', req.method);
+    console.log('📥 Path:', req.path);
+    console.log('📥 URL original:', req.originalUrl);
+    console.log('📥 Body:', JSON.stringify(req.body));
+  }
+  next();
+});
+
 const JORNAIS_FILE = path.join(__dirname, '..', '..', 'jornais.json');
 const SITE_CONFIG_FILE = path.join(__dirname, '..', '..', 'site-config.json');
 const MATERIAS_FILE = path.join(__dirname, '..', '..', 'public', 'Noticias', 'materias.json');
@@ -75,11 +91,29 @@ async function writeColunistas(data) {
 
 // ==================== AUTENTICAÇÃO ====================
 
-// Login
+// Rota de teste para verificar se as rotas estão funcionando
+router.get('/test', (req, res) => {
+  console.log('✅ Rota de teste /api/test chamada com sucesso!');
+  res.json({ message: 'Rotas funcionando!', timestamp: new Date().toISOString() });
+});
+
+// Login - REGISTRAR A ROTA COM LOG IMEDIATO
+console.log('🔐 Registrando rota POST /login...');
 router.post('/login', async (req, res) => {
+  // Log IMEDIATO no início da função - PRIMEIRA COISA A EXECUTAR
+  console.log('\n\n\n');
+  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
+  console.log('🔐 ===== ROTA DE LOGIN CHAMADA =====');
+  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
+  console.log('⏰ Timestamp:', new Date().toISOString());
+  console.log('📧 Email recebido:', req.body.email);
+  console.log('🔑 Password recebido (comprimento):', req.body.password ? req.body.password.length + ' caracteres' : 'NÃO FORNECIDO');
+  console.log('🔑 Password recebido (valor completo):', req.body.password);
+  console.log('📦 Body completo:', JSON.stringify(req.body));
+  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
+  console.log('\n\n');
+  
   try {
-    console.log('=== TENTATIVA DE LOGIN ===');
-    console.log('Body recebido:', { email: req.body.email ? req.body.email.substring(0, 10) + '...' : 'não fornecido', hasPassword: !!req.body.password });
     
     const { username, email, password } = req.body;
     
@@ -87,38 +121,133 @@ router.post('/login', async (req, res) => {
     const loginValue = email || username;
     
     if (!loginValue || !password) {
-      console.log('Campos vazios');
+      console.log('❌ Campos vazios');
       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
     
     // Credenciais fixas - APENAS essas credenciais permitem acesso ao dashboard
     // Email: jornaldoreino545@gmail.com
-    // Senha: ReinodosCéus@775533
+    // Senha: Igrejareinodosceus1313
     const ADMIN_EMAIL = 'jornaldoreino545@gmail.com';
-    const ADMIN_PASS = 'ReinodosCéus@775533';
+    const ADMIN_PASS = 'Igrejareinodosceus1313';
     
     // Permitir override via variável de ambiente, mas usar os valores fixos como padrão
     const adminEmail = (process.env.ADMIN_EMAIL || ADMIN_EMAIL).trim().toLowerCase();
-    const adminPass = process.env.ADMIN_PASS || ADMIN_PASS;
+    // IMPORTANTE: Não fazer trim na senha esperada, manter exatamente como está
+    const adminPass = (process.env.ADMIN_PASS || ADMIN_PASS);
 
-    // Normalizar entrada do usuário (remover espaços, converter email para lowercase)
+    // Normalizar entrada do usuário (remover espaços no início e fim, converter email para lowercase)
     const normalizedEmail = loginValue.trim().toLowerCase();
-    const normalizedPassword = password; // Senha é case-sensitive e pode ter caracteres especiais
+    // Remover TODOS os espaços (início, fim e meio) da senha fornecida
+    // Mas manter case-sensitive
+    const normalizedPassword = password.replace(/\s+/g, ''); // Remove todos os espaços
+    
+    console.log('\n📋 === DADOS NORMALIZADOS ===');
+    console.log('📧 Email normalizado:', normalizedEmail);
+    console.log('🔑 Senha normalizada (completa):', normalizedPassword);
+    console.log('📏 Senha normalizada (comprimento):', normalizedPassword.length);
 
-    console.log('=== COMPARANDO CREDENCIAIS ===');
-    console.log('Email fornecido (normalizado):', normalizedEmail);
-    console.log('Email esperado:', adminEmail);
-    console.log('Emails coincidem:', normalizedEmail === adminEmail);
-    console.log('Senha fornecida (comprimento):', normalizedPassword ? normalizedPassword.length + ' caracteres' : 'não fornecida');
-    console.log('Senha esperada (comprimento):', adminPass.length + ' caracteres');
-    console.log('Primeiro caractere da senha fornecida:', normalizedPassword ? normalizedPassword[0] : 'N/A');
-    console.log('Primeiro caractere da senha esperada:', adminPass[0]);
-    console.log('Senhas coincidem (comparação exata):', normalizedPassword === adminPass);
+    console.log('\n🔍 === COMPARANDO CREDENCIAIS ===');
+    console.log('📧 Email fornecido:', normalizedEmail);
+    console.log('📧 Email esperado:', adminEmail);
+    console.log('✅ Emails coincidem?', normalizedEmail === adminEmail);
+    console.log('🔑 Senha fornecida (comprimento):', normalizedPassword.length, 'caracteres');
+    console.log('🔑 Senha esperada (comprimento):', adminPass.length, 'caracteres');
+    console.log('🔑 Senha fornecida (primeiros 5 chars):', normalizedPassword.substring(0, 5));
+    console.log('🔑 Senha esperada (primeiros 5 chars):', adminPass.substring(0, 5));
+    console.log('🔑 Senha fornecida (últimos 5 chars):', normalizedPassword.substring(normalizedPassword.length - 5));
+    console.log('🔑 Senha esperada (últimos 5 chars):', adminPass.substring(adminPass.length - 5));
+    console.log('🔑 Senhas coincidem (exata)?', normalizedPassword === adminPass);
 
-    // Comparação estrita - APENAS essas credenciais específicas permitem acesso
-    // Verificar email e senha com comparação exata (case-sensitive para senha)
+    // Comparação de email - verificar se coincide (já está normalizado para lowercase)
     const emailMatch = normalizedEmail === adminEmail;
-    const passwordMatch = normalizedPassword === adminPass;
+    
+    console.log('\n📧 === VERIFICAÇÃO DE EMAIL ===');
+    console.log('📧 Email fornecido:', normalizedEmail);
+    console.log('📧 Email esperado:', adminEmail);
+    console.log('✅ Emails coincidem?', emailMatch);
+    
+    // Se email não coincidir, retornar erro imediatamente
+    if (!emailMatch) {
+      console.log('\n❌❌❌ EMAIL INCORRETO ❌❌❌\n');
+      return res.status(401).json({ 
+        error: 'Credenciais inválidas',
+        message: 'Email ou senha incorretos.'
+      });
+    }
+    
+    console.log('✅ Email correto! Verificando senha...\n');
+    
+    // Comparação de senha - COMPARAÇÃO EXATA COM DEBUG COMPLETO
+    let passwordMatch = false;
+    
+    console.log('🔑 === VERIFICAÇÃO DE SENHA ===');
+    console.log('🔑 Senha fornecida (raw):', JSON.stringify(normalizedPassword));
+    console.log('🔑 Senha esperada (raw):', JSON.stringify(adminPass));
+    console.log('📏 Comprimento fornecido:', normalizedPassword.length);
+    console.log('📏 Comprimento esperado:', adminPass.length);
+    
+    // Verificar se os comprimentos são iguais
+    if (normalizedPassword.length !== adminPass.length) {
+      console.log('❌ COMPRIMENTOS DIFERENTES!');
+      console.log(`   Fornecida: ${normalizedPassword.length} caracteres`);
+      console.log(`   Esperada: ${adminPass.length} caracteres`);
+    }
+    
+    // Comparação byte a byte para debug COMPLETO
+    console.log('\n🔍 Comparação byte a byte (TODOS os caracteres):');
+    const maxLen = Math.max(normalizedPassword.length, adminPass.length);
+    let allMatch = true;
+    let firstMismatch = -1;
+    
+    for (let i = 0; i < maxLen; i++) {
+      const charInput = normalizedPassword[i] || 'MISSING';
+      const charExpected = adminPass[i] || 'MISSING';
+      const match = charInput === charExpected;
+      
+      if (!match) {
+        allMatch = false;
+        if (firstMismatch === -1) {
+          firstMismatch = i;
+        }
+      }
+      
+      // Mostrar todos os caracteres ou apenas os que não coincidem
+      if (i < 30 || !match) {
+        const inputCode = charInput !== 'MISSING' ? charInput.charCodeAt(0) : 'N/A';
+        const expectedCode = charExpected !== 'MISSING' ? charExpected.charCodeAt(0) : 'N/A';
+        console.log(`  [${i}] '${charInput}' (${inputCode}) === '${charExpected}' (${expectedCode}) ? ${match ? '✅' : '❌'}`);
+      }
+    }
+    
+    if (firstMismatch !== -1) {
+      console.log(`\n⚠️ Primeira diferença encontrada na posição ${firstMismatch}`);
+    }
+    
+    // Comparação exata (case-sensitive)
+    if (normalizedPassword === adminPass) {
+      passwordMatch = true;
+      console.log('\n✅✅✅ SENHA CORRETA (comparação exata) ✅✅✅');
+    } else {
+      console.log('\n❌❌❌ SENHA INCORRETA - comparação exata falhou ❌❌❌');
+      console.log('🔍 Diferenças detectadas na comparação byte a byte');
+      
+      // Tentar comparação case-insensitive como fallback (apenas para debug)
+      if (normalizedPassword.toLowerCase() === adminPass.toLowerCase()) {
+        console.log('\n⚠️⚠️⚠️ ATENÇÃO: Senhas coincidem em minúsculas, mas diferem em maiúsculas/minúsculas!');
+        console.log('   Isso indica que a senha é case-sensitive e há diferença de capitalização.');
+        console.log(`   Fornecida: "${normalizedPassword}"`);
+        console.log(`   Esperada: "${adminPass}"`);
+      } else {
+        console.log('\n⚠️ Senhas também diferem em minúsculas (não é apenas problema de capitalização)');
+      }
+    }
+    
+    console.log('\n🎯 === RESULTADO FINAL ===');
+    console.log('📧 Email correto?', emailMatch);
+    console.log('🔑 Senha correta?', passwordMatch);
+    console.log('🎯 Acesso autorizado?', emailMatch && passwordMatch);
+    console.log('===========================\n');
     
     if (emailMatch && passwordMatch) {
       // Credenciais válidas - criar sessão autenticada
@@ -126,12 +255,13 @@ router.post('/login', async (req, res) => {
       req.session.user = adminEmail;
       req.session.loginTime = new Date().toISOString();
       
-      console.log('✅ Credenciais válidas - ACESSO AUTORIZADO');
-      console.log('Criando sessão...');
-      console.log('Session ID:', req.sessionID);
-      console.log('Usuário:', adminEmail);
+      console.log('✅✅✅ CREDENCIAIS VÁLIDAS - ACESSO AUTORIZADO ✅✅✅');
+      console.log('🔐 Criando sessão...');
+      console.log('🆔 Session ID:', req.sessionID);
+      console.log('👤 Usuário:', adminEmail);
       
       // Salvar sessão explicitamente antes de responder
+      console.log('💾 Salvando sessão...');
       req.session.save((err) => {
         if (err) {
           console.error('❌ Erro ao salvar sessão:', err);
@@ -139,21 +269,46 @@ router.post('/login', async (req, res) => {
         }
         console.log('✅ Sessão salva com sucesso!');
         console.log('Verificando sessão salva:', req.session.authenticated);
-        res.json({ ok: true, user: adminEmail, message: 'Login realizado com sucesso' });
+        console.log('📤 Enviando resposta de sucesso...');
+        const responseData = { ok: true, user: adminEmail, message: 'Login realizado com sucesso' };
+        console.log('📦 Dados da resposta:', JSON.stringify(responseData));
+        res.json(responseData);
+        console.log('✅ Resposta enviada com sucesso!');
       });
       return; // Importante: não continuar após iniciar o save
     }
     
-    console.log('❌ Credenciais inválidas - ACESSO NEGADO');
-    console.log('Email correto?', emailMatch);
-    console.log('Senha correta?', passwordMatch);
+    console.log('\n❌❌❌ CREDENCIAIS INVÁLIDAS - ACESSO NEGADO ❌❌❌');
+    console.log('📧 Email correto?', emailMatch);
+    console.log('🔑 Senha correta?', passwordMatch);
+    console.log('\n🔍 === DIAGNÓSTICO FINAL ===');
+    console.log('📧 Email fornecido:', normalizedEmail);
+    console.log('📧 Email esperado:', adminEmail);
+    console.log('🔑 Senha fornecida (completa):', normalizedPassword);
+    console.log('🔑 Senha esperada (completa):', adminPass);
+    console.log('📏 Senha fornecida (comprimento):', normalizedPassword.length);
+    console.log('📏 Senha esperada (comprimento):', adminPass.length);
+    console.log('\n🔤 Senha fornecida (caractere por caractere):');
+    normalizedPassword.split('').forEach((c, i) => {
+      console.log(`  [${i}] '${c}' (código: ${c.charCodeAt(0)})`);
+    });
+    console.log('\n🔤 Senha esperada (caractere por caractere):');
+    adminPass.split('').forEach((c, i) => {
+      console.log(`  [${i}] '${c}' (código: ${c.charCodeAt(0)})`);
+    });
+    console.log('==========================================\n');
+    
     res.status(401).json({ 
       error: 'Credenciais inválidas',
-      message: 'Email ou senha incorretos. Apenas usuários autorizados podem acessar o dashboard.'
+      message: 'Email ou senha incorretos. Verifique o console do servidor para mais detalhes.'
     });
   } catch (error) {
-    console.error('Erro no login:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('\n\n❌❌❌ ERRO NO LOGIN ❌❌❌');
+    console.error('Tipo do erro:', error.constructor.name);
+    console.error('Mensagem:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌\n');
+    res.status(500).json({ error: 'Erro interno do servidor', message: error.message });
   }
 });
 
@@ -178,11 +333,21 @@ router.get('/auth/check', (req, res) => {
 // ==================== JORNAIS ====================
 
 // Listar todos os jornais
+// Se não estiver autenticado, retorna apenas jornais ativos (para o site público)
+// Se estiver autenticado, retorna todos os jornais (para o dashboard)
 router.get('/jornais', async (req, res) => {
   try {
     console.log('Listando jornais...');
     const data = await readJornais();
-    const jornaisList = data.jornais || [];
+    let jornaisList = data.jornais || [];
+    
+    // Se não estiver autenticado, filtrar apenas jornais ativos e ordenar
+    if (!req.session || !req.session.authenticated) {
+      jornaisList = jornaisList
+        .filter(j => j.ativo !== false)
+        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    }
+    
     console.log(`Retornando ${jornaisList.length} jornais`);
     res.json({ jornais: jornaisList });
   } catch (error) {
@@ -1223,6 +1388,22 @@ router.put('/site/banner-modal', requireAuth, uploadMateria, async (req, res) =>
 
 // ==================== NOTÍCIAS/MATÉRIAS ====================
 
+// Rota para o site público (compatibilidade)
+router.get('/site/noticias', async (req, res) => {
+  try {
+    console.log('📰 Buscando notícias para o site público...');
+    console.log('   Arquivo:', MATERIAS_FILE);
+    const materias = await readMaterias();
+    console.log(`✅ ${materias.length} notícias encontradas`);
+    console.log('   Primeiras 3 matérias:', materias.slice(0, 3).map(m => ({ id: m.id, title: m.title })));
+    res.json(materias);
+  } catch (error) {
+    console.error('❌ Erro ao listar notícias:', error);
+    res.status(500).json({ error: 'Erro ao listar notícias' });
+  }
+});
+
+// Rota para o dashboard (admin)
 router.get('/noticias', async (req, res) => {
   try {
     const materias = await readMaterias();
@@ -1251,11 +1432,19 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { title, date, category, content, excerpt, tag } = req.body;
     
+    console.log('📝 Criando nova notícia...');
+    console.log('   Título:', title);
+    console.log('   Data:', date);
+    console.log('   Categoria:', category);
+    console.log('   Tem imagem?', !!req.file);
+    
     if (!title || !content) {
       return res.status(400).json({ error: 'Título e conteúdo são obrigatórios' });
     }
 
     const materias = await readMaterias();
+    console.log(`   Total de matérias antes: ${materias.length}`);
+    
     const novoId = materias.length > 0
       ? Math.max(...materias.map(m => m.id || 0)) + 1
       : 1;
@@ -1273,10 +1462,14 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
 
     materias.push(novaMateria);
     await writeMaterias(materias);
+    
+    console.log(`✅ Notícia criada com sucesso! ID: ${novoId}`);
+    console.log(`   Total de matérias depois: ${materias.length}`);
+    console.log(`   Arquivo salvo em: ${MATERIAS_FILE}`);
 
     res.json({ ok: true, materia: novaMateria });
   } catch (error) {
-    console.error('Erro ao criar notícia:', error);
+    console.error('❌ Erro ao criar notícia:', error);
     res.status(500).json({ error: 'Erro ao criar notícia' });
   }
 });
@@ -1597,19 +1790,40 @@ router.post('/pagamentos', async (req, res) => {
 
 // ==================== COLUNISTAS ====================
 
-// Listar todos os colunistas (público - para o site)
+// Listar todos os colunistas (público - para o site) - Rota /api/colunistas
 router.get('/colunistas', async (req, res) => {
   try {
+    console.log('📚 Buscando colunistas para o site público (rota /colunistas)...');
     const data = await readColunistas();
     // Retornar apenas colunistas ativos e ordenados para o site
     const colunistasAtivos = (data.colunistas || [])
       .filter(c => c.ativo !== false)
       .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
     
+    console.log(`✅ ${colunistasAtivos.length} colunistas ativos encontrados`);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.json({ colunistas: colunistasAtivos });
   } catch (error) {
-    console.error('Erro ao listar colunistas:', error);
+    console.error('❌ Erro ao listar colunistas:', error);
+    res.status(500).json({ error: 'Erro ao listar colunistas' });
+  }
+});
+
+// Listar todos os colunistas (público - para o site) - Rota /api/site/colunistas (compatibilidade)
+router.get('/site/colunistas', async (req, res) => {
+  try {
+    console.log('📚 Buscando colunistas para o site público (rota /site/colunistas)...');
+    const data = await readColunistas();
+    // Retornar apenas colunistas ativos e ordenados para o site
+    const colunistasAtivos = (data.colunistas || [])
+      .filter(c => c.ativo !== false)
+      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    
+    console.log(`✅ ${colunistasAtivos.length} colunistas ativos encontrados`);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.json({ colunistas: colunistasAtivos });
+  } catch (error) {
+    console.error('❌ Erro ao listar colunistas:', error);
     res.status(500).json({ error: 'Erro ao listar colunistas' });
   }
 });
@@ -1648,11 +1862,17 @@ router.post('/colunistas', requireAuth, async (req, res) => {
   try {
     const { nome, coluna, conteudo, instagram, ordem, ativo } = req.body;
     
+    console.log('📝 Criando novo colunista...');
+    console.log('   Nome:', nome);
+    console.log('   Coluna:', coluna);
+    console.log('   Ativo:', ativo);
+    
     if (!nome || !coluna || !conteudo) {
       return res.status(400).json({ error: 'Nome, coluna e conteúdo são obrigatórios' });
     }
     
     const data = await readColunistas();
+    console.log(`   Total de colunistas antes: ${data.colunistas.length}`);
     
     // Gerar ID único
     const newId = data.colunistas.length > 0 
@@ -1674,6 +1894,10 @@ router.post('/colunistas', requireAuth, async (req, res) => {
     
     data.colunistas.push(novoColunista);
     await writeColunistas(data);
+    
+    console.log(`✅ Colunista criado com sucesso! ID: ${newId}`);
+    console.log(`   Total de colunistas depois: ${data.colunistas.length}`);
+    console.log(`   Arquivo salvo em: ${COLUNISTAS_FILE}`);
     
     res.status(201).json(novoColunista);
   } catch (error) {

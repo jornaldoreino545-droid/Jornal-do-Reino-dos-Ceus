@@ -8,6 +8,67 @@ const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const cors = require('cors');
 
+// ==================== MIDDLEWARES GLOBAIS ====================
+
+// CORS - permitir requisições de múltiplas origens
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:4242', 'http://localhost:5000'],
+  credentials: true
+}));
+
+// Body parser
+app.use(bodyParser.json({ type: 'application/json' }));
+app.use(bodyParser.urlencoded({ extended: true, type: 'application/x-www-form-urlencoded' }));
+
+// Middleware para logar TODAS as requisições (para debug)
+app.use((req, res, next) => {
+  if (req.method === 'POST' && (req.path.includes('/login') || req.path.includes('/api/login'))) {
+    console.log('\n\n🚨🚨🚨 REQUISIÇÃO POST DETECTADA (MIDDLEWARE GLOBAL) 🚨🚨🚨');
+    console.log('📥 Método:', req.method);
+    console.log('📥 Path:', req.path);
+    console.log('📥 URL original:', req.originalUrl);
+    console.log('📥 Body:', JSON.stringify(req.body));
+    console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
+    console.log('⏭️ Passando para o próximo middleware...');
+  }
+  next();
+});
+
+// Session - IMPORTANTE: deve vir ANTES das rotas mas DEPOIS do CORS
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dashboard-secret-key-change-in-production',
+  resave: true,
+  saveUninitialized: false,
+  name: 'dashboard.sid',
+  cookie: {
+    httpOnly: true,
+    secure: false, // false para desenvolvimento (http)
+    maxAge: 1000 * 60 * 60 * 24, // 24 horas
+    sameSite: 'lax'
+  }
+}));
+
+// Middleware para garantir charset UTF-8 em todas as respostas JSON
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(data) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    return originalJson.call(this, data);
+  };
+  next();
+});
+
+// Middleware para desabilitar cache em desenvolvimento
+app.use((req, res, next) => {
+  if (req.url.match(/\.(css|js|html)$/)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
+// ==================== SERVIÇO DE ARQUIVOS ESTÁTICOS ====================
 
 // Servir site principal com charset UTF-8
 app.use(express.static(path.join(__dirname, "public"), {
@@ -25,33 +86,77 @@ app.use(express.static(path.join(__dirname, "public"), {
 // Servir uploads do dashboard-server (para as capas dos jornais)
 app.use('/uploads', express.static(path.join(__dirname, "dashboard-server", "uploads")));
 
+// Servir arquivos estáticos do dashboard
+app.use('/dashboard', express.static(path.join(__dirname, 'dashboard-server', 'public'), {
+  maxAge: 0,
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.match(/\.html$/)) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else if (filePath.match(/\.css$/)) {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else if (filePath.match(/\.js$/)) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
+
+// Servir arquivos estáticos do checkout PRIMEIRO (CSS, JS, imagens, etc)
+app.use('/checkout', express.static(path.join(__dirname, "checkout", "public")));
+
+// Servir o gerador
+app.use('/gerador', express.static(path.join(__dirname, "gerador", "public")));
+
+// Servir arquivos de download (criar pasta se não existir)
+const downloadPath = path.join(__dirname, 'checkout', 'public', 'download');
+if (!fs.existsSync(downloadPath)) {
+  fs.mkdirSync(downloadPath, { recursive: true });
+  console.log('📁 Pasta download criada:', downloadPath);
+}
+app.use('/download', express.static(downloadPath));
+app.use('/checkout/download', express.static(downloadPath));
+
+// ==================== ROTAS DE PÁGINAS ====================
+
+// Rota principal do site
 app.get("/", (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Servir o gerador
-app.use('/gerador', express.static(path.join(__dirname, "gerador", "public")));
+// Rota principal do dashboard (apenas para a rota exata, não para subcaminhos)
+app.get(["/dashboard", "/dashboard/"], (req, res) => {
+  // Verificar se é uma requisição para arquivo estático (tem extensão)
+  if (req.path.includes('.')) {
+    return res.status(404).send('Arquivo não encontrado');
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'dashboard-server', 'public', 'index.html'));
+});
 
+// Servir o gerador
 app.get("/gerador", (req, res) => {
   res.sendFile(path.join(__dirname, "gerador", "public", "index.html"));
 });
 
-// Servir arquivos estáticos do checkout PRIMEIRO (CSS, JS, imagens, etc)
-// IMPORTANTE: Esta linha DEVE vir ANTES da rota GET /checkout para servir arquivos estáticos
-app.use('/checkout', express.static(path.join(__dirname, "checkout", "public")));
-
-// Rota específica para checkout.html DEPOIS do static (ordem é crítica!)
+// Rota específica para checkout.html
 app.get("/checkout", (req, res) => {
-  // Verificar se é uma requisição para arquivo estático (tem extensão)
   if (req.path.includes('.')) {
     return res.status(404).send('Arquivo não encontrado');
   }
   
   const filePath = path.join(__dirname, "checkout", "public", "checkout.html");
   console.log('📄 Servindo checkout.html de:', filePath);
-  console.log('📍 URL requisitada:', req.url);
-  console.log('📍 Query params:', req.query);
   
   res.sendFile(filePath, (err) => {
     if (err) {
@@ -63,7 +168,6 @@ app.get("/checkout", (req, res) => {
             <h1>Erro ao carregar checkout</h1>
             <p><strong>Erro:</strong> ${err.message}</p>
             <p><strong>Caminho tentado:</strong> ${filePath}</p>
-            <p><strong>Diretório atual:</strong> ${__dirname}</p>
           </body>
         </html>
       `);
@@ -77,8 +181,6 @@ app.get("/checkout", (req, res) => {
 app.get("/checkout/success", (req, res) => {
   const filePath = path.join(__dirname, "checkout", "public", "success.html");
   console.log('📄 Servindo success.html de:', filePath);
-  console.log('📍 URL requisitada:', req.url);
-  console.log('📍 Query params:', req.query);
   
   res.sendFile(filePath, (err) => {
     if (err) {
@@ -90,7 +192,6 @@ app.get("/checkout/success", (req, res) => {
             <h1>Erro ao carregar página de sucesso</h1>
             <p><strong>Erro:</strong> ${err.message}</p>
             <p><strong>Caminho tentado:</strong> ${filePath}</p>
-            <p><strong>Diretório atual:</strong> ${__dirname}</p>
           </body>
         </html>
       `);
@@ -100,33 +201,8 @@ app.get("/checkout/success", (req, res) => {
   });
 });
 
-
-
-
-
-
-
-
-
-
-//GERADOR DE CODIGO
-// CORS para o site do jornal
-app.use(cors({
-  origin: ['http://localhost:3000'],
-  credentials: true
-}));
-
-app.use(bodyParser.json());
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'troque_para_uma_coisa_secreta',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: false,
-    maxAge: 1000 * 60 * 60
-  }
-}));
+// ==================== ROTAS DE API - SITE PRINCIPAL ====================
+// (Colocadas antes das rotas do dashboard para ter prioridade nas rotas públicas)
 
 const DB_FILE = path.join(__dirname, 'db.json');
 const JORNAIS_FILE = path.join(__dirname, 'jornais.json');
@@ -143,460 +219,19 @@ async function writeDB(data){
   return fs.writeJson(DB_FILE, data, {spaces:2});
 }
 
-// Login ADMIN
-app.post('/api/login', async (req, res) => {
-  const { user, pass } = req.body;
-  const adminUser = process.env.ADMIN_USER;
-  const adminPassHash = process.env.ADMIN_PASS_HASH;
+// Login ADMIN - REMOVIDO: Agora está no dashboard-server/routes/index.js
+// A rota /api/login agora é gerenciada pelo dashboard que aceita email e password
 
-  if (!adminUser || !adminPassHash) {
-    return res.status(500).json({error:'Servidor mal configurado'});
-  }
-
-  if (user !== adminUser) {
-    return res.status(401).json({error:'Usuário ou senha incorretos'});
-  }
-
-  const ok = await bcrypt.compare(pass, adminPassHash);
-  if (!ok) return res.status(401).json({error:'Usuário ou senha incorretos'});
-
-  req.session.authenticated = true;
-  req.session.user = adminUser;
-  res.json({ok:true});
-});
-
-// Logout
+// Logout (compatibilidade com rotas antigas)
 app.post('/api/logout', (req, res) => {
   req.session.destroy(err => {
     res.json({ok:true});
   });
 });
 
-// API para obter jornais (público)
-app.get('/api/jornais', async (req, res) => {
-  try {
-    console.log('Requisição para /api/jornais recebida');
-    const exists = await fs.pathExists(JORNAIS_FILE);
-    if (!exists) {
-      console.log('Arquivo jornais.json não existe, retornando array vazio');
-      return res.json({ jornais: [] });
-    }
-    const data = await fs.readJson(JORNAIS_FILE);
-    console.log('Total de jornais no arquivo:', data.jornais?.length || 0);
-    
-    // Retorna apenas jornais ativos, ordenados por ordem
-    const jornaisAtivos = (data.jornais || [])
-      .filter(j => j.ativo !== false)
-      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-    
-    console.log('Jornais ativos retornados:', jornaisAtivos.length);
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.json({ jornais: jornaisAtivos });
-  } catch (error) {
-    console.error('Erro ao ler jornais:', error);
-    res.status(500).json({ error: 'Erro ao carregar jornais', details: error.message });
-  }
-});
-
-// Proxy para APIs do servidor de checkout
-const http = require('http');
-
-// API para obter carrossel (público) - proxy para dashboard-server
-app.get('/api/site/carrossel', async (req, res) => {
-  try {
-    // Fazer proxy para o dashboard-server na porta 5000
-    const dashboardUrl = 'http://localhost:5000/api/site/carrossel';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta do carrossel:', err);
-          res.status(500).json({ error: 'Erro ao carregar carrossel' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      // Retornar array vazio se servidor dashboard não estiver rodando
-      res.json([]);
-    });
-  } catch (error) {
-    console.error('Erro no proxy carrossel:', error);
-    res.status(500).json({ error: 'Erro ao carregar carrossel' });
-  }
-});
-
-// Rota proxy para responsáveis
-app.get('/api/site/responsaveis', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/site/responsaveis';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta dos responsáveis:', err);
-          res.status(500).json({ error: 'Erro ao carregar responsáveis' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      // Retornar array vazio se servidor dashboard não estiver rodando
-      res.json([]);
-    });
-  } catch (error) {
-    console.error('Erro no proxy responsáveis:', error);
-    res.status(500).json({ error: 'Erro ao carregar responsáveis' });
-  }
-});
-
-// Rota proxy para Notícias
-app.get('/api/site/noticias', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/noticias';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta das notícias:', err);
-          res.status(500).json({ error: 'Erro ao carregar notícias' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      res.status(500).json({ error: 'Erro ao carregar notícias' });
-    });
-  } catch (error) {
-    console.error('Erro no proxy notícias:', error);
-    res.status(500).json({ error: 'Erro ao carregar notícias' });
-  }
-});
-
-// Rota proxy para Banner Modal
-app.get('/api/site/banner-modal', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/site/banner-modal';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta do banner modal:', err);
-          res.status(500).json({ error: 'Erro ao carregar banner modal' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      res.status(500).json({ error: 'Erro ao carregar banner modal' });
-    });
-  } catch (error) {
-    console.error('Erro no proxy banner modal:', error);
-    res.status(500).json({ error: 'Erro ao carregar banner modal' });
-  }
-});
-
-// Rota proxy para Carrossel Médio
-app.get('/api/site/carrossel-medio', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/site/carrossel-medio';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta do carrossel médio:', err);
-          res.status(500).json({ error: 'Erro ao carregar carrossel médio' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      res.json([]);
-    });
-  } catch (error) {
-    console.error('Erro no proxy carrossel médio:', error);
-    res.status(500).json({ error: 'Erro ao carregar carrossel médio' });
-  }
-});
-
-// Rota proxy para Textos
-app.get('/api/site/textos', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/site/textos';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta dos textos:', err);
-          res.status(500).json({ error: 'Erro ao carregar textos' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      res.status(500).json({ error: 'Erro ao carregar textos' });
-    });
-  } catch (error) {
-    console.error('Erro no proxy textos:', error);
-    res.status(500).json({ error: 'Erro ao carregar textos' });
-  }
-});
-
-// Rota proxy para Vídeo
-app.get('/api/site/video', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/site/video';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta do vídeo:', err);
-          res.status(500).json({ error: 'Erro ao carregar vídeo' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      // Retornar objeto vazio se servidor dashboard não estiver rodando
-      res.json({ url: '', titulo: '', subtitulo: '', ativo: false });
-    });
-  } catch (error) {
-    console.error('Erro no proxy vídeo:', error);
-    res.status(500).json({ error: 'Erro ao carregar vídeo' });
-  }
-});
-
-app.get('/api/site/faq', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/site/faq';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta do FAQ:', err);
-          res.status(500).json({ error: 'Erro ao carregar FAQ' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      // Retornar array vazio se servidor dashboard não estiver rodando
-      res.json([]);
-    });
-  } catch (error) {
-    console.error('Erro no proxy FAQ:', error);
-    res.status(500).json({ error: 'Erro ao carregar FAQ' });
-  }
-});
-
-// Rota proxy para colunistas
-app.get('/api/site/colunistas', async (req, res) => {
-  try {
-    const dashboardUrl = 'http://localhost:5000/api/colunistas';
-    
-    const proxyRequest = http.get(dashboardUrl, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta dos colunistas:', err);
-          res.status(500).json({ error: 'Erro ao carregar colunistas' });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de dashboard:', err.message);
-      // Retornar array vazio se servidor dashboard não estiver rodando
-      res.json({ colunistas: [] });
-    });
-  } catch (error) {
-    console.error('Erro no proxy colunistas:', error);
-    res.status(500).json({ error: 'Erro ao carregar colunistas' });
-  }
-});
-
-// Rota proxy para configuração do Stripe
-app.get('/api/stripe-config', async (req, res) => {
-  try {
-    // Tentar buscar do servidor do checkout (porta 4242)
-    const checkoutUrl = 'http://localhost:4242/api/stripe-config';
-    
-    const proxyRequest = http.request({
-      hostname: 'localhost',
-      port: 4242,
-      path: '/api/stripe-config',
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          const jsonData = JSON.parse(data);
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.json(jsonData);
-        } catch (err) {
-          console.error('Erro ao parsear resposta do checkout:', err);
-          res.status(500).json({ 
-            error: 'Erro ao obter configuração do Stripe',
-            publishableKey: ''
-          });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de checkout:', err.message);
-      // Retornar resposta vazia se servidor checkout não estiver rodando
-      res.json({ 
-        publishableKey: '',
-        error: 'Servidor de checkout não disponível'
-      });
-    });
-    
-    proxyRequest.end();
-  } catch (error) {
-    console.error('Erro no proxy stripe-config:', error);
-    res.status(500).json({ 
-      error: 'Erro ao obter configuração do Stripe',
-      publishableKey: ''
-    });
-  }
-});
-
-// Rota proxy para criar Payment Intent
-app.post('/api/create-payment-intent', async (req, res) => {
-  try {
-    const requestData = JSON.stringify(req.body);
-    
-    const proxyRequest = http.request({
-      hostname: 'localhost',
-      port: 4242,
-      path: '/api/create-payment-intent',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(requestData)
-      }
-    }, (proxyResponse) => {
-      let data = '';
-      proxyResponse.on('data', (chunk) => {
-        data += chunk;
-      });
-      proxyResponse.on('end', () => {
-        try {
-          res.status(proxyResponse.statusCode).json(JSON.parse(data));
-        } catch (err) {
-          console.error('Erro ao parsear resposta do checkout:', err);
-          res.status(500).json({ 
-            error: 'Erro ao criar pagamento',
-            message: err.message
-          });
-        }
-      });
-    });
-    
-    proxyRequest.on('error', (err) => {
-      console.error('Erro ao conectar com servidor de checkout:', err.message);
-      res.status(503).json({ 
-        error: 'Servidor de checkout não disponível',
-        message: 'O servidor de checkout não está rodando. Inicie-o na porta 4242.'
-      });
-    });
-    
-    proxyRequest.write(requestData);
-    proxyRequest.end();
-  } catch (error) {
-    console.error('Erro no proxy create-payment-intent:', error);
-    res.status(500).json({ 
-      error: 'Erro ao criar pagamento',
-      message: error.message
-    });
-  }
-});
+// As rotas do dashboard já estão montadas em /api, então rotas como:
+// /api/jornais, /api/site/carrossel, /api/site/responsaveis, /api/noticias, etc.
+// funcionam diretamente sem necessidade de proxy
 
 // Verificar código (público)
 app.post('/api/verificar', async (req, res) => {
@@ -617,8 +252,28 @@ app.post('/api/verificar', async (req, res) => {
   return res.json({status:'nao'});
 });
 
+// ==================== ROTAS DE API - DASHBOARD ====================
 
-// Rotas ADMIN
+// Importar rotas do dashboard (montadas em /api)
+console.log('📦 Carregando rotas do dashboard...');
+const dashboardRoutes = require('./dashboard-server/routes');
+console.log('✅ Rotas do dashboard carregadas');
+
+// Montar rotas do dashboard em /api
+app.use('/api', dashboardRoutes);
+console.log('✅ Rotas do dashboard montadas em /api');
+
+// Log de teste para verificar se as rotas estão sendo registradas
+console.log('🔍 Verificando rotas registradas...');
+console.log('   Rotas disponíveis no router:', Object.keys(dashboardRoutes.stack || {}).length > 0 ? 'Sim' : 'Não');
+
+// ==================== ROTAS DE API - CHECKOUT ====================
+
+// Importar rotas do checkout
+const checkoutRoutes = require('./checkout/routes');
+app.use('/', checkoutRoutes);
+
+// ==================== ROTAS ADMIN ====================
 function requireAuth(req, res, next){
   if (req.session && req.session.authenticated) return next();
   res.status(401).json({error: 'Não autenticado'});
@@ -628,17 +283,6 @@ app.get('/api/admin/codigos', requireAuth, async (req, res) => {
   const db = await readDB();
   res.json({codigosPremiados: db.codigosPremiados, codigosUsados: db.codigosUsados});
 });
-
-async function listarCodigos() {
-  const res = await fetch('/api/admin/codigos', {
-      credentials: 'include'
-  });
-
-  const data = await res.json();
-
-  document.getElementById("listaCodigos").innerText =
-      "Códigos ativos: " + data.codigosPremiados.join(", ");
-}
 
 // Adicionar código premiado
 app.post('/api/admin/adicionar', requireAuth, async (req, res) => {
@@ -659,9 +303,6 @@ app.post('/api/admin/adicionar', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-
-
-
 app.post('/api/admin/apagar-usados', requireAuth, async (req, res) => {
   const db = await readDB();
   db.codigosUsados = [];
@@ -677,25 +318,90 @@ app.post('/api/admin/limpar-tudo', requireAuth, async (req, res) => {
   res.json({ok:true});
 });
 
-async function listarCodigos() {
-  try {
-      const res = await fetch('/api/admin/codigos', {
-          credentials: 'include'
-      });
+// ==================== TRATAMENTO DE ERROS ====================
 
-      const data = await res.json();
-
-      document.getElementById("listaCodigos").innerHTML =
-          "<strong>Códigos ativos:</strong> " + 
-          (data.codigosPremiados.length ? data.codigosPremiados.join(", ") : "Nenhum.");
-  } catch (err) {
-      console.error(err);
-      alert("Erro ao carregar códigos");
-  }
-}
-
-// Porta 3000 (JORNAL)
-app.listen(3000, () => {
-  console.log("Site do Jornal rodando em http://localhost:3000");
+// Middleware de tratamento de erros (deve vir por último)
+app.use((err, req, res, next) => {
+  console.error('=== ERRO NÃO TRATADO ===');
+  console.error('Tipo:', err.constructor.name);
+  console.error('Mensagem:', err.message);
+  console.error('Stack:', err.stack);
+  console.error('========================');
+  
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.status(err.status || 500).json({ 
+    error: err.message || 'Erro interno do servidor',
+    details: process.env.NODE_ENV !== 'production' ? err.stack : undefined
+  });
 });
 
+// 404 handler
+app.use((req, res) => {
+  // Se for uma requisição de arquivo estático que não existe
+  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+    res.status(404).end();
+    return;
+  }
+  // Para outras rotas, retornar JSON
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.status(404).json({ error: 'Rota não encontrada' });
+});
+
+// ==================== INICIALIZAÇÃO DO SERVIDOR ====================
+
+const PORT = process.env.PORT || 3000;
+
+const server = app.listen(PORT, () => {
+  console.log(`\n🚀 Servidor unificado rodando em http://localhost:${PORT}`);
+  console.log(`📚 Sistema completo pronto!`);
+  console.log(`\n💡 URLs disponíveis:`);
+  console.log(`   Site principal: http://localhost:${PORT}/`);
+  console.log(`   Dashboard: http://localhost:${PORT}/dashboard`);
+  console.log(`   Checkout: http://localhost:${PORT}/checkout?product=jornal_1`);
+  console.log(`   Sucesso: http://localhost:${PORT}/checkout/success`);
+  console.log(`   Gerador: http://localhost:${PORT}/gerador`);
+  console.log(`\n📋 Configuração:`);
+  const envPath = path.join(__dirname, '.env');
+  console.log(`   Arquivo .env: ${fs.existsSync(envPath) ? '✅ Encontrado' : '❌ Não encontrado'}`);
+  if (process.env.STRIPE_SECRET_KEY) {
+    console.log(`   STRIPE_SECRET_KEY: ✅ Configurado (${process.env.STRIPE_SECRET_KEY.substring(0, 12)}...)`);
+  } else {
+    console.log(`   STRIPE_SECRET_KEY: ❌ Não configurado`);
+  }
+  if (process.env.STRIPE_PUBLISHABLE_KEY) {
+    console.log(`   STRIPE_PUBLISHABLE_KEY: ✅ Configurado (${process.env.STRIPE_PUBLISHABLE_KEY.substring(0, 12)}...)`);
+  } else {
+    console.log(`   STRIPE_PUBLISHABLE_KEY: ❌ Não configurado`);
+  }
+  console.log(`\n📁 Diretórios:`);
+  console.log(`   Pasta pública: ${path.join(__dirname, 'public')}`);
+  console.log(`   Pasta download: ${downloadPath}`);
+  console.log(`   Pasta uploads: ${path.join(__dirname, 'dashboard-server', 'uploads')}`);
+  console.log(`\n`);
+});
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`\n❌ Erro: A porta ${PORT} já está em uso!`);
+    console.error(`\n💡 Soluções:`);
+    console.error(`   1. Feche o processo que está usando a porta ${PORT}`);
+    console.error(`   2. Ou altere a porta no arquivo .env (PORT=3001)`);
+    console.error(`\n🔍 Para encontrar o processo no Windows:`);
+    console.error(`   netstat -ano | findstr :${PORT}`);
+    console.error(`   taskkill /PID <PID> /F`);
+    process.exit(1);
+  } else {
+    console.error('❌ Erro ao iniciar servidor:', error);
+    throw error;
+  }
+});
+
+// Tratamento de erros não capturados
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Erro não tratado:', err);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Exceção não capturada:', err);
+  process.exit(1);
+});

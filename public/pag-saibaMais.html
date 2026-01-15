@@ -407,6 +407,11 @@
                 
                 <h1 style="margin: 0; font-family: 'Roboto', sans-serif; font-weight: 700; color: #ffffff; font-size: 1.5rem; line-height: 1.4; text-align: center; letter-spacing: 0.3px; min-height: 60px; display: flex; align-items: center; justify-content: center; padding: 12px 0; text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);">${jornal.nome}</h1>
                 
+                <!-- Descrição do jornal (resumo - apenas primeiros 150 caracteres) -->
+                ${jornal.descricao ? `<div class="card-description" style="padding: 16px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin: 8px 0;">
+                  <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; line-height: 1.6; margin: 0; text-align: center; font-family: 'Roboto', sans-serif; font-weight: 400;">${jornal.descricao.length > 150 ? jornal.descricao.substring(0, 150) + '...' : jornal.descricao}</p>
+                </div>` : ''}
+                
                 <!-- Meta informações -->
                 <div class="card-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                   <span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">

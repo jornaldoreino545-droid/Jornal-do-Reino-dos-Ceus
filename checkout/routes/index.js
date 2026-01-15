@@ -8,94 +8,7 @@ router.get('/api/stripe-config', (req, res) => {
     });
 });
 
-// Rota proxy para buscar jornais da API principal
-router.get('/api/jornais', async (req, res) => {
-  try {
-    const apiPaths = [
-      'http://localhost:3000/api/jornais',
-      'http://127.0.0.1:3000/api/jornais'
-    ];
-    
-    let jornaisData = null;
-    
-    for (const path of apiPaths) {
-      try {
-        // Usar fetch global (Node.js 18+) ou http nativo
-        if (typeof fetch !== 'undefined') {
-          const response = await fetch(path, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            jornaisData = await response.json();
-            break;
-          }
-        } else {
-          // Fallback para http nativo (Node.js < 18)
-          jornaisData = await new Promise((resolve, reject) => {
-            const http = require('http');
-            const url = new URL(path);
-            const options = {
-              hostname: url.hostname,
-              port: url.port || 3000,
-              path: url.pathname,
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            };
-            
-            const req = http.request(options, (res) => {
-              let data = '';
-              res.on('data', (chunk) => {
-                data += chunk;
-              });
-              res.on('end', () => {
-                try {
-                  resolve(JSON.parse(data));
-                } catch (err) {
-                  reject(err);
-                }
-              });
-            });
-            
-            req.on('error', (err) => {
-              reject(err);
-            });
-            
-            req.end();
-          });
-          
-          if (jornaisData) {
-            break;
-          }
-        }
-      } catch (err) {
-        console.log(`Erro ao buscar de ${path}:`, err.message);
-        continue;
-      }
-    }
-    
-    if (jornaisData) {
-      res.json(jornaisData);
-    } else {
-      console.error('Não foi possível buscar jornais de nenhuma API');
-      res.status(503).json({ 
-        error: 'Não foi possível conectar com a API principal',
-        jornais: []
-      });
-    }
-  } catch (error) {
-    console.error('Erro ao buscar jornais:', error);
-    res.status(500).json({ 
-      error: 'Erro ao buscar jornais',
-      jornais: []
-    });
-  }
-});
+// Rota de jornais removida - agora usa a rota principal /api/jornais do servidor unificado
 
 // Rota para criar Payment Intent
 router.post('/api/create-payment-intent', async (req, res) => {
@@ -210,7 +123,7 @@ router.get('/api/download', async (req, res) => {
       
       const saveRequest = http.request({
         hostname: 'localhost',
-        port: 5000,
+        port: process.env.PORT || 3000,
         path: '/api/pagamentos',
         method: 'POST',
         headers: {
@@ -253,7 +166,7 @@ router.get('/api/download', async (req, res) => {
         const jornaisData = await new Promise((resolve, reject) => {
           const req = http.request({
             hostname: 'localhost',
-            port: 3000,
+            port: process.env.PORT || 3000,
             path: '/api/jornais',
             method: 'GET',
             headers: {
