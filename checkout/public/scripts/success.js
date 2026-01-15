@@ -104,7 +104,7 @@ async function savePaymentToDashboard() {
         
         // Tentar salvar no dashboard (o servidor vai verificar se já existe e atualizar valor se necessário)
         const dashboardPaths = [
-            'http://localhost:5000/api/pagamentos',
+            'http://localhost:3000/api/pagamentos',
             '/api/pagamentos'
         ];
         

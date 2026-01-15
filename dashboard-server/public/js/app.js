@@ -34,10 +34,13 @@ window.handleLogin = async function(e) {
     }
     
     const email = emailInput.value.trim();
-    const password = passwordInput.value;
+    const password = passwordInput.value; // NÃO fazer trim aqui, pode ter espaços intencionais
     
-    console.log('Email fornecido:', email.substring(0, 20) + '...');
-    console.log('Senha fornecida:', password ? '***' : 'vazia');
+    console.log('📧 Email fornecido:', email);
+    console.log('🔑 Senha fornecida (comprimento):', password ? password.length + ' caracteres' : 'vazia');
+    console.log('🔑 Senha fornecida (primeiros 5):', password ? password.substring(0, 5) + '...' : 'vazia');
+    console.log('🔑 Senha fornecida (últimos 5):', password && password.length > 5 ? '...' + password.substring(password.length - 5) : 'vazia');
+    console.log('🔑 Senha completa (JSON):', JSON.stringify(password));
     
     // Validação básica
     if (!email || !password) {
@@ -57,9 +60,17 @@ window.handleLogin = async function(e) {
     }
     
     try {
-        console.log('📤 Enviando requisição de login...', { email: email.substring(0, 15) + '...' });
+        console.log('📤 Enviando requisição de login...');
         console.log('API_BASE:', API_BASE);
         console.log('URL completa:', `${API_BASE}/login`);
+        console.log('📦 Dados sendo enviados:', {
+            email: email,
+            passwordLength: password ? password.length : 0,
+            passwordPreview: password ? password.substring(0, 3) + '...' + password.substring(password.length - 3) : 'vazia'
+        });
+        
+        const requestBody = { email, password };
+        console.log('📦 Request body (JSON):', JSON.stringify(requestBody));
         
         const response = await fetch(`${API_BASE}/login`, {
             method: 'POST',
@@ -68,7 +79,7 @@ window.handleLogin = async function(e) {
                 'Accept': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(requestBody)
         });
         
         console.log('📥 Resposta recebida!');
@@ -216,7 +227,7 @@ window.handleLogin = async function(e) {
             console.error('❌ Falha no login:', errorMessage);
             
             if (errorDiv) {
-                errorDiv.textContent = 'Erro ao conectar com o servidor. Verifique se o servidor está rodando na porta 5000.';
+                errorDiv.textContent = 'Erro ao conectar com o servidor. Verifique se o servidor está rodando na porta 3000.';
                 errorDiv.classList.add('show');
             }
             if (typeof showToast === 'function') {
@@ -2935,13 +2946,13 @@ function renderCarrosselMedio() {
         }
         
         if (imagemUrl.startsWith('/uploads/')) {
-            imagemUrl = `http://localhost:5000${imagemUrl}`;
+            imagemUrl = `http://localhost:3000${imagemUrl}`;
         } else if (imagemUrl.startsWith('http')) {
             // URL externa
         } else if (imagemUrl.startsWith('uploads/')) {
-            imagemUrl = `http://localhost:5000/${imagemUrl}`;
+            imagemUrl = `http://localhost:3000/${imagemUrl}`;
         } else {
-            imagemUrl = `http://localhost:5000/uploads/materias/${imagemUrl}`;
+            imagemUrl = `http://localhost:3000/uploads/materias/${imagemUrl}`;
         }
         
         return `
@@ -3012,7 +3023,7 @@ window.openCarrosselMedioModal = function(item = null) {
         
         if (item.imagem && imagemPreview) {
             let imgUrl = item.imagem.startsWith('/uploads/') 
-                ? `http://localhost:5000${item.imagem}` 
+                ? `http://localhost:3000${item.imagem}` 
                 : item.imagem;
             imagemPreview.innerHTML = `<img src="${imgUrl}" alt="Preview" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">`;
         }
