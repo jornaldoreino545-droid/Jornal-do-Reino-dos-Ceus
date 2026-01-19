@@ -100,6 +100,7 @@ window.handleLogin = async function(e) {
         if (response.ok && data && data.ok) {
             if (typeof currentUser !== 'undefined') {
                 currentUser = data.user || email;
+                currentUserEmail = data.email || email;
             }
             console.log('✅ Login bem-sucedido pela resposta!', currentUser);
             
@@ -258,6 +259,7 @@ if (typeof window.handleLogin === 'function') {
 
 // Estado da aplicação
 let currentUser = null;
+let currentUserEmail = null;
 let jornais = [];
 let editingJornal = null;
 let editingCarrossel = null;
@@ -808,6 +810,7 @@ async function checkAuth() {
         
         if (data && data.authenticated) {
             currentUser = data.user || data.email || 'Usuário';
+            currentUserEmail = data.email || data.user || 'admin@jornal.com';
             console.log('Usuário autenticado:', currentUser);
             showDashboard();
         } else {
@@ -883,7 +886,34 @@ function setupEventListeners() {
     // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
+        console.log('✅ Botão de logout encontrado, anexando event listener');
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Botão de logout clicado');
+            if (typeof handleLogout === 'function') {
+                handleLogout(e);
+            } else if (typeof window.handleLogout === 'function') {
+                window.handleLogout(e);
+            } else {
+                console.error('❌ Função handleLogout não encontrada');
+                // Fallback: fazer logout diretamente
+                fetch(`${API_BASE}/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                }).then(() => {
+                    currentUser = null;
+                    currentUserEmail = null;
+                    showLogin();
+                }).catch(() => {
+                    currentUser = null;
+                    currentUserEmail = null;
+                    showLogin();
+                });
+            }
+        });
+    } else {
+        console.warn('⚠️ Botão de logout não encontrado');
     }
     
     // Novo Jornal
@@ -1567,39 +1597,129 @@ async function verifyAndShowDashboard(email) {
 // Não é necessário redefini-la aqui - usar a definição global do início
 
 // Logout
-async function handleLogout() {
+async function handleLogout(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🚪 Iniciando logout...');
+    
     try {
-        await fetch(`${API_BASE}/logout`, {
+        const response = await fetch(`${API_BASE}/logout`, {
             method: 'POST',
-            credentials: 'include'
-        }).catch(() => {
-            // Ignorar erros de rede no logout
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).catch((err) => {
+            console.warn('⚠️ Erro de rede no logout (ignorado):', err);
+            return null;
         });
         
+        if (response) {
+            const data = await response.json().catch(() => ({}));
+            console.log('📥 Resposta do logout:', data);
+        }
+        
         currentUser = null;
+        currentUserEmail = null;
+        
+        console.log('✅ Limpando sessão local');
         showLogin();
-        showToast('Logout realizado com sucesso', 'success');
+        
+        if (typeof showToast === 'function') {
+            showToast('Logout realizado com sucesso', 'success');
+        }
     } catch (error) {
-        console.error('Erro ao fazer logout:', error);
+        console.error('❌ Erro ao fazer logout:', error);
         currentUser = null;
+        currentUserEmail = null;
         showLogin();
     }
 }
 
+// Tornar handleLogout global
+window.handleLogout = handleLogout;
+
 // Mostrar telas
 function showLogin() {
-    console.log('Mostrando tela de login');
+    console.log('=== 🎯 MOSTRANDO TELA DE LOGIN ===');
     const loginScreen = document.getElementById('loginScreen');
     const dashboardScreen = document.getElementById('dashboardScreen');
     
-    if (loginScreen) loginScreen.classList.remove('hidden');
-    if (dashboardScreen) dashboardScreen.classList.add('hidden');
+    console.log('Login screen encontrado:', !!loginScreen);
+    console.log('Dashboard screen encontrado:', !!dashboardScreen);
     
+    if (!loginScreen) {
+        console.error('❌ Tela de login não encontrada!');
+        return;
+    }
+    
+    // Forçar ocultação do dashboard - MÚLTIPLAS FORMAS
+    if (dashboardScreen) {
+        dashboardScreen.style.display = 'none';
+        dashboardScreen.style.visibility = 'hidden';
+        dashboardScreen.style.opacity = '0';
+        dashboardScreen.classList.add('hidden');
+        console.log('✅ Dashboard ocultado');
+    }
+    
+    // Forçar exibição da tela de login - MÚLTIPLAS FORMAS
+    loginScreen.style.display = 'block';
+    loginScreen.style.visibility = 'visible';
+    loginScreen.style.opacity = '1';
+    loginScreen.classList.remove('hidden');
+    console.log('✅ Tela de login exibida');
+    console.log('Display:', loginScreen.style.display);
+    console.log('Visibility:', loginScreen.style.visibility);
+    console.log('Classes:', loginScreen.className);
+    
+    // Resetar formulário
     const loginForm = document.getElementById('loginForm');
-    if (loginForm) loginForm.reset();
+    if (loginForm) {
+        loginForm.reset();
+        console.log('✅ Formulário resetado');
+    }
+    
+    // Limpar mensagens de erro
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.classList.remove('show');
+        errorDiv.textContent = '';
+    }
     
     // Garantir que o loading está oculto
     hideLoading();
+    
+    // Focar no campo de email
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        setTimeout(() => {
+            emailInput.focus();
+        }, 100);
+    }
+    
+    // Verificar visualmente se está visível
+    setTimeout(() => {
+        const loginStyle = window.getComputedStyle(loginScreen);
+        const dashboardStyle = dashboardScreen ? window.getComputedStyle(dashboardScreen) : null;
+        console.log('=== VERIFICAÇÃO FINAL ===');
+        console.log('Login display (computed):', loginStyle.display);
+        console.log('Login visibility (computed):', loginStyle.visibility);
+        if (dashboardStyle) {
+            console.log('Dashboard display (computed):', dashboardStyle.display);
+            console.log('Dashboard visibility (computed):', dashboardStyle.visibility);
+        }
+        
+        // Se ainda não estiver visível, forçar novamente
+        if (loginStyle.display === 'none' || loginStyle.visibility === 'hidden') {
+            console.warn('⚠️ Tela de login ainda não visível, forçando novamente...');
+            loginScreen.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important;');
+        }
+    }, 100);
+    
+    console.log('=== ✅ TELA DE LOGIN CONFIGURADA ===');
 }
 
 function showDashboard() {
@@ -1656,9 +1776,14 @@ function showDashboard() {
     }, 100);
     
     const userNameEl = document.getElementById('userName');
+    const userEmailEl = document.getElementById('userEmail');
     if (userNameEl && currentUser) {
-        userNameEl.textContent = `Olá, ${currentUser}`;
+        userNameEl.textContent = currentUser;
         console.log('✅ Nome de usuário atualizado:', currentUser);
+    }
+    if (userEmailEl && currentUserEmail) {
+        userEmailEl.textContent = currentUserEmail;
+        console.log('✅ Email de usuário atualizado:', currentUserEmail);
     }
     
     // Garantir que o loading está oculto
@@ -1666,6 +1791,44 @@ function showDashboard() {
     
     try {
         setupTabs();
+        setupMenuToggle();
+        
+        // Garantir que o botão de logout está configurado
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            // Remover event listeners antigos
+            const newLogoutBtn = logoutBtn.cloneNode(true);
+            logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+            
+            // Anexar novo event listener
+            newLogoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Botão de logout clicado');
+                if (typeof handleLogout === 'function') {
+                    handleLogout(e);
+                } else if (typeof window.handleLogout === 'function') {
+                    window.handleLogout(e);
+                } else {
+                    console.error('❌ Função handleLogout não encontrada');
+                    // Fallback: fazer logout diretamente
+                    fetch(`${API_BASE}/logout`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    }).then(() => {
+                        currentUser = null;
+                        currentUserEmail = null;
+                        showLogin();
+                    }).catch(() => {
+                        currentUser = null;
+                        currentUserEmail = null;
+                        showLogin();
+                    });
+                }
+            });
+            console.log('✅ Botão de logout configurado');
+        }
+        
         console.log('✅ Tabs configuradas');
         loadJornais();
         console.log('✅ Jornais sendo carregados...');
@@ -1679,9 +1842,75 @@ function showDashboard() {
     }
 }
 
+// Setup Menu Toggle
+function setupMenuToggle() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.dashboard-sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        const toggleSidebar = () => {
+            sidebar.classList.toggle('open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        };
+        
+        menuToggle.addEventListener('click', toggleSidebar);
+        
+        // Fechar sidebar ao clicar no overlay (em mobile)
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                }
+            });
+        }
+        
+        // Fechar sidebar ao clicar em um item do menu (em mobile)
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    sidebar.classList.remove('open');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+        
+        // Fechar sidebar ao redimensionar a janela (se voltar para desktop)
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                sidebar.classList.remove('open');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.remove('active');
+                }
+            }
+        });
+    }
+}
+
 // Setup Tabs
 function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabButtons = document.querySelectorAll('.nav-item[data-tab]');
+    const tabTitles = {
+        'jornais': 'Jornais',
+        'carrossel': 'Carrossel',
+        'carrossel-medio': 'Carrossel Médio',
+        'video': 'Vídeo',
+        'responsaveis': 'Responsáveis',
+        'faq': 'FAQ',
+        'sites': 'Sites Igreja',
+        'textos': 'Textos',
+        'banner': 'Banner Modal',
+        'noticias': 'Notícias',
+        'colunistas': 'Colunistas',
+        'pagamentos': 'Pagamentos'
+    };
+    
     tabButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabName = btn.dataset.tab;
@@ -1693,6 +1922,12 @@ function setupTabs() {
             // Ativa a tab selecionada
             btn.classList.add('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Atualiza o título do dashboard
+            const titleElement = document.getElementById('dashboardTitle');
+            if (titleElement && tabTitles[tabName]) {
+                titleElement.textContent = tabTitles[tabName];
+            }
             
             // Carrega os dados da tab
             loadTabData(tabName);
@@ -2543,6 +2778,11 @@ window.openCarrosselModal = function(item = null) {
             imagemPreview.innerHTML = '';
         }
         
+        const linkInput = document.getElementById('carrosselLink');
+        if (linkInput) {
+            linkInput.value = '';
+        }
+        
         if (item) {
             console.log('📝 Editando item:', item);
             if (title) title.textContent = 'Editar Item';
@@ -2555,6 +2795,9 @@ window.openCarrosselModal = function(item = null) {
             
             const ativoInput = document.getElementById('carrosselAtivo');
             if (ativoInput) ativoInput.value = item.ativo ? 'true' : 'false';
+            
+            const linkInput = document.getElementById('carrosselLink');
+            if (linkInput) linkInput.value = item.link || '';
             
             if (item.imagem && imagemPreview) {
                 imagemPreview.innerHTML = `
@@ -2657,6 +2900,11 @@ async function handleSaveCarrossel(e) {
     const ativoInput = document.getElementById('carrosselAtivo');
     if (ativoInput) {
         formData.append('ativo', ativoInput.value || 'true');
+    }
+    
+    const linkInput = document.getElementById('carrosselLink');
+    if (linkInput && linkInput.value) {
+        formData.append('link', linkInput.value);
     }
     
     // Adicionar arquivo se existir (apenas se houver arquivo selecionado)
@@ -3188,10 +3436,13 @@ function renderPagamentos() {
     const pagamentosComValorZero = pagamentos.filter(p => !p.valor || p.valor === 0).length;
     
     listDiv.innerHTML = `
-        <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-            <h3 style="margin: 0 0 10px 0; color: #00095b;">Total de Pagamentos: ${pagamentos.length}</h3>
-            ${pagamentosComValorZero > 0 ? `<p style="margin: 5px 0; color: #d97706; font-weight: 600;">⚠️ ${pagamentosComValorZero} pagamento(s) com valor R$ 0,00 - Use o botão "Atualizar Valores" para corrigir</p>` : ''}
-            <p style="margin: 0; color: #666;">Última atualização: ${new Date().toLocaleString('pt-BR')}</p>
+        <div style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, rgba(0, 9, 91, 0.05), rgba(37, 99, 235, 0.03)); border-radius: 16px; border: 1px solid rgba(0, 9, 91, 0.1); box-shadow: 0 4px 12px rgba(0, 9, 91, 0.08);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <i class='bx bx-credit-card' style="font-size: 24px; color: #00095b;"></i>
+                <h3 style="margin: 0; color: #00095b; font-size: 1.3rem; font-weight: 700;">Total de Pagamentos: ${pagamentos.length}</h3>
+            </div>
+            ${pagamentosComValorZero > 0 ? `<div style="margin: 12px 0; padding: 12px 16px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.08)); border-radius: 12px; border-left: 4px solid #f59e0b;"><p style="margin: 0; color: #d97706; font-weight: 600; display: flex; align-items: center; gap: 8px;"><i class='bx bx-error-circle'></i> ${pagamentosComValorZero} pagamento(s) com valor R$ 0,00 - Use o botão "Atualizar Valores" para corrigir</p></div>` : ''}
+            <p style="margin: 0; color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;"><i class='bx bx-time'></i> Última atualização: ${new Date().toLocaleString('pt-BR')}</p>
         </div>
         <div class="jornais-grid">
             ${pagamentosOrdenados.map(pagamento => {
@@ -3211,39 +3462,48 @@ function renderPagamentos() {
                 }).format(valorNumerico);
                 
                 return `
-                    <div class="jornal-card">
-                        <div style="padding: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                                <div>
-                                    <h3 style="margin: 0 0 8px 0; color: #00095b; font-size: 1.2rem;">${pagamento.nome || 'Nome não informado'}</h3>
-                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">${pagamento.email || 'Email não informado'}</p>
+                    <div class="jornal-card" style="animation: fadeInUp 0.4s ease-out;">
+                        <div style="padding: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #f1f5f9;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                        <i class='bx bx-user' style="font-size: 20px; color: #00095b;"></i>
+                                        <h3 style="margin: 0; color: #00095b; font-size: 1.25rem; font-weight: 700;">${pagamento.nome || 'Nome não informado'}</h3>
+                                    </div>
+                                    <p style="margin: 0; color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;"><i class='bx bx-envelope' style="font-size: 14px;"></i> ${pagamento.email || 'Email não informado'}</p>
                                 </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 1.3rem; font-weight: 700; color: #10b981; margin-bottom: 5px;">${valorFormatado}</div>
-                                    <div style="font-size: 0.85rem; color: #999;">${pagamento.moeda || 'BRL'}</div>
-                                </div>
-                            </div>
-                            
-                            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
-                                <div style="margin-bottom: 10px;">
-                                    <strong style="color: #555; font-size: 0.9rem;">Jornal:</strong>
-                                    <div style="color: #00095b; font-weight: 600; margin-top: 3px;">${pagamento.jornalNome || `ID: ${pagamento.jornalId}`}</div>
-                                </div>
-                                
-                                <div style="margin-bottom: 10px;">
-                                    <strong style="color: #555; font-size: 0.9rem;">Data do Pagamento:</strong>
-                                    <div style="color: #666; margin-top: 3px;">${dataFormatada}</div>
-                                </div>
-                                
-                                <div style="margin-bottom: 10px;">
-                                    <strong style="color: #555; font-size: 0.9rem;">Payment Intent ID:</strong>
-                                    <div style="color: #666; font-family: monospace; font-size: 0.85rem; margin-top: 3px; word-break: break-all;">${pagamento.paymentIntentId}</div>
+                                <div style="text-align: right; padding: 12px 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin-bottom: 4px; font-family: 'Inter', sans-serif;">${valorFormatado}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${pagamento.moeda || 'BRL'}</div>
                                 </div>
                             </div>
                             
-                            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px; display: flex; justify-content: flex-end;">
-                                <button onclick="deletePagamento(${pagamento.id}, '${(pagamento.nome || 'Cliente').replace(/'/g, "\\'")}')" 
-                                        class="btn-delete-pagamento">
+                            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                                <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <i class='bx bx-book' style="font-size: 16px; color: #00095b;"></i>
+                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Jornal:</strong>
+                                </div>
+                                <div style="color: #00095b; font-weight: 600; font-size: 0.95rem; padding-left: 24px;">${pagamento.jornalNome || `ID: ${pagamento.jornalId}`}</div>
+                                
+                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                                    <i class='bx bx-calendar' style="font-size: 16px; color: #64748b;"></i>
+                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Data do Pagamento:</strong>
+                                </div>
+                                <div style="color: #64748b; font-size: 0.9rem; padding-left: 24px; margin-top: 6px;">${dataFormatada}</div>
+                                
+                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                        <i class='bx bx-hash' style="font-size: 16px; color: #64748b;"></i>
+                                        <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Payment Intent ID:</strong>
+                                    </div>
+                                    <div style="color: #64748b; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.8rem; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; word-break: break-all; margin-left: 24px;">${pagamento.paymentIntentId}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="border-top: 2px solid #f1f5f9; padding-top: 16px; margin-top: 16px; display: flex; justify-content: flex-end;">
+                                <button onclick="if(typeof window.deletePagamento === 'function') { window.deletePagamento(${parseInt(pagamento.id)}, '${(pagamento.nome || 'Cliente').replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); } else { console.error('deletePagamento não está disponível'); alert('Erro: Função de exclusão não disponível'); }" 
+                                        class="btn-delete-pagamento"
+                                        type="button">
                                     <i class='bx bx-trash'></i>
                                     Excluir Comprovante
                                 </button>
@@ -3258,27 +3518,75 @@ function renderPagamentos() {
 
 // Função para deletar pagamento
 window.deletePagamento = async function(id, nome) {
+    console.log('🗑️ Tentando excluir pagamento:', { id, nome, idType: typeof id });
+    
+    // Garantir que o ID seja um número
+    const paymentId = parseInt(id);
+    
+    if (!paymentId || isNaN(paymentId)) {
+        console.error('❌ ID do pagamento inválido:', id);
+        showToast('Erro: ID do pagamento inválido', 'error');
+        return;
+    }
+    
     if (!confirm(`Tem certeza que deseja excluir o comprovante de pagamento de ${nome}?\n\nEsta ação não pode ser desfeita.`)) {
+        console.log('🚫 Exclusão cancelada pelo usuário');
         return;
     }
     
     try {
-        const response = await fetch(`${API_BASE}/pagamentos/${id}`, {
+        console.log('📡 Enviando requisição DELETE para:', `${API_BASE}/pagamentos/${paymentId}`);
+        
+        const response = await fetch(`${API_BASE}/pagamentos/${paymentId}`, {
             method: 'DELETE',
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
         
-        if (response.ok) {
+        console.log('📥 Resposta recebida:', { 
+            status: response.status, 
+            statusText: response.statusText, 
+            ok: response.ok,
+            headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        let data;
+        try {
+            const text = await response.text();
+            console.log('📦 Resposta em texto:', text);
+            data = text ? JSON.parse(text) : null;
+        } catch (parseError) {
+            console.error('❌ Erro ao parsear resposta JSON:', parseError);
+            data = null;
+        }
+        
+        console.log('📦 Dados da resposta:', data);
+        
+        if (response.ok && (data?.ok || data?.message)) {
+            console.log('✅ Pagamento excluído com sucesso!');
             showToast('Comprovante excluído com sucesso!', 'success');
-            // Recarregar lista de pagamentos
-            loadPagamentos();
+            
+            // Aguardar um pouco antes de recarregar para garantir que o servidor processou
+            setTimeout(() => {
+                console.log('🔄 Recarregando lista de pagamentos...');
+                if (typeof loadPagamentos === 'function') {
+                    loadPagamentos();
+                } else {
+                    console.error('❌ Função loadPagamentos não encontrada, recarregando página...');
+                    location.reload();
+                }
+            }, 500);
         } else {
-            const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-            showToast(error.error || 'Erro ao excluir comprovante', 'error');
+            const errorMessage = data?.error || data?.message || `Erro HTTP ${response.status}`;
+            console.error('❌ Erro ao excluir:', errorMessage);
+            showToast(errorMessage || 'Erro ao excluir comprovante', 'error');
         }
     } catch (error) {
-        console.error('Erro ao deletar pagamento:', error);
-        showToast('Erro ao excluir comprovante: ' + error.message, 'error');
+        console.error('❌ Erro ao deletar pagamento:', error);
+        console.error('Stack:', error.stack);
+        showToast('Erro ao excluir comprovante: ' + (error.message || 'Erro desconhecido'), 'error');
     }
 };
 

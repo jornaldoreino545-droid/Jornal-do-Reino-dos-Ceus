@@ -30,7 +30,114 @@
         <div class="linha"></div>
             <div class="partefinal">
                 <small>&copy; 2025 jornal da Igreja Reino dos Céus. Todos os direitos reservados</small> 
-                <button><a href="#">Subir para cima</a></button>
+                <button id="scrollToTop" type="button" aria-label="Voltar ao topo">
+                    <span>Volta para o topo</span>
+                </button>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Função global para scroll to top - funciona de qualquer lugar
+        function scrollToTop() {
+            console.log('🔼 Executando scroll para o topo...');
+            
+            // Método 1: window.scrollTo com smooth behavior
+            if (window.scrollTo) {
+                try {
+                    window.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: 'smooth'
+                    });
+                    console.log('✅ Scroll suave executado');
+                    return;
+                } catch (e) {
+                    console.warn('⚠️ Erro no scroll suave, tentando método alternativo:', e);
+                }
+            }
+            
+            // Método 2: scrollTo simples
+            try {
+                window.scrollTo(0, 0);
+                console.log('✅ Scroll simples executado');
+                return;
+            } catch (e) {
+                console.warn('⚠️ Erro no scroll simples:', e);
+            }
+            
+            // Método 3: document.documentElement.scrollTop
+            try {
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+                console.log('✅ Scroll via scrollTop executado');
+            } catch (e) {
+                console.error('❌ Erro ao fazer scroll:', e);
+            }
+        }
+        
+        // Tornar função global
+        window.scrollToTop = scrollToTop;
+        
+        // Configurar botão quando disponível
+        function setupScrollButton() {
+            const scrollBtn = document.getElementById('scrollToTop');
+            if (scrollBtn) {
+                // Remover todos os event listeners anteriores
+                const newBtn = scrollBtn.cloneNode(true);
+                scrollBtn.parentNode.replaceChild(newBtn, scrollBtn);
+                
+                // Adicionar onclick inline como fallback
+                newBtn.setAttribute('onclick', 'scrollToTop(); return false;');
+                
+                // Adicionar event listener
+                newBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    scrollToTop();
+                });
+                
+                // Adicionar também via mousedown para garantir
+                newBtn.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                });
+                
+                console.log('✅ Botão "Volta para o topo" configurado com sucesso');
+                return true;
+            }
+            return false;
+        }
+        
+        // Tentar configurar imediatamente
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setupScrollButton();
+            });
+        } else {
+            setupScrollButton();
+        }
+        
+        // Tentar novamente após delays (caso o footer seja carregado dinamicamente)
+        setTimeout(setupScrollButton, 100);
+        setTimeout(setupScrollButton, 500);
+        setTimeout(setupScrollButton, 1000);
+        setTimeout(setupScrollButton, 2000);
+        
+        // Observar mudanças no DOM
+        if (window.MutationObserver) {
+            const observer = new MutationObserver(function(mutations) {
+                const btn = document.getElementById('scrollToTop');
+                if (btn && !btn.hasAttribute('data-configured')) {
+                    if (setupScrollButton()) {
+                        const configuredBtn = document.getElementById('scrollToTop');
+                        if (configuredBtn) configuredBtn.setAttribute('data-configured', 'true');
+                    }
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+    </script>

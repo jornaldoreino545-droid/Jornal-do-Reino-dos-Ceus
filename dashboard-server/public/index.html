@@ -8,6 +8,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         /* Estilos críticos para garantir que os cards apareçam */
         .jornal-card {
@@ -23,13 +25,13 @@
             gap: 28px !important;
         }
         
-        /* Layout Profissional de Login */
+        /* Layout Profissional de Login - Cores do Site */
         .login-wrapper {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00095b 0%, #001a7a 50%, #00095b 100%);
             padding: 20px;
             position: relative;
             overflow: hidden;
@@ -42,109 +44,164 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: moveBackground 20s linear infinite;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: moveBackground 25s linear infinite;
+        }
+        
+        .login-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 192, 20, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
         
         @keyframes moveBackground {
             0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
+            100% { transform: translate(60px, 60px); }
         }
         
         .login-container {
             position: relative;
             z-index: 1;
-            max-width: 440px;
+            max-width: 460px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            padding: 48px 40px;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: fadeInUp 0.6s ease-out;
+            background: rgba(255, 255, 255, 0.99);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 56px 48px;
+            border-radius: 28px;
+            box-shadow: 
+                0 25px 80px rgba(0, 9, 91, 0.4),
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px) scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
         
         .login-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 44px;
         }
         
         .login-logo {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 16px;
-            margin-bottom: 24px;
-            color: white;
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 
+                0 12px 24px rgba(0, 9, 91, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(0, 9, 91, 0.1);
+            padding: 16px;
+        }
+        
+        .login-logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 9, 91, 0.05), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .login-logo img {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         .login-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            font-size: 34px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -0.8px;
         }
         
         .login-subtitle {
             font-size: 15px;
             color: #64748b;
-            line-height: 1.5;
+            line-height: 1.6;
+            font-weight: 400;
         }
         
         .login-form {
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 26px;
         }
         
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
         
         .form-label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 14px;
             font-weight: 600;
             color: #334155;
         }
         
         .form-label svg {
-            color: #64748b;
+            color: #00095b;
+            width: 18px;
+            height: 18px;
         }
         
         .form-input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 18px;
             font-size: 15px;
             color: #1e293b;
             background: #ffffff;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            transition: all 0.2s ease;
+            border-radius: 14px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
             pointer-events: auto !important;
             user-select: text !important;
+            font-family: 'Inter', sans-serif;
         }
         
         .form-input::placeholder {
@@ -152,60 +209,85 @@
         }
         
         .form-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            border-color: #00095b;
+            box-shadow: 0 0 0 4px rgba(0, 9, 91, 0.1);
             background: #ffffff;
+            transform: translateY(-1px);
         }
         
-        .form-input:hover {
+        .form-input:hover:not(:focus) {
             border-color: #cbd5e1;
         }
         
         .btn-login {
             width: 100%;
-            padding: 16px;
+            padding: 18px 24px;
             font-size: 16px;
-            font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-weight: 700;
+            color: #000000;
+            background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            margin-top: 8px;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 8px 20px rgba(255, 192, 20, 0.4),
+                0 4px 8px rgba(255, 192, 20, 0.2);
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
         }
         
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 28px rgba(255, 192, 20, 0.5),
+                0 6px 12px rgba(255, 192, 20, 0.3);
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
         }
         
         .btn-login:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
         
         .btn-login svg {
             transition: transform 0.3s ease;
+            width: 20px;
+            height: 20px;
         }
         
         .btn-login:hover svg {
-            transform: translateX(4px);
+            transform: translateX(5px);
         }
         
         .error-message {
-            padding: 12px 16px;
-            background: #fee2e2;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
             color: #dc2626;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
-            margin-top: -8px;
+            margin-top: -4px;
             display: none;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
+            font-weight: 500;
         }
         
         .error-message.show {
@@ -215,24 +297,29 @@
         
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
         
         /* Responsivo */
         @media (max-width: 480px) {
             .login-container {
-                padding: 32px 24px;
-                border-radius: 20px;
+                padding: 40px 28px;
+                border-radius: 24px;
             }
             
             .login-title {
-                font-size: 28px;
+                font-size: 30px;
             }
             
             .login-logo {
-                width: 56px;
-                height: 56px;
+                width: 110px;
+                height: 110px;
+                padding: 12px;
+            }
+            
+            .login-subtitle {
+                font-size: 14px;
             }
         }
         
@@ -312,11 +399,7 @@
                 <div class="login-container">
                     <div class="login-header">
                         <div class="login-logo">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
-                                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                            <img src="/Imagem/LOGO - REINO DOS CEUS.png" alt="Logo Reino dos Céus" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
                         </div>
                         <h1 class="login-title">Bem-vindo</h1>
                         <p class="login-subtitle">Entre com suas credenciais para acessar o dashboard</p>
@@ -377,29 +460,100 @@
 
         <!-- Dashboard Principal -->
         <div id="dashboardScreen" class="screen hidden">
-            <header class="dashboard-header">
-                <h1>Dashboard - Gerenciamento de Jornais</h1>
-                <div class="header-actions">
-                    <span id="userName"></span>
-                    <button id="logoutBtn" class="btn btn-secondary">Sair</button>
-                </div>
-            </header>
+            <div class="dashboard-layout">
+                <!-- Sidebar Overlay (Mobile) -->
+                <div class="sidebar-overlay" id="sidebarOverlay"></div>
+                
+                <!-- Sidebar -->
+                <aside class="dashboard-sidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-logo">
+                            <i class='bx bx-book-reader'></i>
+                            <h2>Dashboard</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-user">
+                        <div class="user-avatar">
+                            <i class='bx bx-user'></i>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name" id="userName">Usuário</div>
+                            <div class="user-email" id="userEmail">admin@jornal.com</div>
+                        </div>
+                    </div>
+                    
+                    <nav class="sidebar-nav">
+                        <button class="nav-item active" data-tab="jornais">
+                            <i class='bx bx-book'></i>
+                            <span>Jornais</span>
+                        </button>
+                        <button class="nav-item" data-tab="carrossel">
+                            <i class='bx bx-slider-alt'></i>
+                            <span>Carrossel</span>
+                        </button>
+                        <button class="nav-item" data-tab="carrossel-medio">
+                            <i class='bx bx-slider'></i>
+                            <span>Carrossel Médio</span>
+                        </button>
+                        <button class="nav-item" data-tab="video">
+                            <i class='bx bx-video'></i>
+                            <span>Vídeo</span>
+                        </button>
+                        <button class="nav-item" data-tab="responsaveis">
+                            <i class='bx bx-user'></i>
+                            <span>Responsáveis</span>
+                        </button>
+                        <button class="nav-item" data-tab="faq">
+                            <i class='bx bx-help-circle'></i>
+                            <span>FAQ</span>
+                        </button>
+                        <button class="nav-item" data-tab="sites">
+                            <i class='bx bx-globe'></i>
+                            <span>Sites Igreja</span>
+                        </button>
+                        <button class="nav-item" data-tab="textos">
+                            <i class='bx bx-text'></i>
+                            <span>Textos</span>
+                        </button>
+                        <button class="nav-item" data-tab="banner">
+                            <i class='bx bx-image'></i>
+                            <span>Banner Modal</span>
+                        </button>
+                        <button class="nav-item" data-tab="noticias">
+                            <i class='bx bx-news'></i>
+                            <span>Notícias</span>
+                        </button>
+                        <button class="nav-item" data-tab="colunistas">
+                            <i class='bx bx-user-voice'></i>
+                            <span>Colunistas</span>
+                        </button>
+                        <button class="nav-item" data-tab="pagamentos">
+                            <i class='bx bx-credit-card'></i>
+                            <span>Pagamentos</span>
+                        </button>
+                    </nav>
+                    
+                    <div class="sidebar-footer">
+                        <button id="logoutBtn" class="nav-item logout-btn" type="button">
+                            <i class='bx bx-log-out'></i>
+                            <span>Sair</span>
+                        </button>
+                    </div>
+                </aside>
 
-            <main class="dashboard-main">
-                <div class="dashboard-tabs">
-                    <button class="tab-btn active" data-tab="jornais">Jornais</button>
-                    <button class="tab-btn" data-tab="carrossel">Carrossel</button>
-                    <button class="tab-btn" data-tab="carrossel-medio">Carrossel Médio</button>
-                    <button class="tab-btn" data-tab="video">Vídeo</button>
-                    <button class="tab-btn" data-tab="responsaveis">Responsáveis</button>
-                    <button class="tab-btn" data-tab="faq">FAQ</button>
-                    <button class="tab-btn" data-tab="sites">Sites Igreja</button>
-                    <button class="tab-btn" data-tab="textos">Textos</button>
-                    <button class="tab-btn" data-tab="banner">Banner Modal</button>
-                    <button class="tab-btn" data-tab="noticias">Notícias</button>
-                    <button class="tab-btn" data-tab="colunistas">Colunistas</button>
-                    <button class="tab-btn" data-tab="pagamentos">Pagamentos</button>
-                </div>
+                <!-- Main Content -->
+                <div class="dashboard-content-wrapper">
+                    <header class="dashboard-header">
+                        <h1 id="dashboardTitle">Dashboard - Gerenciamento de Jornais</h1>
+                        <div class="header-actions">
+                            <button class="menu-toggle" id="menuToggle" style="display: none;">
+                                <i class='bx bx-menu'></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    <main class="dashboard-main">
 
                 <!-- Tab Jornais -->
                 <div class="tab-content active" id="tab-jornais">
@@ -487,7 +641,9 @@
                     </div>
                     <div id="pagamentosList"></div>
                 </div>
-            </main>
+                    </main>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -589,6 +745,12 @@
                     <input type="file" id="carrosselImagem" name="imagem" accept="image/*">
                     <small class="form-help">A imagem será exibida no carrossel</small>
                     <div id="carrosselImagemPreview" class="image-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="carrosselLink">Link (opcional)</label>
+                    <input type="url" id="carrosselLink" name="link" placeholder="https://exemplo.com/jornal-compra.html?id=1">
+                    <small class="form-help">URL para onde o usuário será direcionado ao clicar no banner. Deixe em branco se não quiser link.</small>
                 </div>
 
                 <div class="modal-actions">

@@ -1,29 +1,5 @@
 [
   {
-    "id": 1,
-    "title": "Tecnologia avança com novos sistemas de IA",
-    "date": "2025-10-12",
-    "category": "tecnologia",
-    "image": "https://images.unsplash.com/photo-1518773553398-650c184e0bb3",
-    "content": "<p>A tecnologia de inteligência artificial evoluiu de forma acelerada...</p><p>Novos modelos agora conseguem realizar tarefas complexas.</p>"
-  },
-  {
-    "id": 2,
-    "title": "Novo parque ecológico inaugurado",
-    "date": "2025-09-22",
-    "category": "politica",
-    "image": "https://images.unsplash.com/photo-1503264116251-35a269479413",
-    "content": "<p>O município recebeu um moderno parque ecológico...</p><p>As obras duraram 18 meses e custaram R$ 12 milhões.</p>"
-  },
-  {
-    "id": 6,
-    "title": "Novo parque ecológico inaugurado",
-    "date": "2025-09-22",
-    "category": "politica",
-    "image": "https://images.unsplash.com/photo-1503264116251-35a269479413",
-    "content": "<p>O município recebeu um moderno parque ecológico...</p><p>As obras duraram 18 meses e custaram R$ 12 milhões.</p>"
-  },
-  {
     "id": 7,
     "title": "o novo mundo",
     "date": "2026-01-06",
@@ -41,15 +17,5 @@
     "excerpt": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "tag": "#asdasdasd, #safdasdfasdf, #asdasdasd",
     "image": "/uploads/materias/materia-1767994892330-180811384.jpeg"
-  },
-  {
-    "id": 9,
-    "title": "materia de teste",
-    "date": "2026-01-15",
-    "category": "Espiritualidade",
-    "content": "asdadsfgsadfhfgjhgjhkhjsedfaSDFsad",
-    "excerpt": "sdfasdfasdgasd",
-    "tag": "sdfasdfasdfa",
-    "image": "/uploads/materias/materia-1768436122244-159684865.jpeg"
   }
 ]
