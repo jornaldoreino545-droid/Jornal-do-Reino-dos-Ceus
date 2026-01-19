@@ -152,13 +152,45 @@ footer .footeres .partefinal button {
   background-color: #ffc014;
   transition: all 0.5s;
   cursor: pointer;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 100;
+  width: 100%;
+  max-width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 footer .footeres .partefinal button:hover {
   transition: all 0.5s;
   background-color: #ffdb3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+footer .footeres .partefinal button:active {
+  transform: translateY(0);
+}
+
+footer .footeres .partefinal button span {
+  color: #000000;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 0.8rem;
+  text-decoration: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Compatibilidade com estrutura antiga (se houver <a> dentro) */
 footer .footeres .partefinal button a {
   color: #000000;
   font-family: "Roboto", sans-serif;
@@ -167,6 +199,7 @@ footer .footeres .partefinal button a {
   font-style: normal;
   font-size: 0.8rem;
   text-decoration: none;
+  pointer-events: none;
 }
 
 

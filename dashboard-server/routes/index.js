@@ -720,7 +720,7 @@ router.get('/site/carrossel', async (req, res) => {
 
 router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
   try {
-    const { ordem } = req.body;
+    const { ordem, link } = req.body;
     const config = await readSiteConfig();
     
     if (!config) {
@@ -743,7 +743,8 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
       id: novoId,
       imagem: novaImagem,
       ordem: ordem ? parseInt(ordem) : config.carrosselMaterias.length + 1,
-      ativo: true
+      ativo: true,
+      link: link || null
     });
 
     await writeSiteConfig(config);
@@ -757,7 +758,7 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
 router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { ordem, ativo } = req.body;
+    const { ordem, ativo, link } = req.body;
     const config = await readSiteConfig();
     
     if (!config) {
@@ -774,6 +775,7 @@ router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) =
     }
     if (ordem !== undefined) config.carrosselMaterias[index].ordem = parseInt(ordem);
     if (ativo !== undefined) config.carrosselMaterias[index].ativo = ativo === 'true' || ativo === true;
+    if (link !== undefined) config.carrosselMaterias[index].link = link || null;
 
     await writeSiteConfig(config);
     res.json({ ok: true, item: config.carrosselMaterias[index] });
@@ -1620,42 +1622,73 @@ router.get('/pagamentos', requireAuth, async (req, res) => {
 router.delete('/pagamentos/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const paymentId = parseInt(id);
+    
+    console.log('🗑️ Tentando deletar pagamento:', { id, paymentId, idType: typeof id });
+    
+    if (!paymentId || isNaN(paymentId)) {
+      console.error('❌ ID inválido:', id);
+      return res.status(400).json({ error: 'ID do pagamento inválido' });
+    }
     
     // Tentar deletar do MySQL primeiro
     try {
       const [result] = await pool.execute(
         'DELETE FROM pagamentos WHERE id = ?',
-        [id]
+        [paymentId]
       );
       
+      console.log('📊 Resultado do MySQL:', { affectedRows: result.affectedRows, insertId: result.insertId });
+      
       if (result.affectedRows === 0) {
-        return res.status(404).json({ error: 'Pagamento não encontrado' });
+        console.warn('⚠️ Pagamento não encontrado no MySQL:', paymentId);
+        // Tentar fallback para JSON
+        const data = await readPagamentos();
+        const pagamentos = data.pagamentos || [];
+        
+        const index = pagamentos.findIndex(p => p.id === paymentId);
+        if (index === -1) {
+          return res.status(404).json({ error: 'Pagamento não encontrado' });
+        }
+        
+        pagamentos.splice(index, 1);
+        await writePagamentos({ pagamentos });
+        
+        console.log('✅ Pagamento deletado do JSON:', paymentId);
+        return res.json({ ok: true, message: 'Pagamento deletado com sucesso' });
       }
       
-      console.log('✅ Pagamento deletado do MySQL:', id);
-      return res.json({ message: 'Pagamento deletado com sucesso' });
+      console.log('✅ Pagamento deletado do MySQL:', paymentId);
+      return res.json({ ok: true, message: 'Pagamento deletado com sucesso' });
       
     } catch (dbError) {
       console.error('❌ Erro ao deletar pagamento do MySQL:', dbError.message);
+      console.error('❌ Stack:', dbError.stack);
       
       // Fallback para JSON
-      const data = await readPagamentos();
-      const pagamentos = data.pagamentos || [];
-      
-      const index = pagamentos.findIndex(p => p.id === parseInt(id));
-      if (index === -1) {
-        return res.status(404).json({ error: 'Pagamento não encontrado' });
+      try {
+        const data = await readPagamentos();
+        const pagamentos = data.pagamentos || [];
+        
+        const index = pagamentos.findIndex(p => p.id === paymentId);
+        if (index === -1) {
+          return res.status(404).json({ error: 'Pagamento não encontrado' });
+        }
+        
+        pagamentos.splice(index, 1);
+        await writePagamentos({ pagamentos });
+        
+        console.log('✅ Pagamento deletado do JSON:', paymentId);
+        return res.json({ ok: true, message: 'Pagamento deletado com sucesso' });
+      } catch (jsonError) {
+        console.error('❌ Erro ao deletar do JSON:', jsonError.message);
+        throw jsonError;
       }
-      
-      pagamentos.splice(index, 1);
-      await writePagamentos({ pagamentos });
-      
-      console.log('✅ Pagamento deletado do JSON:', id);
-      return res.json({ message: 'Pagamento deletado com sucesso' });
     }
   } catch (error) {
-    console.error('Erro ao deletar pagamento:', error);
-    res.status(500).json({ error: 'Erro ao deletar pagamento' });
+    console.error('❌ Erro ao deletar pagamento:', error);
+    console.error('❌ Stack:', error.stack);
+    res.status(500).json({ error: 'Erro ao deletar pagamento: ' + error.message });
   }
 });
 

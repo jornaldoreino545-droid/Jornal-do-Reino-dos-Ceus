@@ -153,20 +153,6 @@
       "pdf": "/uploads/pdfs/jornal-1768349673434-101639240.pdf",
       "dataCriacao": "2026-01-14T00:14:33.577Z",
       "dataAtualizacao": "2026-01-14T00:14:33.577Z"
-    },
-    {
-      "id": 12,
-      "nome": "JORNAL DE JANEIRO",
-      "mes": "jaineiro",
-      "ano": 2026,
-      "descricao": "asdASFASDGFASDFGADRFGADRGHQAE5HWSRTJUTUYRYULRYUEYJUWRTHWQRQWE",
-      "linkCompra": "",
-      "ordem": 1,
-      "ativo": true,
-      "capa": "/uploads/capas/capa-1768435323709-477267874.png",
-      "pdf": "/uploads/pdfs/jornal-1768435323723-912906079.pdf",
-      "dataCriacao": "2026-01-15T00:02:04.498Z",
-      "dataAtualizacao": "2026-01-15T00:02:04.498Z"
     }
   ]
 }

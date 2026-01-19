@@ -111,9 +111,37 @@
 
       <script>
         async function loadPart(id, file) {
-          const res = await fetch(file);
-          const html = await res.text();
-          document.getElementById(id).innerHTML = html;
+          try {
+            const res = await fetch(file, {
+              method: 'GET',
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn(`Erro de rede ao carregar ${file} (pode ser extensão do navegador):`, err.message);
+                return null;
+              }
+              throw err;
+            });
+            
+            if (!res || !res.ok) {
+              if (res) {
+                console.error(`Erro ao carregar ${file}: HTTP ${res.status}`);
+              } else {
+                console.warn(`Não foi possível carregar ${file}. Usando conteúdo padrão.`);
+              }
+              return;
+            }
+            
+            const html = await res.text();
+            const element = document.getElementById(id);
+            if (element) {
+              element.innerHTML = html;
+            }
+          } catch (error) {
+            console.error(`Erro ao carregar ${file}:`, error);
+          }
         }
         // volta uma pasta com "../"
         loadPart("header", "haader,footer-principal/header.html");
@@ -479,8 +507,8 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         
         <div class="eighth-elemet">
         <div data-aos="fade-down"class="eighth-titulos">
-          <h1>CONHEÇA MAIS SOBRE NOSSO IGREJA</h1>
-          <h2>Tire suas dúvidas de forma simples e rápida</h2>
+          <h1>CONHEÇA MAIS SOBRE NOSSA IGREJA</h1>
+          <h2>Conheça os sites da Igreja Reino dos Céus</h2>
         </div>
 
         <div data-aos="fade-up" class="todos-site-igreja">
@@ -525,6 +553,87 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
 
     <div id="footer"></div>
 
+    <!-- Handler global para erros não tratados de extensões do navegador -->
+    <script>
+      // Capturar erros de promise não tratados (principalmente de extensões do Chrome)
+      window.addEventListener('unhandledrejection', function(event) {
+        const error = event.reason;
+        
+        // Verificar se é um erro de extensão do Chrome
+        if (error && typeof error === 'object') {
+          const errorString = JSON.stringify(error).toLowerCase();
+          const errorMessage = (error.message || '').toLowerCase();
+          const errorName = (error.name || '').toLowerCase();
+          const errorCode = error.code;
+          const httpStatus = error.httpStatus;
+          
+          // Verificar stack trace se disponível
+          let originalErrorStack = '';
+          if (error.originalError && error.originalError.stack) {
+            originalErrorStack = error.originalError.stack.toLowerCase();
+          }
+          
+          // Verificar reqInfo se disponível
+          let reqPath = '';
+          let reqPathPrefix = '';
+          if (error.reqInfo) {
+            reqPath = (error.reqInfo.path || '').toLowerCase();
+            reqPathPrefix = (error.reqInfo.pathPrefix || '').toLowerCase();
+          }
+          
+          // Ignorar erros de extensões do Chrome (permission errors, template_list, etc)
+          if (
+            errorCode === 403 ||
+            (httpStatus === 200 && errorCode === 403) ||
+            originalErrorStack.includes('background.js') ||
+            originalErrorStack.includes('chrome-extension') ||
+            reqPath.includes('/writing/') ||
+            reqPath.includes('/site_integration/') ||
+            reqPathPrefix.includes('/writing') ||
+            reqPathPrefix.includes('/site_integration') ||
+            errorMessage.includes('permission error') ||
+            errorMessage.includes('userautherror') ||
+            reqPath.includes('get_template_list') ||
+            reqPath.includes('template_list') ||
+            errorString.includes('site_integration') ||
+            errorString.includes('template_list') ||
+            errorString.includes('permission error') ||
+            errorString.includes('background.js') ||
+            errorString.includes('userautherror')
+          ) {
+            // Silenciar completamente - é de extensão do navegador
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+        }
+        
+        // Para outros erros, apenas logar sem mostrar no console como erro não tratado
+        // (já que adicionamos .catch() em todos os fetches)
+        console.warn('Promise rejeitada (já tratada):', error);
+        event.preventDefault();
+      });
+      
+      // Também capturar erros gerais não tratados
+      window.addEventListener('error', function(event) {
+        const error = event.error;
+        const errorSource = (event.filename || '').toLowerCase();
+        const errorMessage = (event.message || '').toLowerCase();
+        
+        // Ignorar erros de extensões
+        if (
+          errorSource.includes('chrome-extension') ||
+          errorSource.includes('background.js') ||
+          errorMessage.includes('permission error') ||
+          errorMessage.includes('template_list') ||
+          errorMessage.includes('get_template_list')
+        ) {
+          event.preventDefault();
+          return;
+        }
+      });
+    </script>
+    
     <script src="./gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
     <script src="./style_efeitos.js"></script>
@@ -540,10 +649,31 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarCarrossel() {
           try {
             console.log('Iniciando carregamento do carrossel...');
-            const response = await fetch('/api/site/carrossel');
+            const response = await fetch('/api/site/carrossel', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              // Ignorar erros de CORS de extensões do navegador
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar carrossel (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar carrossel. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const carrosselItems = await response.json();
@@ -599,15 +729,48 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
                 imagemUrl = '/uploads/materias/' + imagemUrl;
               }
               
+              // Verificar se há link para tornar a imagem clicável
+              const link = item.link || '';
+              
+              console.log('Item do carrossel:', { id: item.id, link: link, imagem: item.imagem });
+              
+              // Escapar aspas no link para evitar problemas no HTML
+              const escapedLink = link ? link.replace(/'/g, "&#39;").replace(/"/g, "&quot;") : '';
+              
+              const slideContent = link 
+                ? `<a href="${escapedLink}" class="carrossel-link" style="display: block; width: 100%; height: 100%; cursor: pointer; position: relative; z-index: 10;" ${link.startsWith('http') || link.startsWith('//') ? 'target="_blank" rel="noopener noreferrer"' : ''} onclick="event.stopPropagation(); console.log('Link clicado:', '${escapedLink}'); return true;">
+                    <img src="${imagemUrl}" alt="Carrossel" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">
+                  </a>`
+                : `<img src="${imagemUrl}" alt="Carrossel" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">`;
+              
               return `
                 <div class="swiper-slide">
-                  <img src="${imagemUrl}" alt="Carrossel" onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">
+                  ${slideContent}
                 </div>
               `;
             }).join('');
             
             // Inicializar Swiper após carregar conteúdo dinâmico
             inicializarSwiper();
+            
+            // Adicionar event listeners para links do carrossel após renderizar
+            setTimeout(() => {
+              const carrosselLinks = document.querySelectorAll('.carrossel-link');
+              carrosselLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                  // Permitir que o link funcione normalmente
+                  const href = this.getAttribute('href');
+                  if (href) {
+                    // Se for link externo, já tem target="_blank"
+                    // Se for link interno, navegar normalmente
+                    if (!href.startsWith('http') && !href.startsWith('//')) {
+                      e.preventDefault();
+                      window.location.href = href;
+                    }
+                  }
+                });
+              });
+            }, 100);
             
             console.log('✅ Carrossel carregado e Swiper inicializado');
           } catch (error) {
@@ -644,7 +807,32 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
                 nextEl: ".swiper-button-next",
                 prevEl: ".swiper-button-prev",
               },
+              // Permitir cliques em links dentro dos slides
+              preventClicks: false,
+              preventClicksPropagation: false,
+              touchEventsTarget: 'container',
             });
+            
+            // Adicionar event listener para garantir que links funcionem após Swiper inicializar
+            setTimeout(() => {
+              const carrosselLinks = document.querySelectorAll('.carrossel-link');
+              console.log('Links encontrados no carrossel:', carrosselLinks.length);
+              carrosselLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                  const href = this.getAttribute('href');
+                  if (href) {
+                    console.log('Link do carrossel clicado:', href);
+                    // Permitir navegação normal
+                    if (!href.startsWith('http') && !href.startsWith('//')) {
+                      // Link interno - navegar normalmente
+                      e.preventDefault();
+                      window.location.href = href;
+                    }
+                    // Links externos já têm target="_blank" e funcionam normalmente
+                  }
+                }, true); // Usar capture phase para garantir que o evento seja capturado antes do Swiper
+              });
+            }, 300);
           } else {
             console.error('Swiper não está disponível!');
           }
@@ -665,7 +853,19 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
     <script src="./Loanding/Loanding.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-      AOS.init();
+      // Aguardar o AOS carregar antes de inicializar
+      if (typeof AOS !== 'undefined') {
+        AOS.init();
+      } else {
+        // Se o AOS ainda não carregou, aguardar o evento de carregamento
+        window.addEventListener('load', function() {
+          if (typeof AOS !== 'undefined') {
+            AOS.init();
+          } else {
+            console.warn('AOS não foi carregado. Verifique a conexão com o CDN.');
+          }
+        });
+      }
     </script>
 
     <!-- Script para carregar jornais dinamicamente -->
@@ -676,10 +876,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarJornais() {
           try {
             console.log('Iniciando carregamento de jornais...');
-            const response = await fetch('/api/jornais');
+            const response = await fetch('/api/jornais', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar jornais (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar jornais. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const data = await response.json();
@@ -986,10 +1206,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarResponsaveis() {
           try {
             console.log('Iniciando carregamento de responsáveis...');
-            const response = await fetch('/api/site/responsaveis');
+            const response = await fetch('/api/site/responsaveis', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar responsáveis (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar responsáveis. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const responsaveis = await response.json();
@@ -1118,10 +1358,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarTextos() {
           try {
             console.log('Iniciando carregamento de textos...');
-            const response = await fetch('/api/site/textos');
+            const response = await fetch('/api/site/textos', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar textos (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar textos. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const textos = await response.json();
@@ -1226,10 +1486,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarTextoIgreja() {
           try {
             console.log('Iniciando carregamento de texto da igreja...');
-            const response = await fetch('/api/site/textos');
+            const response = await fetch('/api/site/textos', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar texto da igreja (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar texto da igreja. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const textos = await response.json();
@@ -1340,10 +1620,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarBannerModal() {
           try {
             console.log('Iniciando carregamento de banner modal...');
-            const response = await fetch('/api/site/banner-modal');
+            const response = await fetch('/api/site/banner-modal', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar banner modal (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar banner modal. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const banner = await response.json();
@@ -1470,10 +1770,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarFAQ() {
           try {
             console.log('Iniciando carregamento de FAQ...');
-            const response = await fetch('/api/site/faq');
+            const response = await fetch('/api/site/faq', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar FAQ (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar FAQ. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const faqs = await response.json();
@@ -1581,10 +1901,30 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarVideo() {
           try {
             console.log('Iniciando carregamento de vídeo...');
-            const response = await fetch('/api/site/video');
+            const response = await fetch('/api/site/video', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin'
+            }).catch(err => {
+              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
+              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
+                console.warn('Erro de rede ao carregar vídeo (pode ser extensão do navegador):', err.message);
+                return null;
+              }
+              throw err;
+            });
             
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response || !response.ok) {
+              if (response) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+              } else {
+                // Se response é null, foi erro de rede - usar dados padrão
+                console.warn('Não foi possível carregar vídeo. Usando conteúdo padrão.');
+                return;
+              }
             }
             
             const video = await response.json();

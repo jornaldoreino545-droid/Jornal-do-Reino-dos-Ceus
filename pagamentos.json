@@ -1,42 +1,6 @@
 {
   "pagamentos": [
     {
-      "id": 1,
-      "paymentIntentId": "pi_3SovioQ3FoT9YAkC2j8DSKxF",
-      "nome": "carlos",
-      "email": "carlosmoreira@gmail.com",
-      "jornalId": "1",
-      "jornalNome": "JORNAL DE JANEIRO",
-      "valor": 0,
-      "moeda": "BRL",
-      "dataPagamento": "2026-01-13T00:44:35.903Z",
-      "dataCriacao": "2026-01-13T00:44:35.906Z"
-    },
-    {
-      "id": 2,
-      "paymentIntentId": "pi_3SpFohQ3FoT9YAkC1qbEBQ5p",
-      "nome": "lucas gomes",
-      "email": "lucasgomes@gmail.com",
-      "jornalId": "1",
-      "jornalNome": "JORNAL DE JANEIRO",
-      "valor": 0,
-      "moeda": "BRL",
-      "dataPagamento": "2026-01-13T22:12:03.226Z",
-      "dataCriacao": "2026-01-13T22:12:03.231Z"
-    },
-    {
-      "id": 3,
-      "paymentIntentId": "pi_3SpHZIQ3FoT9YAkC0akss1na",
-      "nome": "JAILSON MOREIRA GOMES",
-      "email": "jailsonomreira831@gmail.com",
-      "jornalId": "1",
-      "jornalNome": "JORNAL DE JANEIRO",
-      "valor": 0,
-      "moeda": "BRL",
-      "dataPagamento": "2026-01-14T00:04:17.421Z",
-      "dataCriacao": "2026-01-14T00:04:17.433Z"
-    },
-    {
       "id": 4,
       "paymentIntentId": "pi_3SpJGgQ3FoT9YAkC0nUbZ3U7",
       "nome": "JAILSON MOREIRA GOMES",
