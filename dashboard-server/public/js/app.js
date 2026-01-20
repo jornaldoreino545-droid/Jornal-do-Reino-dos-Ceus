@@ -5210,7 +5210,15 @@ window.openNoticiaModal = function(noticia = null) {
             if (excerptInput) excerptInput.value = noticia.excerpt || '';
             
             const contentInput = document.getElementById('noticiaContent');
-            if (contentInput) contentInput.value = noticia.content || '';
+            if (contentInput) {
+                contentInput.value = noticia.content || '';
+                // Se o editor CodeMirror estiver inicializado, atualizar também
+                setTimeout(() => {
+                    if (window.contentEditor && typeof window.contentEditor.setValue === 'function') {
+                        window.contentEditor.setValue(noticia.content || '');
+                    }
+                }, 200);
+            }
             
             const tagInput = document.getElementById('noticiaTag');
             if (tagInput) tagInput.value = noticia.tag || '';
@@ -5305,7 +5313,16 @@ async function handleSaveNoticia(e) {
     
     const id = document.getElementById('noticiaId').value;
     const title = document.getElementById('noticiaTitle').value.trim();
-    const content = document.getElementById('noticiaContent').value.trim();
+    // Pegar conteúdo do editor CodeMirror ou do textarea
+    let content = '';
+    if (window.contentEditor && typeof window.contentEditor.getValue === 'function') {
+        content = window.contentEditor.getValue().trim();
+    } else {
+        const contentInput = document.getElementById('noticiaContent');
+        if (contentInput) {
+            content = contentInput.value.trim();
+        }
+    }
     
     // Validar campos obrigatórios
     if (!title || !content) {

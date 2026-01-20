@@ -9,10 +9,10 @@ const pool = require('../config/database');
 console.log('📦 Módulo de rotas do dashboard carregado');
 console.log('🔐 Rota POST /login será registrada');
 
-// Middleware de debug para TODAS as requisições
+// Middleware de debug para TODAS as requisições (exceto uploads de arquivos)
 router.use((req, res, next) => {
-  // Log TODAS as requisições para debug
-  if (req.method === 'POST') {
+  // Log TODAS as requisições para debug (mas não para uploads de arquivos)
+  if (req.method === 'POST' && !req.path.includes('upload')) {
     console.log('\n🔍 MIDDLEWARE DO ROUTER - Requisição POST detectada!');
     console.log('📥 Método:', req.method);
     console.log('📥 Path:', req.path);
@@ -621,7 +621,7 @@ router.delete('/jornais/:id', requireAuth, async (req, res) => {
 
 // ==================== MATÉRIAS ====================
 
-// Upload de matéria
+// Upload de matéria (único arquivo)
 router.post('/materias/upload', requireAuth, uploadMateria, async (req, res) => {
   try {
     if (!req.file) {
@@ -636,6 +636,86 @@ router.post('/materias/upload', requireAuth, uploadMateria, async (req, res) => 
   } catch (error) {
     console.error('Erro ao fazer upload de matéria:', error);
     res.status(500).json({ error: 'Erro ao fazer upload' });
+  }
+});
+
+// Upload de múltiplas imagens para conteúdo de notícias
+// Criar uma instância do multer para múltiplos arquivos usando a mesma configuração
+// Nota: path e fs já estão importados no topo do arquivo
+const multer = require('multer');
+
+// Reutilizar a configuração de storage do uploadMateria
+// Usar o mesmo caminho que está no config/upload.js
+const materiasDir = path.join(__dirname, '..', 'uploads', 'materias');
+fs.ensureDirSync(materiasDir);
+console.log('📁 Diretório de upload de matérias:', materiasDir);
+
+const storageMateriasMultiple = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, materiasDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `materia-${uniqueSuffix}${ext}`);
+  }
+});
+
+const imageFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Apenas imagens são permitidas (JPEG, PNG, GIF, WEBP)'));
+  }
+};
+
+const uploadMateriaMultiple = multer({
+  storage: storageMateriasMultiple,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB por arquivo
+  fileFilter: imageFilter
+});
+
+// Rota para upload de uma imagem por vez (o frontend faz uploads sequenciais)
+router.post('/site/upload-materia', requireAuth, uploadMateriaMultiple.single('materia'), async (req, res) => {
+  try {
+    console.log('📤 Upload de imagem recebido');
+    console.log('   Arquivo recebido:', req.file ? req.file.originalname : 'nenhum');
+    console.log('   Body:', req.body);
+    console.log('   File:', req.file ? { 
+      originalname: req.file.originalname, 
+      filename: req.file.filename,
+      mimetype: req.file.mimetype,
+      size: req.file.size 
+    } : 'nenhum');
+    
+    if (!req.file) {
+      console.error('❌ Nenhum arquivo recebido');
+      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+    }
+
+    const imageUrl = `/uploads/materias/${req.file.filename}`;
+    
+    console.log('✅ Upload concluído com sucesso!');
+    console.log('   URL gerada:', imageUrl);
+    
+    // Retornar no formato esperado pelo frontend
+    const response = {
+      ok: true,
+      url: imageUrl,
+      image: imageUrl,
+      filename: req.file.filename
+    };
+    
+    console.log('📤 Enviando resposta:', response);
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Erro ao fazer upload de imagem:', error);
+    console.error('   Stack:', error.stack);
+    res.status(500).json({ error: 'Erro ao fazer upload: ' + (error.message || 'Erro desconhecido') });
   }
 });
 

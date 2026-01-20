@@ -9,6 +9,8 @@
     <meta http-equiv="Expires" content="0">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
         /* Estilos críticos para garantir que os cards apareçam */
@@ -979,8 +981,78 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="noticiaContent">Conteúdo *</label>
-                    <textarea id="noticiaContent" name="content" rows="10" required placeholder="Conteúdo completo da notícia"></textarea>
+                    <label for="noticiaContent">Conteúdo (HTML/CSS) *</label>
+                    <div class="html-editor-wrapper">
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('h1', 'Título Principal')" title="Título H1">
+                                <i class='bx bx-heading'></i> H1
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('h2', 'Subtítulo')" title="Título H2">
+                                <i class='bx bx-heading'></i> H2
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('p', 'Parágrafo')" title="Parágrafo">
+                                <i class='bx bx-text'></i> P
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('strong', 'Texto em Negrito')" title="Negrito">
+                                <i class='bx bx-bold'></i> B
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('em', 'Texto em Itálico')" title="Itálico">
+                                <i class='bx bx-italic'></i> I
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('ul', 'Lista')" title="Lista">
+                                <i class='bx bx-list-ul'></i> Lista
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="openImageUploadModal()" title="Inserir Imagem">
+                                <i class='bx bx-image'></i> Imagem
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('style', '/* Seus estilos CSS aqui */')" title="CSS">
+                                <i class='bx bx-code-alt'></i> CSS
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="previewHTMLContent()" title="Visualizar">
+                                <i class='bx bx-show'></i> Visualizar
+                            </button>
+                        </div>
+                        <textarea id="noticiaContent" name="content" rows="15" required placeholder="Digite ou cole seu HTML aqui. Use os botões acima para inserir tags comuns." style="font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5;"></textarea>
+                        <small class="form-help" style="margin-top: 8px; display: block;">
+                            💡 Dica: Você pode usar HTML completo, incluindo &lt;img&gt;, &lt;figure&gt;, &lt;style&gt;, etc. O conteúdo será renderizado exatamente como você escrever.
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Modal para Upload de Imagens -->
+                <div id="imageUploadModal" class="modal hidden">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2>Inserir Imagem</h2>
+                            <button type="button" class="modal-close" onclick="closeImageUploadModal()">&times;</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="contentImageUpload">Selecione uma ou mais imagens</label>
+                            <input type="file" id="contentImageUpload" name="images" accept="image/*" multiple>
+                            <small class="form-help">Você pode selecionar múltiplas imagens de uma vez</small>
+                        </div>
+                        <div id="imageUploadPreview" style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;"></div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" onclick="closeImageUploadModal()">Cancelar</button>
+                            <button type="button" class="btn btn-primary" onclick="insertUploadedImages()">Inserir no Conteúdo</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal de Preview -->
+                <div id="htmlPreviewModal" class="modal hidden">
+                    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+                        <div class="modal-header">
+                            <h2>Visualização do Conteúdo</h2>
+                            <button type="button" class="modal-close" onclick="closeHTMLPreview()">&times;</button>
+                        </div>
+                        <div id="htmlPreviewContent" style="padding: 20px; background: #fff; border-radius: 8px; min-height: 200px;">
+                            <!-- Preview será inserido aqui -->
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" onclick="closeHTMLPreview()">Fechar</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1165,6 +1237,294 @@
                 });
             }
         }, 500);
+    </script>
+    
+    <!-- Scripts para Editor HTML -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    
+    <script>
+        // Variáveis globais para o editor
+        let contentEditor = null;
+        let uploadedImages = [];
+        
+        // Inicializar CodeMirror quando o modal for aberto
+        function initHTMLEditor() {
+            const textarea = document.getElementById('noticiaContent');
+            if (textarea && !contentEditor) {
+                contentEditor = CodeMirror.fromTextArea(textarea, {
+                    mode: 'htmlmixed',
+                    theme: 'default',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    indentUnit: 2,
+                    tabSize: 2,
+                    autoCloseTags: true,
+                    matchTags: true,
+                    foldGutter: true,
+                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+                });
+                
+                contentEditor.setSize('100%', '400px');
+                console.log('✅ Editor HTML inicializado');
+            }
+        }
+        
+        // Função para inserir tags HTML
+        window.insertHTMLTag = function(tag, placeholder) {
+            if (!contentEditor) {
+                const textarea = document.getElementById('noticiaContent');
+                if (textarea) {
+                    const cursorPos = textarea.selectionStart;
+                    const text = textarea.value;
+                    let insertText = '';
+                    
+                    switch(tag) {
+                        case 'h1':
+                            insertText = `<h1>${placeholder}</h1>\n\n`;
+                            break;
+                        case 'h2':
+                            insertText = `<h2>${placeholder}</h2>\n\n`;
+                            break;
+                        case 'p':
+                            insertText = `<p>${placeholder}</p>\n\n`;
+                            break;
+                        case 'strong':
+                            insertText = `<strong>${placeholder}</strong>`;
+                            break;
+                        case 'em':
+                            insertText = `<em>${placeholder}</em>`;
+                            break;
+                        case 'ul':
+                            insertText = `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n\n`;
+                            break;
+                        case 'style':
+                            insertText = `<style>\n  /* ${placeholder} */\n  .minha-classe {\n    color: #000;\n  }\n</style>\n\n`;
+                            break;
+                    }
+                    
+                    const newText = text.substring(0, cursorPos) + insertText + text.substring(cursorPos);
+                    textarea.value = newText;
+                    textarea.focus();
+                    textarea.setSelectionRange(cursorPos + insertText.length, cursorPos + insertText.length);
+                }
+            } else {
+                const cursor = contentEditor.getCursor();
+                let insertText = '';
+                
+                switch(tag) {
+                    case 'h1':
+                        insertText = `<h1>${placeholder}</h1>\n\n`;
+                        break;
+                    case 'h2':
+                        insertText = `<h2>${placeholder}</h2>\n\n`;
+                        break;
+                    case 'p':
+                        insertText = `<p>${placeholder}</p>\n\n`;
+                        break;
+                    case 'strong':
+                        insertText = `<strong>${placeholder}</strong>`;
+                        break;
+                    case 'em':
+                        insertText = `<em>${placeholder}</em>`;
+                        break;
+                    case 'ul':
+                        insertText = `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n\n`;
+                        break;
+                    case 'style':
+                        insertText = `<style>\n  /* ${placeholder} */\n  .minha-classe {\n    color: #000;\n  }\n</style>\n\n`;
+                        break;
+                }
+                
+                contentEditor.replaceRange(insertText, cursor);
+                contentEditor.focus();
+            }
+        };
+        
+        // Função para abrir modal de upload de imagens
+        window.openImageUploadModal = function() {
+            const modal = document.getElementById('imageUploadModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.getElementById('contentImageUpload').value = '';
+                uploadedImages = [];
+                document.getElementById('imageUploadPreview').innerHTML = '';
+            }
+        };
+        
+        // Função para fechar modal de upload
+        window.closeImageUploadModal = function() {
+            const modal = document.getElementById('imageUploadModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+        
+        // Processar upload de imagens
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('contentImageUpload');
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    const preview = document.getElementById('imageUploadPreview');
+                    preview.innerHTML = '';
+                    uploadedImages = [];
+                    
+                    files.forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const imgData = {
+                                file: file,
+                                dataUrl: e.target.result,
+                                name: file.name
+                            };
+                            uploadedImages.push(imgData);
+                            
+                            const imgDiv = document.createElement('div');
+                            imgDiv.style.cssText = 'position: relative; border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;';
+                            imgDiv.innerHTML = `
+                                <img src="${e.target.result}" style="width: 100%; height: 150px; object-fit: cover; display: block;">
+                                <div style="padding: 8px; background: #f8fafc; font-size: 12px; color: #64748b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                    ${file.name}
+                                </div>
+                            `;
+                            preview.appendChild(imgDiv);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+            }
+        });
+        
+        // Função para inserir imagens no conteúdo
+        window.insertUploadedImages = async function() {
+            if (uploadedImages.length === 0) {
+                showToast('Selecione pelo menos uma imagem', 'error');
+                return;
+            }
+            
+            // Upload das imagens para o servidor (uma por vez para garantir que todas sejam processadas)
+            const imageUrls = [];
+            
+            try {
+                showToast(`Enviando ${uploadedImages.length} imagem(ns)...`, 'info');
+                
+                // Fazer upload de cada imagem individualmente
+                for (let i = 0; i < uploadedImages.length; i++) {
+                    const img = uploadedImages[i];
+                    const formData = new FormData();
+                    formData.append('materia', img.file);
+                    
+                    console.log(`📤 Enviando imagem ${i + 1}/${uploadedImages.length}:`, img.file.name);
+                    
+                    const response = await fetch('/api/site/upload-materia', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                        throw new Error(errorData.error || `Erro ao fazer upload da imagem ${i + 1}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('📥 Resposta do upload:', data);
+                    
+                    // Suportar diferentes formatos de resposta
+                    let url = null;
+                    if (data.url) {
+                        url = data.url;
+                    } else if (data.image) {
+                        url = Array.isArray(data.image) ? data.image[0] : data.image;
+                    } else if (data.images && data.images.length > 0) {
+                        url = data.images[0];
+                    } else if (data.urls && data.urls.length > 0) {
+                        url = data.urls[0];
+                    }
+                    
+                    if (url) {
+                        imageUrls.push(url);
+                        console.log(`✅ Imagem ${i + 1} enviada:`, url);
+                    } else {
+                        console.warn('⚠️ Formato de resposta inesperado:', data);
+                    }
+                }
+                
+                if (imageUrls.length === 0) {
+                    throw new Error('Nenhuma imagem foi enviada com sucesso');
+                }
+                
+                // Inserir tags <img> no editor
+                let imgTags = '';
+                imageUrls.forEach((url, index) => {
+                    const imgTag = `<figure style="margin: 20px 0;">
+  <img src="${url}" alt="Imagem ${index + 1}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+  <figcaption style="margin-top: 8px; font-size: 14px; color: #64748b; text-align: center; font-style: italic;">Legenda da imagem ${index + 1}</figcaption>
+</figure>\n\n`;
+                    imgTags += imgTag;
+                });
+                
+                if (contentEditor) {
+                    const cursor = contentEditor.getCursor();
+                    contentEditor.replaceRange(imgTags, cursor);
+                    contentEditor.focus();
+                } else {
+                    const textarea = document.getElementById('noticiaContent');
+                    if (textarea) {
+                        const cursorPos = textarea.selectionStart;
+                        const text = textarea.value;
+                        const newText = text.substring(0, cursorPos) + imgTags + text.substring(cursorPos);
+                        textarea.value = newText;
+                        textarea.focus();
+                    }
+                }
+                
+                closeImageUploadModal();
+                showToast(`${imageUrls.length} imagem(ns) inserida(s) com sucesso!`, 'success');
+            } catch (error) {
+                console.error('❌ Erro ao fazer upload:', error);
+                showToast('Erro ao fazer upload das imagens: ' + error.message, 'error');
+            }
+        };
+        
+        // Função para visualizar HTML
+        window.previewHTMLContent = function() {
+            const content = contentEditor ? contentEditor.getValue() : document.getElementById('noticiaContent').value;
+            const previewDiv = document.getElementById('htmlPreviewContent');
+            const modal = document.getElementById('htmlPreviewModal');
+            
+            if (previewDiv && modal) {
+                previewDiv.innerHTML = content;
+                modal.classList.remove('hidden');
+            }
+        };
+        
+        window.closeHTMLPreview = function() {
+            const modal = document.getElementById('htmlPreviewModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+        
+        // Modificar openNoticiaModal para inicializar o editor
+        const originalOpenNoticiaModal = window.openNoticiaModal;
+        if (typeof originalOpenNoticiaModal === 'function') {
+            window.openNoticiaModal = function(noticia) {
+                originalOpenNoticiaModal(noticia);
+                setTimeout(() => {
+                    initHTMLEditor();
+                    if (noticia && noticia.content) {
+                        if (contentEditor) {
+                            contentEditor.setValue(noticia.content);
+                        }
+                    }
+                }, 100);
+            };
+        }
     </script>
 </body>
 </html>
