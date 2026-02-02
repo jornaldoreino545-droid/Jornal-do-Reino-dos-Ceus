@@ -65,7 +65,7 @@
     }).join('');
   }
   
-  // Função para mostrar slide específico (mostra 3 slides de cada vez)
+  // Função para mostrar slide específico (mostra 3 slides no desktop, 1 no mobile)
   function mostrarSlide(index) {
     const track = document.querySelector('.carrossel-medio-track');
     const viewport = document.querySelector('.carrossel-medio-viewport');
@@ -91,12 +91,11 @@
       return;
     }
     
-    // Calcular o deslocamento: usar a largura real do primeiro slide + gap
-    // Como estamos usando flexbox com calc(33.333% - 14px), precisamos calcular baseado no primeiro item
+    // Calcular o deslocamento baseado no tamanho da tela
     if (items.length > 0) {
       const firstItem = items[0];
       const slideWidth = firstItem.offsetWidth;
-      const gap = 20; // gap do flexbox
+      const gap = isMobile ? 10 : 20; // gap menor no mobile
       const slideWidthWithGap = slideWidth + gap;
       
       // Limitar o índice para que sempre vejamos o número correto de slides
@@ -104,7 +103,16 @@
       const adjustedIndex = Math.min(index, maxIndex);
       
       // Calcular o translateX em pixels
-      const translateX = -(adjustedIndex * slideWidthWithGap);
+      let translateX;
+      
+      if (isMobile) {
+        // No mobile: cada card ocupa 100% da largura do viewport (90% da tela)
+        // O viewport já está centralizado, então apenas movemos o track
+        translateX = -(adjustedIndex * slideWidthWithGap);
+      } else {
+        // No desktop: mostrar 3 cards
+        translateX = -(adjustedIndex * slideWidthWithGap);
+      }
       
       track.style.transform = `translateX(${translateX}px)`;
     }
@@ -112,6 +120,15 @@
     // Atualizar indicadores
     atualizarIndicadores();
   }
+  
+  // Adicionar listener para redimensionamento da janela
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      mostrarSlide(carrosselMedioIndex);
+    }, 250);
+  });
   
   // Função para atualizar indicadores
   function atualizarIndicadores() {
@@ -197,17 +214,39 @@
     const btnProximo = document.getElementById('carrossel-medio-btn-proximo');
     
     if (btnAnterior) {
-      btnAnterior.addEventListener('click', () => {
+      // Remover listeners anteriores para evitar duplicação
+      const newBtnAnterior = btnAnterior.cloneNode(true);
+      btnAnterior.parentNode.replaceChild(newBtnAnterior, btnAnterior);
+      
+      newBtnAnterior.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Botão anterior clicado');
         slideAnterior();
         resetarAutoplay();
       });
+      
+      // Garantir que o botão seja clicável
+      newBtnAnterior.style.pointerEvents = 'auto';
+      newBtnAnterior.style.zIndex = '100';
     }
     
     if (btnProximo) {
-      btnProximo.addEventListener('click', () => {
+      // Remover listeners anteriores para evitar duplicação
+      const newBtnProximo = btnProximo.cloneNode(true);
+      btnProximo.parentNode.replaceChild(newBtnProximo, btnProximo);
+      
+      newBtnProximo.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Botão próximo clicado');
         proximoSlide();
         resetarAutoplay();
       });
+      
+      // Garantir que o botão seja clicável
+      newBtnProximo.style.pointerEvents = 'auto';
+      newBtnProximo.style.zIndex = '100';
     }
     
     // Pausar autoplay no hover

@@ -124,14 +124,6 @@
               <h1>${colunista.nome || 'Colunista'}</h1>
               <p>${colunista.conteudo || 'Conteúdo não disponível.'}</p>
               <div class="social-actions">
-                ${colunista.instagram ? `
-                <div class="icon-redessocial">
-                  <i class='bx bxl-instagram'></i>
-                  <a href="${colunista.instagram.startsWith('http') ? colunista.instagram : '#'}" target="_blank" rel="noopener noreferrer">
-                    <span class="instagram">${colunista.instagram}</span>
-                  </a>
-                </div>
-                ` : ''}
                 <button class="share-button" onclick="openShareMenu(this)" data-colunista="${colunista.nome || ''}" data-coluna="${colunista.coluna || ''}">
                   <i class='bx bx-share-alt'></i>
                   <span>Compartilhar</span>

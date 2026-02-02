@@ -2,8 +2,7 @@
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"rel="stylesheet"/>
 
     <link rel="stylesheet" href="./reset.css" />
@@ -285,6 +284,10 @@ Por isso, o Jornal do Reino dos Céus é tão importante: porque ele não apenas
 
       <section class="carrossel-medio" id="carrossel-medio">
         <div class="carrossel-medio-container">
+          <div class="carrossel-medio-header">
+            <h2 class="carrossel-medio-title">Campeões no Evangelismo com o Jornal do Reino</h2>
+            <p class="carrossel-medio-subtitle">Parabéns a todos os pastores e evangelistas</p>
+          </div>
           <div class="carrossel-medio-wrapper">
             <button class="carrossel-medio-nav carrossel-medio-nav-anterior" id="carrossel-medio-btn-anterior" aria-label="Slide anterior">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -401,7 +404,7 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
           </div>
 
           <!-- Complete form with reCAPTCHA and custom fields -->
-          <form action="https://api.staticforms.xyz/submit" method="POST">
+          <form id="contactForm" action="https://api.staticforms.xyz/submit" method="POST">
             <!-- Required: Your Static Forms API key -->
             <input
               type="hidden"
@@ -471,10 +474,28 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               value="https://www.testeigreja.store/pag-Obrigado.html"
             />
 
-            <button type="submit">Envie menssagem</button>
+            <button type="submit" id="submitBtn">
+              <span class="btn-text">Envie menssagem</span>
+              <span class="btn-loading" style="display: none;">
+                <span class="spinner"></span> Enviando...
+              </span>
+            </button>
           </form>
         </div>
       </section>
+
+      <!-- Modal de Sucesso -->
+      <div id="successModal" class="success-modal" style="display: none;">
+        <div class="success-modal-overlay"></div>
+        <div class="success-modal-content">
+          <div class="success-icon">
+            <i class='bx bx-check-circle'></i>
+          </div>
+          <h2>Mensagem enviada com sucesso!</h2>
+          <p>Recebemos seu contato e retornaremos o mais rápido possível.</p>
+          <button class="success-modal-close" onclick="closeSuccessModal()">Fechar</button>
+        </div>
+      </div>
 
 <!--============================================================================
 ============================================================================
@@ -2067,6 +2088,253 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         // Tentar após delays progressivos para garantir
         setTimeout(() => carregarVideo(), 500);
         setTimeout(() => carregarVideo(), 1000);
+      })();
+    </script>
+
+    <!-- Script do Formulário de Contato -->
+    <script>
+      (function() {
+        'use strict';
+        
+        const form = document.getElementById('contactForm');
+        if (!form) return;
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        
+        // Validação de telefone brasileiro
+        function validatePhone(phone) {
+          const phoneRegex = /^[\d\s\(\)\-]+$/;
+          const digitsOnly = phone.replace(/\D/g, '');
+          return phoneRegex.test(phone) && digitsOnly.length >= 10 && digitsOnly.length <= 11;
+        }
+        
+        // Validação de email
+        function validateEmail(email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+        
+        // Mostrar erro
+        function showError(input, message) {
+          const formGroup = input.closest('.form-group');
+          let errorMsg = formGroup.querySelector('.error-message');
+          
+          if (!errorMsg) {
+            errorMsg = document.createElement('span');
+            errorMsg.className = 'error-message';
+            formGroup.appendChild(errorMsg);
+          }
+          
+          errorMsg.textContent = message;
+          errorMsg.style.display = 'block';
+          input.classList.add('error');
+        }
+        
+        // Remover erro
+        function removeError(input) {
+          const formGroup = input.closest('.form-group');
+          const errorMsg = formGroup.querySelector('.error-message');
+          
+          if (errorMsg) {
+            errorMsg.style.display = 'none';
+          }
+          input.classList.remove('error');
+        }
+        
+        // Validar formulário
+        function validateForm() {
+          const name = document.getElementById('name');
+          const email = document.getElementById('email');
+          const tel = document.getElementById('tel');
+          const message = document.getElementById('message');
+          
+          let isValid = true;
+          
+          // Validar nome
+          if (!name.value.trim()) {
+            showError(name, 'Nome é obrigatório');
+            isValid = false;
+          } else {
+            removeError(name);
+          }
+          
+          // Validar email
+          if (!email.value.trim()) {
+            showError(email, 'Email é obrigatório');
+            isValid = false;
+          } else if (!validateEmail(email.value.trim())) {
+            showError(email, 'Email inválido');
+            isValid = false;
+          } else {
+            removeError(email);
+          }
+          
+          // Validar telefone (se preenchido)
+          if (tel.value.trim() && !validatePhone(tel.value.trim())) {
+            showError(tel, 'Telefone inválido. Use o formato (99) 99999-9999');
+            isValid = false;
+          } else {
+            removeError(tel);
+          }
+          
+          // Validar mensagem
+          if (!message.value.trim()) {
+            showError(message, 'Mensagem é obrigatória');
+            isValid = false;
+          } else {
+            removeError(message);
+          }
+          
+          return isValid;
+        }
+        
+        // Limpar formulário
+        function clearForm() {
+          form.reset();
+          const errorMessages = form.querySelectorAll('.error-message');
+          errorMessages.forEach(msg => msg.style.display = 'none');
+          const errorInputs = form.querySelectorAll('.error');
+          errorInputs.forEach(input => input.classList.remove('error'));
+        }
+        
+        // Mostrar modal de sucesso
+        function showSuccessModal() {
+          const modal = document.getElementById('successModal');
+          if (modal) {
+            modal.style.display = 'flex';
+            
+            // Fechar automaticamente após 5 segundos
+            setTimeout(() => {
+              closeSuccessModal();
+            }, 5000);
+          }
+        }
+        
+        // Fechar modal de sucesso
+        window.closeSuccessModal = function() {
+          const modal = document.getElementById('successModal');
+          if (modal) {
+            modal.style.display = 'none';
+          }
+        };
+        
+        // Fechar modal ao clicar no overlay
+        document.addEventListener('DOMContentLoaded', function() {
+          const modalOverlay = document.querySelector('.success-modal-overlay');
+          if (modalOverlay) {
+            modalOverlay.addEventListener('click', closeSuccessModal);
+          }
+        });
+        
+        // Remover validação em tempo real
+        const inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+          input.addEventListener('input', function() {
+            if (this.classList.contains('error')) {
+              removeError(this);
+            }
+          });
+        });
+        
+        // Interceptar submit
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          // Validar formulário
+          if (!validateForm()) {
+            return;
+          }
+          
+          // Desabilitar botão e mostrar loading
+          submitBtn.disabled = true;
+          btnText.style.display = 'none';
+          btnLoading.style.display = 'inline-flex';
+          
+          try {
+            console.log('📤 Enviando formulário...');
+            
+            // Remover o redirectTo para evitar redirecionamento
+            const redirectInput = form.querySelector('input[name="redirectTo"]');
+            const originalRedirectValue = redirectInput ? redirectInput.value : null;
+            if (redirectInput) {
+              redirectInput.remove();
+            }
+            
+            // Criar um iframe oculto para enviar o formulário sem sair da página
+            const iframe = document.createElement('iframe');
+            iframe.name = 'hidden_iframe_' + Date.now();
+            iframe.style.display = 'none';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            document.body.appendChild(iframe);
+            
+            // Configurar o form para enviar ao iframe
+            form.target = iframe.name;
+            
+            // Adicionar listener para quando o iframe carregar (form enviado)
+            iframe.onload = function() {
+              console.log('✅ Formulário enviado com sucesso!');
+              
+              // Limpar formulário e mostrar modal
+              clearForm();
+              showSuccessModal();
+              
+              // Reabilitar botão
+              submitBtn.disabled = false;
+              btnText.style.display = 'inline';
+              btnLoading.style.display = 'none';
+              
+              // Remover iframe após um tempo
+              setTimeout(() => {
+                if (iframe.parentNode) {
+                  iframe.parentNode.removeChild(iframe);
+                }
+              }, 3000);
+              
+              // Restaurar redirectTo se existia
+              if (redirectInput && originalRedirectValue) {
+                redirectInput.value = originalRedirectValue;
+                form.appendChild(redirectInput);
+              }
+            };
+            
+            // Mostrar loading
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-flex';
+            
+            // Submeter o formulário normalmente (vai para o iframe)
+            form.submit();
+            
+            // Timeout de segurança caso o iframe não carregue
+            setTimeout(() => {
+              if (submitBtn.disabled) {
+                console.log('⏱️ Timeout - assumindo sucesso');
+                clearForm();
+                showSuccessModal();
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                
+                if (iframe.parentNode) {
+                  iframe.parentNode.removeChild(iframe);
+                }
+              }
+            }, 5000);
+            
+          } catch (error) {
+            console.error('❌ Erro ao enviar formulário:', error);
+            
+            // Reabilitar botão em caso de erro
+            submitBtn.disabled = false;
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+            
+            alert('Erro ao enviar mensagem. Por favor, verifique sua conexão e tente novamente.');
+          }
+        });
       })();
     </script>
   </body>
