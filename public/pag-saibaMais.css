@@ -48,12 +48,15 @@ main .jornal-titulo h2 {
 .todoscard {
   margin-top: 3rem;
   display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+  /* Desktop: 4 por linha */
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 32px !important;
   padding: 0 20px !important;
   max-width: 1320px;
   margin-left: auto;
   margin-right: auto;
+  width: 100%;
+  justify-items: center;
 }
 
 .todoscard .card {
@@ -61,7 +64,7 @@ main .jornal-titulo h2 {
   align-items: stretch !important;
   flex-direction: column !important;
   width: 100% !important;
-  max-width: 300px !important;
+  max-width: 320px !important;
   min-height: 520px !important;
   background: linear-gradient(180deg, #00095b 0%, #001a7a 100%) !important;
   border-radius: 16px !important;
@@ -79,7 +82,9 @@ main .jornal-titulo h2 {
 .todoscard .card .card-image-wrapper {
   position: relative !important;
   width: 100% !important;
-  height: 400px !important;
+  /* Padronizar altura da capa sem distorcer */
+  height: auto !important;
+  aspect-ratio: 3 / 4;
   overflow: hidden !important;
   background: linear-gradient(135deg, #00095b 0%, #001a7a 100%) !important;
 }
@@ -89,6 +94,79 @@ main .jornal-titulo h2 {
   height: 100% !important;
   object-fit: cover !important;
   display: block !important;
+}
+
+/* ==================== RESPONSIVO - CARDS DE JORNAIS ==================== */
+@media screen and (max-width: 1024px) {
+  .todoscard {
+    /* Tablet: 3 por linha */
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    padding: 0 16px !important;
+  }
+
+  .todoscard .card {
+    max-width: 100% !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .todoscard {
+    /* Mobile: 2 por linha */
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    padding: 0 14px !important;
+    overflow-x: hidden;
+  }
+
+  .todoscard .card {
+    max-width: 100% !important;
+    min-height: auto !important;
+  }
+
+  .todoscard .card .card-image-wrapper {
+    height: auto !important;
+    aspect-ratio: 3 / 4;
+  }
+
+  /* manter proporção sem esticar */
+  .todoscard .card .card-image-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .todoscard .card h1 {
+    font-size: 1.05rem !important;
+    min-height: auto !important;
+    padding: 8px 0 !important;
+  }
+
+  .todoscard .card .card-content {
+    padding: 16px 14px !important;
+    gap: 12px !important;
+  }
+
+  /* Cortar texto longo com "..." no mobile */
+  .todoscard .card .card-description p {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 3 !important;
+    line-clamp: 3 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .todoscard {
+    padding: 0 12px !important;
+    gap: 12px !important;
+  }
+
+  .todoscard .card .card-content {
+    padding: 14px 12px !important;
+  }
 }
 
 .todoscard .card .card-content {
@@ -531,47 +609,65 @@ main .buttonsaibamais button:hover {
     color: #00095b;
   }
 
+  /* IMPORTANT: este breakpoint estava quebrando o layout com height fixo.
+     Agora mantemos layout fluido (2 colunas) e altura automática. */
   .todoscard {
-    margin-top: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    flex-direction: row;
-    gap: 10px;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding: 0 12px !important;
+    margin-top: 2rem;
+    overflow-x: hidden;
   }
 
   .todoscard .card {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    flex-wrap: wrap;
-    padding: 10px 7px;
-    background-color: #00095b;
-    width: 160px;
-    height: 310px;
-    border-radius: 10px;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important; /* manter borda arredondada sem cortar conteúdo */
   }
 
-  .todoscard .card img {
-    flex-wrap: wrap;
-    width: 100%;
-    height: 230px;
+  .todoscard .card .card-image-wrapper {
+    height: auto !important;
+    aspect-ratio: 3 / 4;
+  }
+
+  .todoscard .card .card-image-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .todoscard .card .card-content {
+    padding: 12px 10px !important;
+    gap: 10px !important;
   }
 
   .todoscard .card h1 {
-    margin-top: 10px;
-    font-family: "Roboto", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 800;
-    font-style: normal;
-    color: aliceblue;
-    text-decoration: none;
-    font-size: 1rem;
+    font-size: 0.95rem !important;
+    padding: 6px 0 !important;
+    min-height: auto !important;
+  }
+
+  /* Cortar texto longo com "..." e manter card compacto */
+  .todoscard .card .card-description p {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 3 !important;
+    line-clamp: 3 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .todoscard .card button {
+    padding: 12px 10px !important;
   }
 
   .todoscard .card button a {
-    font-size: 1.1rem;
+    font-size: 0.95rem !important;
   }
 
   .informaçoes {

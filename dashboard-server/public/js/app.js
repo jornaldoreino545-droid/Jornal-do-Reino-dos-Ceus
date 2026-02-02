@@ -1999,23 +1999,32 @@ async function loadJornais() {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        const data = await response.json();
+        const data = await response.json().catch(err => {
+            console.error('Erro ao processar resposta JSON:', err);
+            throw new Error('Resposta inválida do servidor');
+        });
+        
         console.log('Dados recebidos:', data);
         
         // Aceitar tanto formato de objeto quanto array direto (compatibilidade)
         if (Array.isArray(data)) {
             jornais = data;
         } else if (data && data.jornais) {
-            jornais = data.jornais;
+            jornais = Array.isArray(data.jornais) ? data.jornais : [];
         } else {
             jornais = [];
         }
+        
+        // Garantir que jornais seja sempre um array
+        jornais = Array.isArray(jornais) ? jornais : [];
         
         console.log(`✅ Jornais carregados: ${jornais.length}`);
         console.log('📋 Dados dos jornais:', jornais);
         renderJornais();
     } catch (error) {
         console.error('Erro ao carregar jornais:', error);
+        // Garantir que jornais seja um array mesmo em caso de erro
+        jornais = Array.isArray(jornais) ? jornais : [];
         listDiv.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">⚠</div>
@@ -2639,20 +2648,44 @@ let carrosselItems = [];
 
 async function loadCarrossel() {
     const listDiv = document.getElementById('carrosselList');
+    if (!listDiv) return;
     listDiv.innerHTML = '<div class="loading">Carregando...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/site/carrossel`);
-        carrosselItems = await response.json();
+        const response = await fetch(`${API_BASE}/site/carrossel`).catch(err => {
+            console.error('Erro de rede ao carregar carrossel:', err);
+            throw err;
+        });
+        
+        if (!response || !response.ok) {
+            throw new Error('Erro ao buscar carrossel');
+        }
+        
+        const data = await response.json().catch(err => {
+            console.error('Erro ao processar resposta JSON:', err);
+            throw new Error('Resposta inválida do servidor');
+        });
+        
+        // Garantir que carrosselItems seja sempre um array
+        carrosselItems = Array.isArray(data) ? data : [];
         renderCarrossel();
     } catch (error) {
         listDiv.innerHTML = '<div class="error-message">Erro ao carregar carrossel</div>';
         console.error('Erro ao carregar carrossel:', error);
+        // Garantir que carrosselItems seja um array mesmo em caso de erro
+        carrosselItems = Array.isArray(carrosselItems) ? carrosselItems : [];
     }
 }
 
 function renderCarrossel() {
     const listDiv = document.getElementById('carrosselList');
+    if (!listDiv) return;
+    
+    // Garantir que carrosselItems seja um array antes de usar .length
+    if (!Array.isArray(carrosselItems)) {
+        console.warn('⚠️ carrosselItems não é um array, convertendo...');
+        carrosselItems = [];
+    }
     
     if (carrosselItems.length === 0) {
         listDiv.innerHTML = '<div class="loading">Nenhum item no carrossel</div>';
@@ -3168,18 +3201,40 @@ async function loadCarrosselMedio() {
     listDiv.innerHTML = '<div class="loading">Carregando...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/site/carrossel-medio`);
-        carrosselMedioItems = await response.json();
+        const response = await fetch(`${API_BASE}/site/carrossel-medio`).catch(err => {
+            console.error('Erro de rede ao carregar carrossel médio:', err);
+            throw err;
+        });
+        
+        if (!response || !response.ok) {
+            throw new Error('Erro ao buscar carrossel médio');
+        }
+        
+        const data = await response.json().catch(err => {
+            console.error('Erro ao processar resposta JSON:', err);
+            throw new Error('Resposta inválida do servidor');
+        });
+        
+        // Garantir que carrosselMedioItems seja sempre um array
+        carrosselMedioItems = Array.isArray(data) ? data : [];
         renderCarrosselMedio();
     } catch (error) {
         listDiv.innerHTML = '<div class="error-message">Erro ao carregar carrossel médio</div>';
         console.error('Erro ao carregar carrossel médio:', error);
+        // Garantir que carrosselMedioItems seja um array mesmo em caso de erro
+        carrosselMedioItems = Array.isArray(carrosselMedioItems) ? carrosselMedioItems : [];
     }
 }
 
 function renderCarrosselMedio() {
     const listDiv = document.getElementById('carrosselMedioList');
     if (!listDiv) return;
+    
+    // Garantir que carrosselMedioItems seja um array antes de usar .length
+    if (!Array.isArray(carrosselMedioItems)) {
+        console.warn('⚠️ carrosselMedioItems não é um array, convertendo...');
+        carrosselMedioItems = [];
+    }
     
     if (carrosselMedioItems.length === 0) {
         listDiv.innerHTML = '<div class="loading">Nenhum item no carrossel médio</div>';
@@ -3404,21 +3459,40 @@ async function loadPagamentos() {
     listDiv.innerHTML = '<div class="loading">Carregando pagamentos...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/pagamentos`);
-        if (!response.ok) {
+        const response = await fetch(`${API_BASE}/pagamentos`).catch(err => {
+            console.error('Erro de rede ao carregar pagamentos:', err);
+            throw err;
+        });
+        
+        if (!response || !response.ok) {
             throw new Error('Erro ao buscar pagamentos');
         }
-        pagamentos = await response.json();
+        
+        const data = await response.json().catch(err => {
+            console.error('Erro ao processar resposta JSON:', err);
+            throw new Error('Resposta inválida do servidor');
+        });
+        
+        // Garantir que pagamentos seja sempre um array
+        pagamentos = Array.isArray(data) ? data : [];
         renderPagamentos();
     } catch (error) {
         listDiv.innerHTML = '<div class="error-message">Erro ao carregar pagamentos</div>';
         console.error('Erro ao carregar pagamentos:', error);
+        // Garantir que pagamentos seja um array mesmo em caso de erro
+        pagamentos = Array.isArray(pagamentos) ? pagamentos : [];
     }
 }
 
 function renderPagamentos() {
     const listDiv = document.getElementById('pagamentosList');
     if (!listDiv) return;
+    
+    // Garantir que pagamentos seja um array antes de usar .length
+    if (!Array.isArray(pagamentos)) {
+        console.warn('⚠️ pagamentos não é um array, convertendo...');
+        pagamentos = [];
+    }
     
     if (pagamentos.length === 0) {
         listDiv.innerHTML = '<div class="loading">Nenhum pagamento registrado</div>';
@@ -5874,8 +5948,54 @@ async function deleteColunista(id) {
         } else {
             showToast('Erro ao excluir colunista', 'error');
         }
-    } catch (error) {
+        } catch (error) {
         console.error('Erro ao excluir colunista:', error);
         showToast('Erro ao excluir colunista', 'error');
     }
 }
+
+// ==================== HANDLER GLOBAL PARA ERROS DE PROMISE NÃO TRATADOS ====================
+// Capturar erros de Promise não tratados (Uncaught (in promise))
+window.addEventListener('unhandledrejection', function(event) {
+    // Ignorar erros de extensões do Chrome (background.js, template_list, etc.)
+    const errorMessage = event.reason?.message || event.reason?.toString() || '';
+    const errorStack = event.reason?.stack || '';
+    
+    if (errorMessage.includes('background.js') || 
+        errorMessage.includes('template_list') || 
+        errorMessage.includes('writing') ||
+        errorMessage.includes('site_integration') ||
+        errorMessage.includes('permission error') ||
+        errorMessage.includes('UserAuthError') ||
+        errorStack.includes('background.js') ||
+        errorStack.includes('chrome-extension')) {
+        // Silenciar erros de extensões do Chrome
+        event.preventDefault();
+        return;
+    }
+    
+    // Logar outros erros para debug
+    console.error('⚠️ Promise rejeitada não tratada:', event.reason);
+    console.error('Stack:', errorStack);
+    
+    // Não prevenir o comportamento padrão para outros erros (para debug)
+});
+
+// Capturar erros JavaScript gerais
+window.addEventListener('error', function(event) {
+    // Ignorar erros de extensões do Chrome
+    const errorMessage = event.message || '';
+    const errorSource = event.filename || '';
+    
+    if (errorMessage.includes('background.js') || 
+        errorMessage.includes('template_list') || 
+        errorMessage.includes('chrome-extension') ||
+        errorSource.includes('chrome-extension')) {
+        // Silenciar erros de extensões do Chrome
+        event.preventDefault();
+        return;
+    }
+    
+    // Logar outros erros para debug
+    console.error('⚠️ Erro JavaScript:', event.message, 'em', event.filename, 'linha', event.lineno);
+});

@@ -1040,6 +1040,64 @@ body {
   border-top: 2px solid #f0f0f0;
 }
 
+.article-author {
+  margin-top: 36px;
+  padding-top: 26px;
+  border-top: 1px solid #eef2f7;
+}
+
+.author-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(0, 9, 91, 0.03) 0%, rgba(0, 26, 122, 0.05) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+}
+
+.author-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 3px solid rgba(0, 9, 91, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.author-label {
+  font-family: "Roboto", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.author-name {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #00095b;
+  line-height: 1.2;
+}
+
+.author-role {
+  font-family: "Roboto", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #475569;
+}
+
 .article-share {
   display: flex;
   align-items: center;
@@ -1147,6 +1205,22 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+
+  .author-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    padding: 18px 16px;
+  }
+
+  .author-photo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .author-info {
+    align-items: center;
   }
 }
 

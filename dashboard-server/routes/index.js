@@ -28,36 +28,403 @@ const MATERIAS_FILE = path.join(__dirname, '..', '..', 'public', 'Noticias', 'ma
 const PAGAMENTOS_FILE = path.join(__dirname, '..', '..', 'pagamentos.json');
 const COLUNISTAS_FILE = path.join(__dirname, '..', '..', 'colunistas.json');
 
-// Funções auxiliares para trabalhar com jornais.json
+// ==================== FUNÇÕES AUXILIARES PARA JORNAIS ====================
+
+// Ler jornais do MySQL ou JSON (fallback)
 async function readJornais() {
   try {
-    const exists = await fs.pathExists(JORNAIS_FILE);
-    if (!exists) {
-      await fs.writeJson(JORNAIS_FILE, { jornais: [] }, { spaces: 2 });
-      return { jornais: [] };
+    // Tentar buscar do MySQL primeiro
+    try {
+      const [rows] = await pool.execute(
+        'SELECT * FROM jornais ORDER BY ordem ASC, ano DESC, id DESC'
+      );
+      return { jornais: rows };
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao buscar jornais do MySQL, usando JSON:', dbError.message);
+      // Fallback para JSON
+      const exists = await fs.pathExists(JORNAIS_FILE);
+      if (!exists) {
+        await fs.writeJson(JORNAIS_FILE, { jornais: [] }, { spaces: 2 });
+        return { jornais: [] };
+      }
+      return await fs.readJson(JORNAIS_FILE);
     }
-    return await fs.readJson(JORNAIS_FILE);
   } catch (error) {
-    console.error('Erro ao ler jornais.json:', error);
+    console.error('Erro ao ler jornais:', error);
     return { jornais: [] };
   }
 }
 
-async function writeJornais(data) {
+// Salvar jornal no MySQL e JSON (backup)
+async function saveJornal(jornal, isUpdate = false) {
   try {
-    // Garantir que o diretório existe
+    // Salvar no MySQL
+    try {
+      if (isUpdate) {
+        await pool.execute(
+          `UPDATE jornais SET 
+            nome = ?, mes = ?, ano = ?, descricao = ?, linkCompra = ?, 
+            ordem = ?, ativo = ?, capa = ?, pdf = ?, dataAtualizacao = NOW()
+          WHERE id = ?`,
+          [
+            jornal.nome, jornal.mes, jornal.ano, jornal.descricao || '',
+            jornal.linkCompra || '', jornal.ordem || 0, jornal.ativo ? 1 : 0,
+            jornal.capa || '', jornal.pdf || '', jornal.id
+          ]
+        );
+        console.log('✅ Jornal atualizado no MySQL:', jornal.id);
+      } else {
+        const [result] = await pool.execute(
+          `INSERT INTO jornais 
+            (nome, mes, ano, descricao, linkCompra, ordem, ativo, capa, pdf, dataCriacao, dataAtualizacao)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+          [
+            jornal.nome, jornal.mes, jornal.ano, jornal.descricao || '',
+            jornal.linkCompra || '', jornal.ordem || 0, jornal.ativo ? 1 : 0,
+            jornal.capa || '', jornal.pdf || ''
+          ]
+        );
+        jornal.id = result.insertId;
+        console.log('✅ Jornal salvo no MySQL com ID:', jornal.id);
+      }
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao salvar jornal no MySQL, usando JSON:', dbError.message);
+      // Fallback para JSON
+      const data = await readJornais();
+      if (isUpdate) {
+        const index = data.jornais.findIndex(j => j.id === jornal.id);
+        if (index !== -1) {
+          data.jornais[index] = jornal;
+        }
+      } else {
+        if (!jornal.id) {
+          jornal.id = data.jornais.length > 0 
+            ? Math.max(...data.jornais.map(j => j.id)) + 1 
+            : 1;
+        }
+        data.jornais.push(jornal);
+      }
+      await writeJornaisJSON(data);
+      return jornal;
+    }
+    
+    // Também salvar no JSON como backup
+    try {
+      const data = await readJornais();
+      if (isUpdate) {
+        const index = data.jornais.findIndex(j => j.id === jornal.id);
+        if (index !== -1) {
+          data.jornais[index] = jornal;
+        } else {
+          data.jornais.push(jornal);
+        }
+      } else {
+        if (!data.jornais.find(j => j.id === jornal.id)) {
+          data.jornais.push(jornal);
+        }
+      }
+      await writeJornaisJSON(data);
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao salvar backup JSON (não crítico):', jsonError.message);
+    }
+    
+    return jornal;
+  } catch (error) {
+    console.error('Erro ao salvar jornal:', error);
+    throw error;
+  }
+}
+
+// Função auxiliar para escrever JSON (backup)
+async function writeJornaisJSON(data) {
+  try {
     const dir = path.dirname(JORNAIS_FILE);
     await fs.ensureDir(dir);
-    
-    // Escrever arquivo
     await fs.writeJson(JORNAIS_FILE, data, { spaces: 2 });
-    console.log('Arquivo jornais.json escrito com sucesso');
+    console.log('✅ Backup JSON escrito com sucesso');
     return true;
   } catch (error) {
     console.error('Erro ao escrever jornais.json:', error);
-    console.error('Caminho do arquivo:', JORNAIS_FILE);
-    console.error('Stack:', error.stack);
-    throw error; // Re-throw para ser capturado pelo try/catch da rota
+    throw error;
+  }
+}
+
+// Deletar jornal do MySQL e JSON
+async function deleteJornal(id) {
+  try {
+    // Deletar do MySQL
+    try {
+      await pool.execute('DELETE FROM jornais WHERE id = ?', [id]);
+      console.log('✅ Jornal deletado do MySQL:', id);
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao deletar jornal do MySQL, usando JSON:', dbError.message);
+    }
+    
+    // Deletar do JSON também
+    try {
+      const data = await readJornais();
+      const index = data.jornais.findIndex(j => j.id === id);
+      if (index !== -1) {
+        data.jornais.splice(index, 1);
+        await writeJornaisJSON(data);
+      }
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao deletar do JSON (não crítico):', jsonError.message);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao deletar jornal:', error);
+    throw error;
+  }
+}
+
+// ==================== FUNÇÕES AUXILIARES PARA MATÉRIAS ====================
+
+// Ler matérias do MySQL ou JSON (fallback)
+async function readMaterias() {
+  try {
+    // Tentar buscar do MySQL primeiro
+    try {
+      const [rows] = await pool.execute(
+        'SELECT * FROM materias ORDER BY created_at DESC, date DESC, id DESC'
+      );
+      return rows;
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao buscar matérias do MySQL, usando JSON:', dbError.message);
+      // Fallback para JSON
+      const exists = await fs.pathExists(MATERIAS_FILE);
+      if (!exists) {
+        await fs.writeJson(MATERIAS_FILE, [], { spaces: 2 });
+        return [];
+      }
+      const materias = await fs.readJson(MATERIAS_FILE);
+      // Ordenar matérias: created_at (mais recente) > date (mais recente) > id (maior)
+      materias.sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date);
+        const dateB = new Date(b.created_at || b.date);
+        if (dateA.getTime() !== dateB.getTime()) {
+          return dateB.getTime() - dateA.getTime();
+        }
+        return (b.id || 0) - (a.id || 0);
+      });
+      return materias;
+    }
+  } catch (error) {
+    console.error('Erro ao ler materias.json:', error);
+    return [];
+  }
+}
+
+// Salvar matéria no MySQL e JSON (backup)
+async function saveMateria(materia, isUpdate = false) {
+  try {
+    // Salvar no MySQL
+    try {
+      if (isUpdate) {
+        await pool.execute(
+          `UPDATE materias SET 
+            title = ?, content = ?, excerpt = ?, date = ?, category = ?, 
+            tag = ?, image = ?, ativo = ?, updated_at = NOW()
+          WHERE id = ?`,
+          [
+            materia.title, materia.content, materia.excerpt || '',
+            materia.date || null, materia.category || 'geral',
+            materia.tag || '', materia.image || '', materia.ativo !== false ? 1 : 0,
+            materia.id
+          ]
+        );
+        console.log('✅ Matéria atualizada no MySQL:', materia.id);
+      } else {
+        const [result] = await pool.execute(
+          `INSERT INTO materias 
+            (title, content, excerpt, date, category, tag, image, ativo, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+          [
+            materia.title, materia.content, materia.excerpt || '',
+            materia.date || null, materia.category || 'geral',
+            materia.tag || '', materia.image || '', materia.ativo !== false ? 1 : 0
+          ]
+        );
+        materia.id = result.insertId;
+        console.log('✅ Matéria salva no MySQL com ID:', materia.id);
+      }
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao salvar matéria no MySQL, usando JSON:', dbError.message);
+      // Fallback para JSON
+      const materias = await readMaterias();
+      if (isUpdate) {
+        const index = materias.findIndex(m => m.id === materia.id);
+        if (index !== -1) {
+          materias[index] = materia;
+        }
+      } else {
+        if (!materia.id) {
+          materia.id = materias.length > 0
+            ? Math.max(...materias.map(m => m.id || 0)) + 1
+            : 1;
+        }
+        materias.unshift(materia); // Adicionar no início
+      }
+      await writeMateriasJSON(materias);
+      return materia;
+    }
+    
+    // Também salvar no JSON como backup
+    try {
+      const materias = await readMaterias();
+      if (isUpdate) {
+        const index = materias.findIndex(m => m.id === materia.id);
+        if (index !== -1) {
+          materias[index] = materia;
+        } else {
+          materias.unshift(materia);
+        }
+      } else {
+        if (!materias.find(m => m.id === materia.id)) {
+          materias.unshift(materia);
+        }
+      }
+      await writeMateriasJSON(materias);
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao salvar backup JSON (não crítico):', jsonError.message);
+    }
+    
+    return materia;
+  } catch (error) {
+    console.error('Erro ao salvar matéria:', error);
+    throw error;
+  }
+}
+
+// Função auxiliar para escrever JSON (backup)
+async function writeMateriasJSON(materias) {
+  try {
+    const dir = path.dirname(MATERIAS_FILE);
+    await fs.ensureDir(dir);
+    await fs.writeJson(MATERIAS_FILE, materias, { spaces: 2 });
+    console.log('✅ Backup JSON escrito com sucesso');
+    return true;
+  } catch (error) {
+    console.error('Erro ao escrever materias.json:', error);
+    throw error;
+  }
+}
+
+// Deletar matéria do MySQL e JSON
+async function deleteMateria(id) {
+  try {
+    // Deletar do MySQL
+    try {
+      await pool.execute('DELETE FROM materias WHERE id = ?', [id]);
+      console.log('✅ Matéria deletada do MySQL:', id);
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao deletar matéria do MySQL, usando JSON:', dbError.message);
+    }
+    
+    // Deletar do JSON também
+    try {
+      const materias = await readMaterias();
+      const index = materias.findIndex(m => m.id === id);
+      if (index !== -1) {
+        materias.splice(index, 1);
+        await writeMateriasJSON(materias);
+      }
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao deletar do JSON (não crítico):', jsonError.message);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao deletar matéria:', error);
+    throw error;
+  }
+}
+
+// ==================== FUNÇÕES AUXILIARES PARA VÍDEOS ====================
+
+// Ler vídeo do MySQL ou JSON (fallback)
+async function readVideo() {
+  try {
+    // Tentar buscar do MySQL primeiro
+    try {
+      const [rows] = await pool.execute(
+        'SELECT * FROM videos WHERE ativo = 1 ORDER BY dataCriacao DESC LIMIT 1'
+      );
+      if (rows.length > 0) {
+        return rows[0];
+      }
+      return null;
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao buscar vídeo do MySQL, usando JSON:', dbError.message);
+      // Fallback para JSON
+      const config = await readSiteConfig();
+      return config?.video || null;
+    }
+  } catch (error) {
+    console.error('Erro ao ler vídeo:', error);
+    return null;
+  }
+}
+
+// Salvar vídeo no MySQL e JSON (backup)
+async function saveVideo(video) {
+  try {
+    // Salvar no MySQL
+    try {
+      // Verificar se já existe um vídeo ativo
+      const [existing] = await pool.execute(
+        'SELECT id FROM videos WHERE ativo = 1 LIMIT 1'
+      );
+      
+      if (existing.length > 0) {
+        // Atualizar vídeo existente
+        await pool.execute(
+          `UPDATE videos SET 
+            url = ?, titulo = ?, descricao = ?, thumbnail = ?, 
+            dataAtualizacao = NOW()
+          WHERE id = ?`,
+          [video.url, video.titulo || '', video.descricao || '', video.thumbnail || '', existing[0].id]
+        );
+        video.id = existing[0].id;
+        console.log('✅ Vídeo atualizado no MySQL:', video.id);
+      } else {
+        // Criar novo vídeo
+        const [result] = await pool.execute(
+          `INSERT INTO videos (url, titulo, descricao, thumbnail, ativo, dataCriacao, dataAtualizacao)
+          VALUES (?, ?, ?, ?, 1, NOW(), NOW())`,
+          [video.url, video.titulo || '', video.descricao || '', video.thumbnail || '']
+        );
+        video.id = result.insertId;
+        console.log('✅ Vídeo salvo no MySQL com ID:', video.id);
+      }
+    } catch (dbError) {
+      console.warn('⚠️ Erro ao salvar vídeo no MySQL, usando JSON:', dbError.message);
+      // Fallback para JSON
+      const config = await readSiteConfig();
+      if (!config) {
+        throw new Error('Erro ao ler configuração');
+      }
+      config.video = video;
+      await writeSiteConfig(config);
+      return video;
+    }
+    
+    // Também salvar no JSON como backup
+    try {
+      const config = await readSiteConfig();
+      if (config) {
+        config.video = video;
+        await writeSiteConfig(config);
+      }
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao salvar backup JSON (não crítico):', jsonError.message);
+    }
+    
+    return video;
+  } catch (error) {
+    console.error('Erro ao salvar vídeo:', error);
+    throw error;
   }
 }
 
@@ -418,16 +785,20 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       return res.status(400).json({ error: 'PDF é obrigatório para novos jornais' });
     }
 
-    console.log('Lendo arquivo jornais.json...');
-    const data = await readJornais();
-    
-    const novoId = data.jornais.length > 0 
-      ? Math.max(...data.jornais.map(j => j.id)) + 1 
-      : 1;
-
     // Obter nome dos arquivos
     const capaFile = req.files.capa && req.files.capa[0] ? req.files.capa[0] : null;
     const pdfFile = req.files.pdf && req.files.pdf[0] ? req.files.pdf[0] : null;
+
+    // Obter próximo ID do banco ou JSON
+    let novoId = 1;
+    try {
+      const data = await readJornais();
+      if (data.jornais && data.jornais.length > 0) {
+        novoId = Math.max(...data.jornais.map(j => j.id)) + 1;
+      }
+    } catch (err) {
+      console.warn('Erro ao obter próximo ID, usando 1:', err.message);
+    }
 
     const novoJornal = {
       id: novoId,
@@ -444,14 +815,11 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       dataAtualizacao: new Date().toISOString()
     };
 
-    console.log('Adicionando jornal ao array...');
-    data.jornais.push(novoJornal);
+    console.log('Salvando jornal no MySQL e JSON...');
+    const jornalSalvo = await saveJornal(novoJornal, false);
     
-    console.log('Salvando arquivo...');
-    await writeJornais(data);
-    
-    console.log('Jornal criado com sucesso! ID:', novoId);
-    res.json({ ok: true, jornal: novoJornal });
+    console.log('Jornal criado com sucesso! ID:', jornalSalvo.id);
+    res.json({ ok: true, jornal: jornalSalvo });
   } catch (error) {
     console.error('=== ERRO AO CRIAR JORNAL ===');
     console.error('Tipo:', error.constructor.name);
@@ -516,14 +884,13 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
       return res.status(400).json({ error: 'Ano é obrigatório' });
     }
 
+    // Buscar jornal atual
     const data = await readJornais();
-    const index = data.jornais.findIndex(j => j.id === id);
+    const jornalAtual = data.jornais.find(j => j.id === id);
 
-    if (index === -1) {
+    if (!jornalAtual) {
       return res.status(404).json({ error: 'Jornal não encontrado' });
     }
-
-    const jornalAtual = data.jornais[index];
     
     // Atualizar campos apenas se fornecidos
     if (nome !== undefined) jornalAtual.nome = nome.trim().toUpperCase();
@@ -539,7 +906,6 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     if (capaFile) {
       // Deletar capa antiga se existir
       if (jornalAtual.capa) {
-        // Remove o prefixo /uploads se existir
         const capaPath = jornalAtual.capa.startsWith('/uploads/') 
           ? jornalAtual.capa.substring(1) 
           : jornalAtual.capa;
@@ -558,7 +924,6 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     if (pdfFile) {
       // Deletar PDF antigo se existir
       if (jornalAtual.pdf) {
-        // Remove o prefixo /uploads se existir
         const pdfPath = jornalAtual.pdf.startsWith('/uploads/') 
           ? jornalAtual.pdf.substring(1) 
           : jornalAtual.pdf;
@@ -574,8 +939,9 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     
     jornalAtual.dataAtualizacao = new Date().toISOString();
 
-    await writeJornais(data);
-    res.json({ ok: true, jornal: jornalAtual });
+    // Salvar no MySQL e JSON
+    const jornalAtualizado = await saveJornal(jornalAtual, true);
+    res.json({ ok: true, jornal: jornalAtualizado });
   } catch (error) {
     console.error('Erro ao atualizar jornal:', error);
     res.status(500).json({ error: 'Erro ao atualizar jornal' });
@@ -587,17 +953,14 @@ router.delete('/jornais/:id', requireAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const data = await readJornais();
-    const index = data.jornais.findIndex(j => j.id === id);
+    const jornal = data.jornais.find(j => j.id === id);
 
-    if (index === -1) {
+    if (!jornal) {
       return res.status(404).json({ error: 'Jornal não encontrado' });
     }
-
-    const jornal = data.jornais[index];
     
     // Deletar capa se existir
     if (jornal.capa) {
-      // Remove o prefixo /uploads se existir
       const capaPath = jornal.capa.startsWith('/uploads/') 
         ? jornal.capa.substring(1) 
         : jornal.capa;
@@ -608,9 +971,22 @@ router.delete('/jornais/:id', requireAuth, async (req, res) => {
         console.error('Erro ao deletar capa:', err);
       }
     }
+    
+    // Deletar PDF se existir
+    if (jornal.pdf) {
+      const pdfPath = jornal.pdf.startsWith('/uploads/') 
+        ? jornal.pdf.substring(1) 
+        : jornal.pdf;
+      const fullPdfPath = path.join(__dirname, '..', pdfPath);
+      try {
+        await fs.remove(fullPdfPath);
+      } catch (err) {
+        console.error('Erro ao deletar PDF:', err);
+      }
+    }
 
-    data.jornais.splice(index, 1);
-    await writeJornais(data);
+    // Deletar do MySQL e JSON
+    await deleteJornal(id);
 
     res.json({ ok: true });
   } catch (error) {
@@ -763,29 +1139,7 @@ async function writeSiteConfig(data) {
   }
 }
 
-async function readMaterias() {
-  try {
-    const exists = await fs.pathExists(MATERIAS_FILE);
-    if (!exists) {
-      await fs.writeJson(MATERIAS_FILE, [], { spaces: 2 });
-      return [];
-    }
-    return await fs.readJson(MATERIAS_FILE);
-  } catch (error) {
-    console.error('Erro ao ler materias.json:', error);
-    return [];
-  }
-}
-
-async function writeMaterias(data) {
-  try {
-    await fs.writeJson(MATERIAS_FILE, data, { spaces: 2 });
-    return true;
-  } catch (error) {
-    console.error('Erro ao escrever materias.json:', error);
-    return false;
-  }
-}
+// Funções readMaterias e writeMaterias foram movidas para cima (com suporte MySQL)
 
 // ==================== CARROSSEL DE MATÉRIAS ====================
 
@@ -1006,9 +1360,23 @@ router.delete('/site/carrossel-medio/:id', requireAuth, async (req, res) => {
 
 router.get('/site/video', async (req, res) => {
   try {
-    const config = await readSiteConfig();
-    res.json(config?.videoPrincipal || {});
+    // Tentar buscar do MySQL primeiro
+    const video = await readVideo();
+    if (video) {
+      // Converter formato MySQL para formato esperado pelo frontend
+      res.json({
+        url: video.url,
+        titulo: video.titulo || '',
+        subtitulo: video.descricao || '',
+        ativo: video.ativo !== 0
+      });
+    } else {
+      // Fallback para JSON
+      const config = await readSiteConfig();
+      res.json(config?.videoPrincipal || {});
+    }
   } catch (error) {
+    console.error('Erro ao obter vídeo:', error);
     res.status(500).json({ error: 'Erro ao obter vídeo' });
   }
 });
@@ -1047,37 +1415,68 @@ router.put('/site/video', requireAuth, (req, res, next) => {
       return res.status(500).json({ error: 'Erro ao ler configuração' });
     }
 
+    // Preparar objeto de vídeo
+    const videoData = {
+      url: '',
+      titulo: '',
+      descricao: '',
+      thumbnail: ''
+    };
+    
     // Se um novo vídeo foi enviado, processar o upload
     if (req.file) {
-      const videoUrl = `/uploads/videos/${req.file.filename}`;
+      videoData.url = `/uploads/videos/${req.file.filename}`;
       
       // Se havia um vídeo anterior, deletar o arquivo antigo
-      if (config.videoPrincipal.url && config.videoPrincipal.url.startsWith('/uploads/videos/')) {
-        const oldVideoPath = path.join(__dirname, '..', 'uploads', 'videos', path.basename(config.videoPrincipal.url));
+      const videoAtual = await readVideo();
+      if (videoAtual && videoAtual.url && videoAtual.url.startsWith('/uploads/videos/')) {
+        const oldVideoPath = path.join(__dirname, '..', 'uploads', 'videos', path.basename(videoAtual.url));
         try {
           await fs.remove(oldVideoPath);
           console.log('Vídeo antigo deletado:', oldVideoPath);
         } catch (err) {
           console.error('Erro ao deletar vídeo antigo:', err);
-          // Não bloquear a operação se falhar ao deletar o arquivo antigo
         }
       }
-      
-      config.videoPrincipal.url = videoUrl;
+    } else {
+      // Manter URL atual se não houver novo upload
+      const videoAtual = await readVideo();
+      if (videoAtual) {
+        videoData.url = videoAtual.url || '';
+      } else {
+        const config = await readSiteConfig();
+        videoData.url = config?.videoPrincipal?.url || '';
+      }
     }
     
     // Atualizar campos de texto
-    // Garantir que titulo e subtitulo sejam strings (não arrays)
     if (titulo !== undefined) {
-      config.videoPrincipal.titulo = Array.isArray(titulo) ? titulo[0] : titulo;
+      videoData.titulo = Array.isArray(titulo) ? titulo[0] : titulo;
+    } else {
+      const videoAtual = await readVideo();
+      videoData.titulo = videoAtual?.titulo || '';
     }
+    
     if (subtitulo !== undefined) {
-      config.videoPrincipal.subtitulo = Array.isArray(subtitulo) ? subtitulo[0] : subtitulo;
+      videoData.descricao = Array.isArray(subtitulo) ? subtitulo[0] : subtitulo;
+    } else {
+      const videoAtual = await readVideo();
+      videoData.descricao = videoAtual?.descricao || '';
     }
-    if (ativo !== undefined) config.videoPrincipal.ativo = ativo === 'true' || ativo === true;
 
-    await writeSiteConfig(config);
-    res.json({ ok: true, video: config.videoPrincipal });
+    // Salvar no MySQL e JSON
+    const videoSalvo = await saveVideo(videoData);
+    
+    // Retornar no formato esperado pelo frontend
+    res.json({ 
+      ok: true, 
+      video: {
+        url: videoSalvo.url,
+        titulo: videoSalvo.titulo || '',
+        subtitulo: videoSalvo.descricao || '',
+        ativo: videoSalvo.ativo !== false
+      }
+    });
   } catch (error) {
     console.error('Erro ao atualizar vídeo:', error);
     res.status(500).json({ error: 'Erro ao atualizar vídeo' });
@@ -1475,9 +1874,32 @@ router.get('/site/noticias', async (req, res) => {
   try {
     console.log('📰 Buscando notícias para o site público...');
     console.log('   Arquivo:', MATERIAS_FILE);
-    const materias = await readMaterias();
-    console.log(`✅ ${materias.length} notícias encontradas`);
-    console.log('   Primeiras 3 matérias:', materias.slice(0, 3).map(m => ({ id: m.id, title: m.title })));
+    let materias = await readMaterias();
+    
+    // Ordenar por data de criação/publicação em ordem decrescente (mais recente primeiro)
+    materias = materias.sort((a, b) => {
+      // Priorizar created_at se existir
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+      if (a.created_at && !b.created_at) return -1;
+      if (!a.created_at && b.created_at) return 1;
+      
+      // Se não tiver created_at, usar date
+      if (a.date && b.date) {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Mais recente primeiro
+      }
+      if (a.date && !b.date) return -1;
+      if (!a.date && b.date) return 1;
+      
+      // Por último, usar ID (maior ID = mais recente)
+      return (b.id || 0) - (a.id || 0);
+    });
+    
+    console.log(`✅ ${materias.length} notícias encontradas e ordenadas`);
+    console.log('   Primeiras 3 matérias:', materias.slice(0, 3).map(m => ({ id: m.id, title: m.title, date: m.date, created_at: m.created_at })));
     res.json(materias);
   } catch (error) {
     console.error('❌ Erro ao listar notícias:', error);
@@ -1488,7 +1910,30 @@ router.get('/site/noticias', async (req, res) => {
 // Rota para o dashboard (admin)
 router.get('/noticias', async (req, res) => {
   try {
-    const materias = await readMaterias();
+    let materias = await readMaterias();
+    
+    // Ordenar por data de criação/publicação em ordem decrescente (mais recente primeiro)
+    materias = materias.sort((a, b) => {
+      // Priorizar created_at se existir
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+      if (a.created_at && !b.created_at) return -1;
+      if (!a.created_at && b.created_at) return 1;
+      
+      // Se não tiver created_at, usar date
+      if (a.date && b.date) {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Mais recente primeiro
+      }
+      if (a.date && !b.date) return -1;
+      if (!a.date && b.date) return 1;
+      
+      // Por último, usar ID (maior ID = mais recente)
+      return (b.id || 0) - (a.id || 0);
+    });
+    
     res.json(materias);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar notícias' });
@@ -1524,6 +1969,7 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
       return res.status(400).json({ error: 'Título e conteúdo são obrigatórios' });
     }
 
+    // Obter próximo ID
     const materias = await readMaterias();
     console.log(`   Total de matérias antes: ${materias.length}`);
     
@@ -1531,25 +1977,24 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
       ? Math.max(...materias.map(m => m.id || 0)) + 1
       : 1;
 
+    const agora = new Date().toISOString();
     const novaMateria = {
       id: novoId,
       title,
-      date: date || new Date().toISOString().split('T')[0],
+      date: date || agora.split('T')[0],
       category: category || 'geral',
       content,
       excerpt: excerpt || '',
       tag: tag || '',
-      image: req.file ? `/uploads/materias/${req.file.filename}` : ''
+      image: req.file ? `/uploads/materias/${req.file.filename}` : '',
+      created_at: agora // Timestamp de criação
     };
 
-    materias.push(novaMateria);
-    await writeMaterias(materias);
+    // Salvar no MySQL e JSON
+    const materiaSalva = await saveMateria(novaMateria, false);
     
-    console.log(`✅ Notícia criada com sucesso! ID: ${novoId}`);
-    console.log(`   Total de matérias depois: ${materias.length}`);
-    console.log(`   Arquivo salvo em: ${MATERIAS_FILE}`);
-
-    res.json({ ok: true, materia: novaMateria });
+    console.log(`✅ Notícia criada com sucesso! ID: ${materiaSalva.id}`);
+    res.json({ ok: true, materia: materiaSalva });
   } catch (error) {
     console.error('❌ Erro ao criar notícia:', error);
     res.status(500).json({ error: 'Erro ao criar notícia' });
@@ -1562,22 +2007,36 @@ router.put('/noticias/:id', requireAuth, uploadMateria, async (req, res) => {
     const { title, date, category, content, excerpt, tag } = req.body;
     
     const materias = await readMaterias();
-    const index = materias.findIndex(m => m.id === id);
+    const materiaAtual = materias.find(m => m.id === id);
 
-    if (index === -1) {
+    if (!materiaAtual) {
       return res.status(404).json({ error: 'Notícia não encontrada' });
     }
 
-    if (title) materias[index].title = title;
-    if (date) materias[index].date = date;
-    if (category) materias[index].category = category;
-    if (content) materias[index].content = content;
-    if (excerpt !== undefined) materias[index].excerpt = excerpt;
-    if (tag !== undefined) materias[index].tag = tag;
-    if (req.file) materias[index].image = `/uploads/materias/${req.file.filename}`;
+    // Preservar created_at se já existir
+    const existingCreatedAt = materiaAtual.created_at;
+    
+    // Atualizar campos
+    if (title) materiaAtual.title = title;
+    if (date) materiaAtual.date = date;
+    if (category) materiaAtual.category = category;
+    if (content) materiaAtual.content = content;
+    if (excerpt !== undefined) materiaAtual.excerpt = excerpt;
+    if (tag !== undefined) materiaAtual.tag = tag;
+    if (req.file) materiaAtual.image = `/uploads/materias/${req.file.filename}`;
+    
+    // Garantir que created_at seja preservado
+    if (existingCreatedAt) {
+      materiaAtual.created_at = existingCreatedAt;
+    } else if (!materiaAtual.created_at) {
+      materiaAtual.created_at = materiaAtual.date 
+        ? new Date(materiaAtual.date).toISOString()
+        : new Date().toISOString();
+    }
 
-    await writeMaterias(materias);
-    res.json({ ok: true, materia: materias[index] });
+    // Salvar no MySQL e JSON
+    const materiaAtualizada = await saveMateria(materiaAtual, true);
+    res.json({ ok: true, materia: materiaAtualizada });
   } catch (error) {
     console.error('Erro ao atualizar notícia:', error);
     res.status(500).json({ error: 'Erro ao atualizar notícia' });
@@ -1588,14 +2047,14 @@ router.delete('/noticias/:id', requireAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const materias = await readMaterias();
-    const index = materias.findIndex(m => m.id === id);
+    const materia = materias.find(m => m.id === id);
 
-    if (index === -1) {
+    if (!materia) {
       return res.status(404).json({ error: 'Notícia não encontrada' });
     }
 
-    materias.splice(index, 1);
-    await writeMaterias(materias);
+    // Deletar do MySQL e JSON
+    await deleteMateria(id);
 
     res.json({ ok: true });
   } catch (error) {

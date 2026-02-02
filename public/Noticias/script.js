@@ -43,8 +43,32 @@ async function loadArticles(){
       date: noticia.date || new Date().toISOString().split('T')[0],
       category: (noticia.category || 'geral').toLowerCase(),
       tag: noticia.tag || '',
-      image: noticia.image || ''
+      image: noticia.image || '',
+      created_at: noticia.created_at || null
     })) : [];
+    
+    // Garantir ordenação por data decrescente (mais recente primeiro)
+    // Isso é uma garantia caso o backend não tenha ordenado corretamente
+    articles.sort((a, b) => {
+      // Priorizar created_at se existir
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+      if (a.created_at && !b.created_at) return -1;
+      if (!a.created_at && b.created_at) return 1;
+      
+      // Se não tiver created_at, usar date
+      if (a.date && b.date) {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Mais recente primeiro
+      }
+      if (a.date && !b.date) return -1;
+      if (!a.date && b.date) return 1;
+      
+      // Por último, usar ID (maior ID = mais recente)
+      return (b.id || 0) - (a.id || 0);
+    });
     
     console.log(`Total de notícias carregadas: ${articles.length}`);
     renderPage();
@@ -54,7 +78,36 @@ async function loadArticles(){
     try {
       const res = await fetch("data.json");
       if (res.ok) {
-        articles = await res.json();
+        const data = await res.json();
+        articles = Array.isArray(data) ? data.map(noticia => ({
+          id: noticia.id,
+          title: noticia.title || '',
+          content: noticia.content || '',
+          excerpt: noticia.excerpt || '',
+          date: noticia.date || new Date().toISOString().split('T')[0],
+          category: (noticia.category || 'geral').toLowerCase(),
+          tag: noticia.tag || '',
+          image: noticia.image || '',
+          created_at: noticia.created_at || null
+        })) : [];
+        
+        // Garantir ordenação por data decrescente também no fallback
+        articles.sort((a, b) => {
+          if (a.created_at && b.created_at) {
+            return new Date(b.created_at) - new Date(a.created_at);
+          }
+          if (a.created_at && !b.created_at) return -1;
+          if (!a.created_at && b.created_at) return 1;
+          if (a.date && b.date) {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB - dateA;
+          }
+          if (a.date && !b.date) return -1;
+          if (!a.date && b.date) return 1;
+          return (b.id || 0) - (a.id || 0);
+        });
+        
         console.log('Usando dados do arquivo local como fallback');
         renderPage();
       } else {

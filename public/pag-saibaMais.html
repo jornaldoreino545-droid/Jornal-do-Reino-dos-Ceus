@@ -16,17 +16,20 @@
       /* Estilos para garantir que os cards apareçam com o mesmo design da página inicial */
       .todoscard {
         display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+        /* Desktop: 4 por linha */
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         gap: 32px !important;
         padding: 0 20px !important;
         max-width: 1320px;
         margin: 3rem auto 0;
+        width: 100%;
+        justify-items: center;
       }
       .todoscard .card {
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        max-width: 300px !important;
+        max-width: 320px !important;
         min-height: 520px !important;
         background: linear-gradient(180deg, #00095b 0%, #001a7a 100%) !important;
         border-radius: 16px !important;
@@ -43,7 +46,8 @@
       .todoscard .card .card-image-wrapper {
         position: relative !important;
         width: 100% !important;
-        height: 400px !important;
+        height: auto !important;
+        aspect-ratio: 3 / 4;
         overflow: hidden !important;
       }
       .todoscard .card .card-image-wrapper img {
@@ -76,6 +80,75 @@
       .todoscard .card button:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(255, 192, 20, 0.5);
+      }
+
+      /* Responsivo - cards */
+      @media (max-width: 1024px) {
+        .todoscard {
+          /* Tablet: 3 por linha */
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 24px !important;
+          padding: 0 0px !important;
+        }
+
+        .todoscard .card {
+          max-width: 100% !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .todoscard {
+          /* Mobile: 2 por linha */
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          gap: 14px !important;
+          padding: 0 0x !important;
+          overflow-x: hidden;
+        }
+
+        .todoscard .card {
+          max-width: 100% !important;
+          min-height: auto !important;
+        }
+
+        .todoscard .card .card-image-wrapper {
+          height: auto !important;
+          aspect-ratio: 3 / 4;
+        }
+
+        .todoscard .card .card-image-wrapper img {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+        }
+
+        .todoscard .card h1 {
+          font-size: 1.05rem !important;
+          padding: 8px 0 !important;
+        }
+
+        .todoscard .card .card-content {
+          padding: 16px 14px !important;
+        }
+
+        /* Cortar texto longo com "..." no mobile */
+        .todoscard .card .card-description p {
+          display: -webkit-box !important;
+          -webkit-box-orient: vertical !important;
+          -webkit-line-clamp: 3 !important;
+          line-clamp: 3 !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .todoscard {
+          padding: 0 0px !important;
+        }
+
+        .todoscard .card .card-content {
+          padding: 14px 12px !important;
+        }
       }
       
       /* Estilos para seções por ano */
@@ -379,7 +452,9 @@
           const isAtivo = jornal.ativo !== false;
           
           return `
-            <div class="card effect loaded" style="opacity: 1 !important; visibility: visible !important; display: flex !important; animation: fadeInSlideUp 0.6s ease-out forwards ${index * 0.05}s;">
+            <div class="card effect loaded" role="link" tabindex="0"
+                 style="opacity: 1 !important; visibility: visible !important; display: flex !important; cursor: ${isAtivo ? 'pointer' : 'default'}; animation: fadeInSlideUp 0.6s ease-out forwards ${index * 0.05}s;"
+                 ${isAtivo ? `onclick="window.location.href='${linkCompra}'" onkeypress="if(event.key==='Enter'||event.key===' '){window.location.href='${linkCompra}'}"` : ''}>
               <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);">
                 <img src="${imagemCapa}" 
                      alt="${jornal.nome}"

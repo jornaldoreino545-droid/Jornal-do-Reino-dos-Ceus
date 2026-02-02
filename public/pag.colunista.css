@@ -263,60 +263,12 @@ main .colunistas .todoscolunistas .card-colunistas:hover::before {
   text-align: left;
 }
 
-/* Instagram Link */
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial:hover {
-  transform: translateX(-5px);
-}
-
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial i {
-  font-size: 1.5rem;
-  color: #aeaeae;
-  transition: all 0.3s ease;
-}
-
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial:hover i {
-  color: #e1306c;
-  transform: scale(1.1);
-}
-
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial a {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial .instagram {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #aeaeae;
-  transition: all 0.3s ease;
-  font-family: "Roboto", sans-serif;
-}
-
-.colunistas .todoscolunistas .card-colunistas .textos .icon-redessocial:hover .instagram {
-  color: #e1306c;
-}
-
 /* Social Actions Container */
 .colunistas .todoscolunistas .card-colunistas .textos .social-actions {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 15px;
   margin-top: auto;
   padding-top: 20px;
