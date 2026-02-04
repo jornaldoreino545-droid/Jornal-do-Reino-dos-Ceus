@@ -56,10 +56,11 @@ async function initializeCheckout() {
             console.log('Buscando jornal com ID:', jornalId);
             
             // Buscar dados do jornal da API principal
+            // Usar URL relativa primeiro (funciona em produção e desenvolvimento)
             const apiPaths = [
-                'http://localhost:3000/api/jornais',
-                '/api/jornais',
-                'http://127.0.0.1:3000/api/jornais'
+                '/api/jornais', // URL relativa (funciona em produção)
+                `${window.location.origin}/api/jornais`, // URL baseada no domínio atual
+                'http://localhost:3000/api/jornais' // Fallback para desenvolvimento local
             ];
             
             let jornaisData = null;
@@ -104,24 +105,34 @@ async function initializeCheckout() {
                 return;
             }
             
-            // Ajustar caminho da imagem
+            // Ajustar caminho da imagem - usar URLs relativas ou baseadas no domínio atual
             let imagemCapa = jornal.capa || '';
             if (imagemCapa) {
-                if (imagemCapa.startsWith('/uploads/')) {
-                    imagemCapa = `http://localhost:3000${imagemCapa}`;
+                // Se já é uma URL completa (http/https), usar como está
+                if (imagemCapa.startsWith('http://') || imagemCapa.startsWith('https://')) {
+                    // URL completa, usar como está
+                } else if (imagemCapa.startsWith('/uploads/')) {
+                    // Caminho absoluto, usar relativo ao domínio atual
+                    imagemCapa = imagemCapa; // Já está no formato correto (/uploads/...)
                 } else if (imagemCapa.startsWith('uploads/')) {
-                    imagemCapa = `http://localhost:3000/${imagemCapa}`;
-                } else if (!imagemCapa.startsWith('http')) {
-                    if (imagemCapa.startsWith('./')) {
-                        imagemCapa = `http://localhost:3000/${imagemCapa.substring(2)}`;
-                    } else if (imagemCapa.startsWith('/')) {
-                        imagemCapa = `http://localhost:3000${imagemCapa}`;
-                    } else {
-                        imagemCapa = `http://localhost:3000/${imagemCapa}`;
+                    // Caminho relativo sem barra inicial, adicionar barra
+                    imagemCapa = `/${imagemCapa}`;
+                } else if (imagemCapa.startsWith('./')) {
+                    // Caminho relativo com ./, remover ./
+                    imagemCapa = imagemCapa.substring(2);
+                    if (!imagemCapa.startsWith('/')) {
+                        imagemCapa = `/${imagemCapa}`;
                     }
+                } else if (imagemCapa.startsWith('/')) {
+                    // Já é um caminho absoluto, usar como está
+                    imagemCapa = imagemCapa;
+                } else {
+                    // Caminho relativo sem barra, adicionar barra
+                    imagemCapa = `/${imagemCapa}`;
                 }
             } else if (jornal.mes) {
-                imagemCapa = `http://localhost:3000/JORNAIS CAPAS/JORNAL DE ${jornal.mes.toUpperCase()}.png`;
+                // Fallback para capa baseada no mês
+                imagemCapa = `/JORNAIS CAPAS/JORNAL DE ${jornal.mes.toUpperCase()}.png`;
             }
             
             // Converter jornal para formato do produto
