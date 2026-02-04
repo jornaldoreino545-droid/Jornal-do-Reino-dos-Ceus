@@ -72,7 +72,7 @@ async function savePaymentToDashboard() {
         
         // Tentar buscar informações do jornal para obter o nome e preço
         try {
-            const response = await fetch(`http://localhost:3000/api/jornais`);
+            const response = await fetch(`/api/jornais`);
             if (response.ok) {
                 const data = await response.json();
                 const jornais = data.jornais || data || [];
@@ -104,8 +104,8 @@ async function savePaymentToDashboard() {
         
         // Tentar salvar no dashboard (o servidor vai verificar se já existe e atualizar valor se necessário)
         const dashboardPaths = [
-            'http://localhost:3000/api/pagamentos',
-            '/api/pagamentos'
+            '/api/pagamentos', // URL relativa (funciona em produção)
+            `${window.location.origin}/api/pagamentos` // URL baseada no domínio atual
         ];
         
         for (const path of dashboardPaths) {
@@ -148,9 +148,8 @@ async function loadProductInfo(productId) {
             
             // Buscar jornais da API principal
             const apiPaths = [
-                'http://localhost:3000/api/jornais',
-                '/api/jornais',
-                'http://127.0.0.1:3000/api/jornais'
+                '/api/jornais', // URL relativa (funciona em produção)
+                `${window.location.origin}/api/jornais` // URL baseada no domínio atual
             ];
             
             for (const path of apiPaths) {
@@ -285,9 +284,8 @@ async function getDownloadLink() {
             // Buscar informações do jornal para encontrar o PDF correto
             try {
                 const apiPaths = [
-                    'http://localhost:3000/api/jornais',
-                    '/api/jornais',
-                    'http://127.0.0.1:3000/api/jornais'
+                    '/api/jornais', // URL relativa (funciona em produção)
+                    `${window.location.origin}/api/jornais` // URL baseada no domínio atual
                 ];
                 
                 for (const apiPath of apiPaths) {
