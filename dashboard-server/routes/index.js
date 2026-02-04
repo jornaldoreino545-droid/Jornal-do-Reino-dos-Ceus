@@ -27,6 +27,8 @@ async function readJornais() {
       return { jornais: rows };
     } catch (dbError) {
       console.warn('⚠️ Erro ao buscar jornais do MySQL, usando JSON:', dbError.message);
+      console.warn('   Banco configurado:', process.env.DB_NAME || 'ebook_checkout');
+      console.warn('   Host:', process.env.DB_HOST || 'localhost');
       // Fallback para JSON
     const exists = await fs.pathExists(JORNAIS_FILE);
     if (!exists) {
@@ -343,6 +345,8 @@ async function readVideo() {
       return null;
     } catch (dbError) {
       console.warn('⚠️ Erro ao buscar vídeo do MySQL, usando JSON:', dbError.message);
+      console.warn('   Banco configurado:', process.env.DB_NAME || 'ebook_checkout');
+      console.warn('   Host:', process.env.DB_HOST || 'localhost');
       // Fallback para JSON
       const config = await readSiteConfig();
       return config?.video || null;
@@ -2490,6 +2494,87 @@ router.post('/colunistas/upload-imagem', requireAuth, uploadMateria, async (req,
   } catch (error) {
     console.error('Erro ao fazer upload de imagem:', error);
     res.status(500).json({ error: 'Erro ao fazer upload de imagem' });
+  }
+});
+
+// ==================== ENDPOINT DE VERIFICAÇÃO DE BANCO ====================
+// Endpoint para verificar conexão e estrutura do banco de dados
+router.get('/api/db/check', async (req, res) => {
+  try {
+    // Testar conexão
+    const connection = await pool.getConnection();
+    const [dbInfo] = await connection.execute('SELECT DATABASE() as db, USER() as user, @@hostname as hostname');
+    const dbName = dbInfo[0]?.db || 'desconhecido';
+    const dbUser = dbInfo[0]?.user || 'desconhecido';
+    const hostname = dbInfo[0]?.hostname || 'desconhecido';
+    connection.release();
+    
+    // Verificar tabelas
+    const [tables] = await pool.execute(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = DATABASE()
+      ORDER BY TABLE_NAME
+    `);
+    
+    const existingTables = tables.map(t => t.TABLE_NAME);
+    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas'];
+    const missingTables = requiredTables.filter(t => !existingTables.includes(t));
+    
+    // Verificar variáveis de ambiente
+    const envConfig = {
+      DB_HOST: process.env.DB_HOST || 'não definido',
+      DB_USER: process.env.DB_USER || 'não definido',
+      DB_NAME: process.env.DB_NAME || 'não definido',
+      DB_PASSWORD: process.env.DB_PASSWORD ? '***' : 'não definido'
+    };
+    
+    res.json({
+      connected: true,
+      database: {
+        name: dbName,
+        user: dbUser,
+        hostname: hostname
+      },
+      tables: {
+        existing: existingTables,
+        required: requiredTables,
+        missing: missingTables,
+        allExist: missingTables.length === 0
+      },
+      environment: envConfig
+    });
+  } catch (error) {
+    res.status(500).json({
+      connected: false,
+      error: error.message,
+      environment: {
+        DB_HOST: process.env.DB_HOST || 'não definido',
+        DB_USER: process.env.DB_USER || 'não definido',
+        DB_NAME: process.env.DB_NAME || 'não definido',
+        DB_PASSWORD: process.env.DB_PASSWORD ? '***' : 'não definido'
+      }
+    });
+  }
+});
+
+// Endpoint para inicializar/criar tabelas
+router.post('/api/db/init', requireAuth, async (req, res) => {
+  try {
+    const { initDatabase, checkTables } = require('../config/init-database');
+    const initialized = await initDatabase();
+    const tablesOk = await checkTables();
+    
+    res.json({
+      success: initialized && tablesOk,
+      initialized,
+      tablesOk
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
