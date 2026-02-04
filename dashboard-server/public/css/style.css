@@ -1288,11 +1288,6 @@ body {
     font-weight: 400;
     line-height: 1.5;
 }
-    display: block;
-    margin-top: 4px;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
 
 /* Loading */
 .loading {
@@ -1351,10 +1346,6 @@ body {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
     border-color: var(--border-color);
-}
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .faq-item-question {

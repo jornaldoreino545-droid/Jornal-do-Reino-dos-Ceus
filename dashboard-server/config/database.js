@@ -3,16 +3,17 @@ require('dotenv').config();
 
 // Configuração do banco de dados
 // Credenciais do banco MySQL da Hostinger
-// As variáveis de ambiente podem sobrescrever esses valores se definidas
+// Usuário: jornal@localhost
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  user: process.env.DB_USER || 'jornal',
+  port: parseInt(process.env.DB_PORT || '3306'), // MySQL padrão é 3306
+  user: process.env.DB_USER || 'jornal', // Formato: usuario@host
   password: process.env.DB_PASSWORD || 'igrejareinodosceus13',
   database: process.env.DB_NAME || 'ebook_checkout',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 10000 // 10 segundos de timeout
 };
 
 // Pool de conexões
@@ -36,10 +37,24 @@ pool.getConnection()
       
       // Inicializar banco (criar tabelas se não existirem)
       const { initDatabase, checkTables } = require('./init-database');
-      const tablesExist = await checkTables();
+      console.log('🔍 Verificando se as tabelas existem...');
+      const tablesExist = await checkTables(pool);
       if (!tablesExist) {
-        console.log('🔧 Criando tabelas faltantes...');
-        await initDatabase();
+        console.log('🔧 Tabelas faltando detectadas. Criando tabelas...');
+        const initResult = await initDatabase(pool);
+        if (initResult) {
+          // Verificar novamente após criação
+          const tablesExistAfter = await checkTables(pool);
+          if (tablesExistAfter) {
+            console.log('✅ Todas as tabelas foram criadas com sucesso!');
+          } else {
+            console.warn('⚠️  Algumas tabelas ainda podem estar faltando. Verifique os logs acima.');
+          }
+        } else {
+          console.error('❌ Falha ao inicializar banco de dados. Verifique os logs acima.');
+        }
+      } else {
+        console.log('✅ Todas as tabelas essenciais já existem');
       }
     } catch (initError) {
       console.error('⚠️  Erro ao inicializar banco:', initError.message);
@@ -65,6 +80,14 @@ pool.getConnection()
     if (err.code === 'ENOTFOUND') {
       console.error('   ⚠️  Erro: Hostname não encontrado. Verifique se DB_HOST está correto.');
       console.error('   💡 Dica: Na Hostinger, geralmente use "localhost" ou o hostname fornecido no painel.');
+    }
+    
+    if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
+      console.error('   ⚠️  Erro: Timeout ou conexão recusada. Verifique:');
+      console.error('      - Se o MySQL está rodando');
+      console.error('      - Se a porta está correta (MySQL geralmente usa 3306, não 3000)');
+      console.error('      - Se o host está correto');
+      console.error('   💡 Dica: Configure DB_PORT=3306 no Dokploy se estiver usando porta padrão do MySQL');
     }
     
     console.log('⚠️  Usando armazenamento em JSON como fallback');
