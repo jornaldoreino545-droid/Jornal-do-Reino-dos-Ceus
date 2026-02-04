@@ -29,6 +29,17 @@ async function readJornais() {
       console.warn('⚠️ Erro ao buscar jornais do MySQL, usando JSON:', dbError.message);
       console.warn('   Banco configurado:', process.env.DB_NAME || 'ebook_checkout');
       console.warn('   Host:', process.env.DB_HOST || 'localhost');
+      
+      // Se a tabela não existe, tentar criar automaticamente
+      if (dbError.message.includes("doesn't exist") || dbError.message.includes("Table")) {
+        console.log('🔧 Tentando criar tabela jornais automaticamente...');
+        try {
+          const { initDatabase } = require('../config/init-database');
+          await initDatabase(pool);
+        } catch (createError) {
+          console.error('❌ Erro ao criar tabelas automaticamente:', createError.message);
+        }
+      }
       // Fallback para JSON
     const exists = await fs.pathExists(JORNAIS_FILE);
     if (!exists) {
@@ -347,6 +358,17 @@ async function readVideo() {
       console.warn('⚠️ Erro ao buscar vídeo do MySQL, usando JSON:', dbError.message);
       console.warn('   Banco configurado:', process.env.DB_NAME || 'ebook_checkout');
       console.warn('   Host:', process.env.DB_HOST || 'localhost');
+      
+      // Se a tabela não existe, tentar criar automaticamente
+      if (dbError.message.includes("doesn't exist") || dbError.message.includes("Table")) {
+        console.log('🔧 Tentando criar tabela videos automaticamente...');
+        try {
+          const { initDatabase } = require('../config/init-database');
+          await initDatabase(pool);
+        } catch (createError) {
+          console.error('❌ Erro ao criar tabelas automaticamente:', createError.message);
+        }
+      }
       // Fallback para JSON
       const config = await readSiteConfig();
       return config?.video || null;
@@ -2562,8 +2584,8 @@ router.get('/api/db/check', async (req, res) => {
 router.post('/api/db/init', requireAuth, async (req, res) => {
   try {
     const { initDatabase, checkTables } = require('../config/init-database');
-    const initialized = await initDatabase();
-    const tablesOk = await checkTables();
+    const initialized = await initDatabase(pool);
+    const tablesOk = await checkTables(pool);
     
     res.json({
       success: initialized && tablesOk,

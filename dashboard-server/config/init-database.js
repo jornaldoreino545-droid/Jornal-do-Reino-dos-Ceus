@@ -1,4 +1,4 @@
-const pool = require('./database');
+// Importar pool - será passado como parâmetro para evitar referência circular
 const fs = require('fs-extra');
 const path = require('path');
 
@@ -7,10 +7,14 @@ const schemaPath = path.join(__dirname, '..', 'database-schema.sql');
 
 /**
  * Inicializa o banco de dados criando todas as tabelas necessárias
+ * @param {Object} dbPool - Pool de conexão MySQL
  */
-async function initDatabase() {
+async function initDatabase(dbPool) {
   try {
     console.log('🔧 Inicializando banco de dados...');
+    
+    // Usar pool passado como parâmetro
+    const pool = dbPool || require('./database');
     
     // Testar conexão
     const connection = await pool.getConnection();
@@ -28,46 +32,73 @@ async function initDatabase() {
     const schema = await fs.readFile(schemaPath, 'utf8');
     
     // Dividir em comandos individuais (separados por ;)
-    const commands = schema
+    // Remover comentários de linha (-- ...) e blocos (/* ... */)
+    let cleanSchema = schema
+      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove blocos de comentário
+      .split('\n')
+      .map(line => {
+        const commentIndex = line.indexOf('--');
+        if (commentIndex >= 0) {
+          return line.substring(0, commentIndex);
+        }
+        return line;
+      })
+      .join('\n');
+    
+    const commands = cleanSchema
       .split(';')
       .map(cmd => cmd.trim())
       .filter(cmd => {
-        // Filtrar comentários e linhas vazias
         const trimmed = cmd.trim();
-        return trimmed.length > 0 && 
+        return trimmed.length > 20 && // Comandos SQL válidos são maiores
                !trimmed.startsWith('--') && 
-               !trimmed.startsWith('/*') &&
-               trimmed !== '';
+               trimmed.toLowerCase().includes('create table');
       });
     
-    console.log(`📋 Executando ${commands.length} comandos SQL...`);
+    console.log(`📋 Encontrados ${commands.length} comandos CREATE TABLE para executar...`);
     
-    // Executar cada comando
+    // Executar cada comando CREATE TABLE
     let tablesCreated = 0;
+    let tablesErrors = 0;
+    
     for (let i = 0; i < commands.length; i++) {
       const command = commands[i];
-      if (command.length > 10) { // Ignorar comandos muito curtos
+      if (command.length > 20) {
         try {
-          await pool.execute(command);
+          // Adicionar ponto e vírgula se não tiver
+          const sqlCommand = command.endsWith(';') ? command : command + ';';
+          await pool.execute(sqlCommand);
+          
           // Extrair nome da tabela do comando para log
           const tableMatch = command.match(/CREATE TABLE (?:IF NOT EXISTS )?`?(\w+)`?/i);
           if (tableMatch) {
-            console.log(`  ✅ Tabela ${tableMatch[1]} verificada/criada`);
+            const tableName = tableMatch[1];
+            console.log(`  ✅ Tabela '${tableName}' criada/verificada`);
             tablesCreated++;
           }
         } catch (err) {
-          // Ignorar erros de "tabela já existe" ou outros erros não críticos
-          if (!err.message.includes('already exists') && 
-              !err.message.includes('Duplicate') &&
-              !err.message.includes('already exist')) {
-            console.warn(`  ⚠️  Aviso ao executar comando ${i + 1}:`, err.message.substring(0, 100));
+          // Ignorar erros de "tabela já existe"
+          if (err.message.includes('already exists') || 
+              err.message.includes('Duplicate') ||
+              err.message.includes('already exist')) {
+            const tableMatch = command.match(/CREATE TABLE (?:IF NOT EXISTS )?`?(\w+)`?/i);
+            if (tableMatch) {
+              console.log(`  ℹ️  Tabela '${tableMatch[1]}' já existe (ignorado)`);
+            }
+          } else {
+            console.error(`  ❌ Erro ao criar tabela (comando ${i + 1}):`, err.message);
+            console.error(`     SQL: ${command.substring(0, 100)}...`);
+            tablesErrors++;
           }
         }
       }
     }
     
     if (tablesCreated > 0) {
-      console.log(`✅ ${tablesCreated} tabela(s) processada(s)`);
+      console.log(`✅ ${tablesCreated} tabela(s) criada(s)/verificada(s) com sucesso`);
+    }
+    if (tablesErrors > 0) {
+      console.warn(`⚠️  ${tablesErrors} erro(s) ao criar tabela(s)`);
     }
     
     console.log('✅ Banco de dados inicializado com sucesso!');
@@ -81,9 +112,13 @@ async function initDatabase() {
 
 /**
  * Verifica se as tabelas essenciais existem
+ * @param {Object} dbPool - Pool de conexão MySQL
  */
-async function checkTables() {
+async function checkTables(dbPool) {
   try {
+    // Usar pool passado como parâmetro
+    const pool = dbPool || require('./database');
+    
     const [tables] = await pool.execute(`
       SELECT TABLE_NAME 
       FROM INFORMATION_SCHEMA.TABLES 
