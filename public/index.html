@@ -602,6 +602,12 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             reqPathPrefix = (error.reqInfo.pathPrefix || '').toLowerCase();
           }
           
+          // Verificar data.error se disponível
+          let dataError = '';
+          if (error.data && error.data.error) {
+            dataError = String(error.data.error).toLowerCase();
+          }
+          
           // Ignorar erros de extensões do Chrome (permission errors, template_list, etc)
           if (
             errorCode === 403 ||
@@ -612,15 +618,25 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             reqPath.includes('/site_integration/') ||
             reqPathPrefix.includes('/writing') ||
             reqPathPrefix.includes('/site_integration') ||
+            reqPathPrefix === '/writing' ||
+            reqPathPrefix === '/site_integration' ||
             errorMessage.includes('permission error') ||
             errorMessage.includes('userautherror') ||
+            errorMessage.includes('userauth') ||
             reqPath.includes('get_template_list') ||
             reqPath.includes('template_list') ||
+            reqPath === '/template_list' ||
+            reqPath === '/get_template_list' ||
+            dataError.includes('userauth') ||
+            dataError.includes('permission') ||
             errorString.includes('site_integration') ||
             errorString.includes('template_list') ||
             errorString.includes('permission error') ||
             errorString.includes('background.js') ||
-            errorString.includes('userautherror')
+            errorString.includes('userautherror') ||
+            errorString.includes('writing') ||
+            (error.data && error.data.code === 403) ||
+            (error.data && error.data.msg && error.data.msg.toLowerCase().includes('permission'))
           ) {
             // Silenciar completamente - é de extensão do navegador
             event.preventDefault();
@@ -640,16 +656,26 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         const error = event.error;
         const errorSource = (event.filename || '').toLowerCase();
         const errorMessage = (event.message || '').toLowerCase();
+        const errorStack = (event.error && event.error.stack ? event.error.stack : '').toLowerCase();
         
         // Ignorar erros de extensões
         if (
           errorSource.includes('chrome-extension') ||
           errorSource.includes('background.js') ||
+          errorSource.includes('extension://') ||
           errorMessage.includes('permission error') ||
           errorMessage.includes('template_list') ||
-          errorMessage.includes('get_template_list')
+          errorMessage.includes('get_template_list') ||
+          errorMessage.includes('userautherror') ||
+          errorMessage.includes('userauth') ||
+          errorStack.includes('chrome-extension') ||
+          errorStack.includes('background.js') ||
+          errorStack.includes('site_integration') ||
+          errorStack.includes('writing') ||
+          errorStack.includes('template_list')
         ) {
           event.preventDefault();
+          event.stopPropagation();
           return;
         }
       });
