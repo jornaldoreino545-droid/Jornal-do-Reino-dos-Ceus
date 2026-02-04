@@ -6,21 +6,7 @@ const { requireAuth } = require('../middleware/auth');
 const { uploadCapa, uploadCapaOptional, uploadMateria, uploadJornalFiles, uploadVideo } = require('../config/upload');
 const pool = require('../config/database');
 
-console.log('📦 Módulo de rotas do dashboard carregado');
-console.log('🔐 Rota POST /login será registrada');
-
-// Middleware de debug para TODAS as requisições (exceto uploads de arquivos)
-router.use((req, res, next) => {
-  // Log TODAS as requisições para debug (mas não para uploads de arquivos)
-  if (req.method === 'POST' && !req.path.includes('upload')) {
-    console.log('\n🔍 MIDDLEWARE DO ROUTER - Requisição POST detectada!');
-    console.log('📥 Método:', req.method);
-    console.log('📥 Path:', req.path);
-    console.log('📥 URL original:', req.originalUrl);
-    console.log('📥 Body:', JSON.stringify(req.body));
-  }
-  next();
-});
+// Middleware removido para produção - logs de debug desabilitados
 
 const JORNAIS_FILE = path.join(__dirname, '..', '..', 'jornais.json');
 const SITE_CONFIG_FILE = path.join(__dirname, '..', '..', 'site-config.json');
@@ -42,12 +28,12 @@ async function readJornais() {
     } catch (dbError) {
       console.warn('⚠️ Erro ao buscar jornais do MySQL, usando JSON:', dbError.message);
       // Fallback para JSON
-      const exists = await fs.pathExists(JORNAIS_FILE);
-      if (!exists) {
-        await fs.writeJson(JORNAIS_FILE, { jornais: [] }, { spaces: 2 });
-        return { jornais: [] };
-      }
-      return await fs.readJson(JORNAIS_FILE);
+    const exists = await fs.pathExists(JORNAIS_FILE);
+    if (!exists) {
+      await fs.writeJson(JORNAIS_FILE, { jornais: [] }, { spaces: 2 });
+      return { jornais: [] };
+    }
+    return await fs.readJson(JORNAIS_FILE);
     }
   } catch (error) {
     console.error('Erro ao ler jornais:', error);
@@ -72,7 +58,7 @@ async function saveJornal(jornal, isUpdate = false) {
             jornal.capa || '', jornal.pdf || '', jornal.id
           ]
         );
-        console.log('✅ Jornal atualizado no MySQL:', jornal.id);
+        // Jornal atualizado no MySQL
       } else {
         const [result] = await pool.execute(
           `INSERT INTO jornais 
@@ -85,7 +71,7 @@ async function saveJornal(jornal, isUpdate = false) {
           ]
         );
         jornal.id = result.insertId;
-        console.log('✅ Jornal salvo no MySQL com ID:', jornal.id);
+        // Jornal salvo no MySQL
       }
     } catch (dbError) {
       console.warn('⚠️ Erro ao salvar jornal no MySQL, usando JSON:', dbError.message);
@@ -141,7 +127,7 @@ async function writeJornaisJSON(data) {
     const dir = path.dirname(JORNAIS_FILE);
     await fs.ensureDir(dir);
     await fs.writeJson(JORNAIS_FILE, data, { spaces: 2 });
-    console.log('✅ Backup JSON escrito com sucesso');
+    // Backup JSON escrito com sucesso
     return true;
   } catch (error) {
     console.error('Erro ao escrever jornais.json:', error);
@@ -155,7 +141,7 @@ async function deleteJornal(id) {
     // Deletar do MySQL
     try {
       await pool.execute('DELETE FROM jornais WHERE id = ?', [id]);
-      console.log('✅ Jornal deletado do MySQL:', id);
+      // Jornal deletado do MySQL
     } catch (dbError) {
       console.warn('⚠️ Erro ao deletar jornal do MySQL, usando JSON:', dbError.message);
     }
@@ -234,7 +220,7 @@ async function saveMateria(materia, isUpdate = false) {
             materia.id
           ]
         );
-        console.log('✅ Matéria atualizada no MySQL:', materia.id);
+        // Matéria atualizada no MySQL
       } else {
         const [result] = await pool.execute(
           `INSERT INTO materias 
@@ -247,7 +233,7 @@ async function saveMateria(materia, isUpdate = false) {
           ]
         );
         materia.id = result.insertId;
-        console.log('✅ Matéria salva no MySQL com ID:', materia.id);
+        // Matéria salva no MySQL
       }
     } catch (dbError) {
       console.warn('⚠️ Erro ao salvar matéria no MySQL, usando JSON:', dbError.message);
@@ -303,7 +289,7 @@ async function writeMateriasJSON(materias) {
     const dir = path.dirname(MATERIAS_FILE);
     await fs.ensureDir(dir);
     await fs.writeJson(MATERIAS_FILE, materias, { spaces: 2 });
-    console.log('✅ Backup JSON escrito com sucesso');
+    // Backup JSON escrito com sucesso
     return true;
   } catch (error) {
     console.error('Erro ao escrever materias.json:', error);
@@ -317,7 +303,7 @@ async function deleteMateria(id) {
     // Deletar do MySQL
     try {
       await pool.execute('DELETE FROM materias WHERE id = ?', [id]);
-      console.log('✅ Matéria deletada do MySQL:', id);
+      // Matéria deletada do MySQL
     } catch (dbError) {
       console.warn('⚠️ Erro ao deletar matéria do MySQL, usando JSON:', dbError.message);
     }
@@ -387,7 +373,7 @@ async function saveVideo(video) {
           [video.url, video.titulo || '', video.descricao || '', video.thumbnail || '', existing[0].id]
         );
         video.id = existing[0].id;
-        console.log('✅ Vídeo atualizado no MySQL:', video.id);
+        // Vídeo atualizado no MySQL
       } else {
         // Criar novo vídeo
         const [result] = await pool.execute(
@@ -396,7 +382,7 @@ async function saveVideo(video) {
           [video.url, video.titulo || '', video.descricao || '', video.thumbnail || '']
         );
         video.id = result.insertId;
-        console.log('✅ Vídeo salvo no MySQL com ID:', video.id);
+        // Vídeo salvo no MySQL
       }
     } catch (dbError) {
       console.warn('⚠️ Erro ao salvar vídeo no MySQL, usando JSON:', dbError.message);
@@ -448,7 +434,7 @@ async function writeColunistas(data) {
     const dir = path.dirname(COLUNISTAS_FILE);
     await fs.ensureDir(dir);
     await fs.writeJson(COLUNISTAS_FILE, data, { spaces: 2 });
-    console.log('Arquivo colunistas.json escrito com sucesso');
+    // Arquivo colunistas.json escrito com sucesso
     return true;
   } catch (error) {
     console.error('Erro ao escrever colunistas.json:', error);
@@ -467,154 +453,40 @@ router.get('/test', (req, res) => {
 // Login - REGISTRAR A ROTA COM LOG IMEDIATO
 console.log('🔐 Registrando rota POST /login...');
 router.post('/login', async (req, res) => {
-  // Log IMEDIATO no início da função - PRIMEIRA COISA A EXECUTAR
-  console.log('\n\n\n');
-  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
-  console.log('🔐 ===== ROTA DE LOGIN CHAMADA =====');
-  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
-  console.log('⏰ Timestamp:', new Date().toISOString());
-  console.log('📧 Email recebido:', req.body.email);
-  console.log('🔑 Password recebido (comprimento):', req.body.password ? req.body.password.length + ' caracteres' : 'NÃO FORNECIDO');
-  console.log('🔑 Password recebido (valor completo):', req.body.password);
-  console.log('📦 Body completo:', JSON.stringify(req.body));
-  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
-  console.log('\n\n');
-  
   try {
-    
     const { username, email, password } = req.body;
     
     // Aceita tanto username quanto email no campo de login
     const loginValue = email || username;
     
     if (!loginValue || !password) {
-      console.log('❌ Campos vazios');
       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
     
-    // Credenciais fixas - APENAS essas credenciais permitem acesso ao dashboard
-    // Email: jornaldoreino545@gmail.com
-    // Senha: Igrejareinodosceus1313
+    // Credenciais fixas
     const ADMIN_EMAIL = 'jornaldoreino545@gmail.com';
     const ADMIN_PASS = 'Igrejareinodosceus1313';
     
-    // Permitir override via variável de ambiente, mas usar os valores fixos como padrão
+    // Permitir override via variável de ambiente
     const adminEmail = (process.env.ADMIN_EMAIL || ADMIN_EMAIL).trim().toLowerCase();
-    // IMPORTANTE: Não fazer trim na senha esperada, manter exatamente como está
     const adminPass = (process.env.ADMIN_PASS || ADMIN_PASS);
 
-    // Normalizar entrada do usuário (remover espaços no início e fim, converter email para lowercase)
+    // Normalizar entrada do usuário
     const normalizedEmail = loginValue.trim().toLowerCase();
-    // Remover TODOS os espaços (início, fim e meio) da senha fornecida
-    // Mas manter case-sensitive
     const normalizedPassword = password.replace(/\s+/g, ''); // Remove todos os espaços
     
-    console.log('\n📋 === DADOS NORMALIZADOS ===');
-    console.log('📧 Email normalizado:', normalizedEmail);
-    console.log('🔑 Senha normalizada (completa):', normalizedPassword);
-    console.log('📏 Senha normalizada (comprimento):', normalizedPassword.length);
-
-    console.log('\n🔍 === COMPARANDO CREDENCIAIS ===');
-    console.log('📧 Email fornecido:', normalizedEmail);
-    console.log('📧 Email esperado:', adminEmail);
-    console.log('✅ Emails coincidem?', normalizedEmail === adminEmail);
-    console.log('🔑 Senha fornecida (comprimento):', normalizedPassword.length, 'caracteres');
-    console.log('🔑 Senha esperada (comprimento):', adminPass.length, 'caracteres');
-    console.log('🔑 Senha fornecida (primeiros 5 chars):', normalizedPassword.substring(0, 5));
-    console.log('🔑 Senha esperada (primeiros 5 chars):', adminPass.substring(0, 5));
-    console.log('🔑 Senha fornecida (últimos 5 chars):', normalizedPassword.substring(normalizedPassword.length - 5));
-    console.log('🔑 Senha esperada (últimos 5 chars):', adminPass.substring(adminPass.length - 5));
-    console.log('🔑 Senhas coincidem (exata)?', normalizedPassword === adminPass);
-
-    // Comparação de email - verificar se coincide (já está normalizado para lowercase)
+    // Comparação de email
     const emailMatch = normalizedEmail === adminEmail;
     
-    console.log('\n📧 === VERIFICAÇÃO DE EMAIL ===');
-    console.log('📧 Email fornecido:', normalizedEmail);
-    console.log('📧 Email esperado:', adminEmail);
-    console.log('✅ Emails coincidem?', emailMatch);
-    
-    // Se email não coincidir, retornar erro imediatamente
     if (!emailMatch) {
-      console.log('\n❌❌❌ EMAIL INCORRETO ❌❌❌\n');
       return res.status(401).json({ 
         error: 'Credenciais inválidas',
         message: 'Email ou senha incorretos.'
       });
     }
     
-    console.log('✅ Email correto! Verificando senha...\n');
-    
-    // Comparação de senha - COMPARAÇÃO EXATA COM DEBUG COMPLETO
-    let passwordMatch = false;
-    
-    console.log('🔑 === VERIFICAÇÃO DE SENHA ===');
-    console.log('🔑 Senha fornecida (raw):', JSON.stringify(normalizedPassword));
-    console.log('🔑 Senha esperada (raw):', JSON.stringify(adminPass));
-    console.log('📏 Comprimento fornecido:', normalizedPassword.length);
-    console.log('📏 Comprimento esperado:', adminPass.length);
-    
-    // Verificar se os comprimentos são iguais
-    if (normalizedPassword.length !== adminPass.length) {
-      console.log('❌ COMPRIMENTOS DIFERENTES!');
-      console.log(`   Fornecida: ${normalizedPassword.length} caracteres`);
-      console.log(`   Esperada: ${adminPass.length} caracteres`);
-    }
-    
-    // Comparação byte a byte para debug COMPLETO
-    console.log('\n🔍 Comparação byte a byte (TODOS os caracteres):');
-    const maxLen = Math.max(normalizedPassword.length, adminPass.length);
-    let allMatch = true;
-    let firstMismatch = -1;
-    
-    for (let i = 0; i < maxLen; i++) {
-      const charInput = normalizedPassword[i] || 'MISSING';
-      const charExpected = adminPass[i] || 'MISSING';
-      const match = charInput === charExpected;
-      
-      if (!match) {
-        allMatch = false;
-        if (firstMismatch === -1) {
-          firstMismatch = i;
-        }
-      }
-      
-      // Mostrar todos os caracteres ou apenas os que não coincidem
-      if (i < 30 || !match) {
-        const inputCode = charInput !== 'MISSING' ? charInput.charCodeAt(0) : 'N/A';
-        const expectedCode = charExpected !== 'MISSING' ? charExpected.charCodeAt(0) : 'N/A';
-        console.log(`  [${i}] '${charInput}' (${inputCode}) === '${charExpected}' (${expectedCode}) ? ${match ? '✅' : '❌'}`);
-      }
-    }
-    
-    if (firstMismatch !== -1) {
-      console.log(`\n⚠️ Primeira diferença encontrada na posição ${firstMismatch}`);
-    }
-    
-    // Comparação exata (case-sensitive)
-    if (normalizedPassword === adminPass) {
-      passwordMatch = true;
-      console.log('\n✅✅✅ SENHA CORRETA (comparação exata) ✅✅✅');
-    } else {
-      console.log('\n❌❌❌ SENHA INCORRETA - comparação exata falhou ❌❌❌');
-      console.log('🔍 Diferenças detectadas na comparação byte a byte');
-      
-      // Tentar comparação case-insensitive como fallback (apenas para debug)
-      if (normalizedPassword.toLowerCase() === adminPass.toLowerCase()) {
-        console.log('\n⚠️⚠️⚠️ ATENÇÃO: Senhas coincidem em minúsculas, mas diferem em maiúsculas/minúsculas!');
-        console.log('   Isso indica que a senha é case-sensitive e há diferença de capitalização.');
-        console.log(`   Fornecida: "${normalizedPassword}"`);
-        console.log(`   Esperada: "${adminPass}"`);
-      } else {
-        console.log('\n⚠️ Senhas também diferem em minúsculas (não é apenas problema de capitalização)');
-      }
-    }
-    
-    console.log('\n🎯 === RESULTADO FINAL ===');
-    console.log('📧 Email correto?', emailMatch);
-    console.log('🔑 Senha correta?', passwordMatch);
-    console.log('🎯 Acesso autorizado?', emailMatch && passwordMatch);
-    console.log('===========================\n');
+    // Comparação de senha (case-sensitive)
+    const passwordMatch = normalizedPassword === adminPass;
     
     if (emailMatch && passwordMatch) {
       // Credenciais válidas - criar sessão autenticada
@@ -622,60 +494,23 @@ router.post('/login', async (req, res) => {
       req.session.user = adminEmail;
       req.session.loginTime = new Date().toISOString();
       
-      console.log('✅✅✅ CREDENCIAIS VÁLIDAS - ACESSO AUTORIZADO ✅✅✅');
-      console.log('🔐 Criando sessão...');
-      console.log('🆔 Session ID:', req.sessionID);
-      console.log('👤 Usuário:', adminEmail);
-      
-      // Salvar sessão explicitamente antes de responder
-      console.log('💾 Salvando sessão...');
       req.session.save((err) => {
         if (err) {
-          console.error('❌ Erro ao salvar sessão:', err);
+          console.error('Erro ao salvar sessão:', err);
           return res.status(500).json({ error: 'Erro ao criar sessão' });
         }
-        console.log('✅ Sessão salva com sucesso!');
-        console.log('Verificando sessão salva:', req.session.authenticated);
-        console.log('📤 Enviando resposta de sucesso...');
-        const responseData = { ok: true, user: adminEmail, message: 'Login realizado com sucesso' };
-        console.log('📦 Dados da resposta:', JSON.stringify(responseData));
-        res.json(responseData);
-        console.log('✅ Resposta enviada com sucesso!');
+        res.json({ ok: true, user: adminEmail, message: 'Login realizado com sucesso' });
       });
-      return; // Importante: não continuar após iniciar o save
+      return;
     }
-    
-    console.log('\n❌❌❌ CREDENCIAIS INVÁLIDAS - ACESSO NEGADO ❌❌❌');
-    console.log('📧 Email correto?', emailMatch);
-    console.log('🔑 Senha correta?', passwordMatch);
-    console.log('\n🔍 === DIAGNÓSTICO FINAL ===');
-    console.log('📧 Email fornecido:', normalizedEmail);
-    console.log('📧 Email esperado:', adminEmail);
-    console.log('🔑 Senha fornecida (completa):', normalizedPassword);
-    console.log('🔑 Senha esperada (completa):', adminPass);
-    console.log('📏 Senha fornecida (comprimento):', normalizedPassword.length);
-    console.log('📏 Senha esperada (comprimento):', adminPass.length);
-    console.log('\n🔤 Senha fornecida (caractere por caractere):');
-    normalizedPassword.split('').forEach((c, i) => {
-      console.log(`  [${i}] '${c}' (código: ${c.charCodeAt(0)})`);
-    });
-    console.log('\n🔤 Senha esperada (caractere por caractere):');
-    adminPass.split('').forEach((c, i) => {
-      console.log(`  [${i}] '${c}' (código: ${c.charCodeAt(0)})`);
-    });
-    console.log('==========================================\n');
     
     res.status(401).json({ 
       error: 'Credenciais inválidas',
-      message: 'Email ou senha incorretos. Verifique o console do servidor para mais detalhes.'
+      message: 'Email ou senha incorretos.'
     });
   } catch (error) {
-    console.error('\n\n❌❌❌ ERRO NO LOGIN ❌❌❌');
-    console.error('Tipo do erro:', error.constructor.name);
-    console.error('Mensagem:', error.message);
-    console.error('Stack:', error.stack);
-    console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌\n');
-    res.status(500).json({ error: 'Erro interno do servidor', message: error.message });
+    console.error('Erro no login:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
@@ -704,7 +539,7 @@ router.get('/auth/check', (req, res) => {
 // Se estiver autenticado, retorna todos os jornais (para o dashboard)
 router.get('/jornais', async (req, res) => {
   try {
-    console.log('Listando jornais...');
+    // Listando jornais
     const data = await readJornais();
     let jornaisList = data.jornais || [];
     
@@ -715,7 +550,7 @@ router.get('/jornais', async (req, res) => {
         .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
     }
     
-    console.log(`Retornando ${jornaisList.length} jornais`);
+    // Retornando jornais
     res.json({ jornais: jornaisList });
   } catch (error) {
     console.error('Erro ao listar jornais:', error);
@@ -741,8 +576,7 @@ router.get('/jornais/:id', async (req, res) => {
 
 // Criar novo jornal
 router.post('/jornais', requireAuth, (req, res, next) => {
-  console.log('=== INICIANDO CRIAÇÃO DE JORNAL ===');
-  console.log('Autenticado:', req.session?.authenticated);
+  // Iniciando criação de jornal
   
   // Usar upload de múltiplos arquivos (capa e PDF)
   uploadJornalFiles(req, res, (uploadErr) => {
@@ -770,9 +604,8 @@ router.post('/jornais', requireAuth, (req, res, next) => {
   });
 }, async (req, res) => {
   try {
-    console.log('Processando criação do jornal...');
-    console.log('Body recebido:', req.body);
-    console.log('Arquivos recebidos:', req.files);
+    // Processando criação do jornal
+    // Arquivos recebidos
     
     const { nome, mes, ano, descricao, linkCompra, ordem, ativo } = req.body;
     
@@ -838,8 +671,8 @@ router.post('/jornais', requireAuth, (req, res, next) => {
 
 // Atualizar jornal
 router.put('/jornais/:id', requireAuth, (req, res, next) => {
-  console.log('=== INICIANDO ATUALIZAÇÃO DE JORNAL ===');
-  console.log('Autenticado:', req.session?.authenticated);
+  // Iniciando atualização de jornal
+  // Verificando autenticação
   
   // Usar upload de múltiplos arquivos (capa e PDF) - ambos opcionais na atualização
   uploadJornalFiles(req, res, (uploadErr) => {
@@ -867,9 +700,8 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
   });
 }, async (req, res) => {
   try {
-    console.log('Processando atualização do jornal...');
-    console.log('Body recebido:', req.body);
-    console.log('Arquivos recebidos:', req.files);
+    // Processando atualização do jornal
+    // Arquivos recebidos
     const { nome, mes, ano, descricao, linkCompra, ordem, ativo } = req.body;
     const id = parseInt(req.params.id);
 
@@ -971,7 +803,7 @@ router.delete('/jornais/:id', requireAuth, async (req, res) => {
         console.error('Erro ao deletar capa:', err);
       }
     }
-    
+
     // Deletar PDF se existir
     if (jornal.pdf) {
       const pdfPath = jornal.pdf.startsWith('/uploads/') 
@@ -1059,7 +891,7 @@ const uploadMateriaMultiple = multer({
 router.post('/site/upload-materia', requireAuth, uploadMateriaMultiple.single('materia'), async (req, res) => {
   try {
     console.log('📤 Upload de imagem recebido');
-    console.log('   Arquivo recebido:', req.file ? req.file.originalname : 'nenhum');
+    // Arquivo recebido
     console.log('   Body:', req.body);
     console.log('   File:', req.file ? { 
       originalname: req.file.originalname, 
@@ -1372,8 +1204,8 @@ router.get('/site/video', async (req, res) => {
       });
     } else {
       // Fallback para JSON
-      const config = await readSiteConfig();
-      res.json(config?.videoPrincipal || {});
+    const config = await readSiteConfig();
+    res.json(config?.videoPrincipal || {});
     }
   } catch (error) {
     console.error('Erro ao obter vídeo:', error);
@@ -1422,7 +1254,7 @@ router.put('/site/video', requireAuth, (req, res, next) => {
       descricao: '',
       thumbnail: ''
     };
-    
+
     // Se um novo vídeo foi enviado, processar o upload
     if (req.file) {
       videoData.url = `/uploads/videos/${req.file.filename}`;
@@ -1872,8 +1704,7 @@ router.put('/site/banner-modal', requireAuth, uploadMateria, async (req, res) =>
 // Rota para o site público (compatibilidade)
 router.get('/site/noticias', async (req, res) => {
   try {
-    console.log('📰 Buscando notícias para o site público...');
-    console.log('   Arquivo:', MATERIAS_FILE);
+    // Buscando notícias para o site público
     let materias = await readMaterias();
     
     // Ordenar por data de criação/publicação em ordem decrescente (mais recente primeiro)
@@ -1898,8 +1729,7 @@ router.get('/site/noticias', async (req, res) => {
       return (b.id || 0) - (a.id || 0);
     });
     
-    console.log(`✅ ${materias.length} notícias encontradas e ordenadas`);
-    console.log('   Primeiras 3 matérias:', materias.slice(0, 3).map(m => ({ id: m.id, title: m.title, date: m.date, created_at: m.created_at })));
+    // Notícias encontradas e ordenadas
     res.json(materias);
   } catch (error) {
     console.error('❌ Erro ao listar notícias:', error);
@@ -1959,11 +1789,7 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { title, date, category, content, excerpt, tag } = req.body;
     
-    console.log('📝 Criando nova notícia...');
-    console.log('   Título:', title);
-    console.log('   Data:', date);
-    console.log('   Categoria:', category);
-    console.log('   Tem imagem?', !!req.file);
+    // Criando nova notícia
     
     if (!title || !content) {
       return res.status(400).json({ error: 'Título e conteúdo são obrigatórios' });
@@ -1971,7 +1797,6 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
 
     // Obter próximo ID
     const materias = await readMaterias();
-    console.log(`   Total de matérias antes: ${materias.length}`);
     
     const novoId = materias.length > 0
       ? Math.max(...materias.map(m => m.id || 0)) + 1
@@ -2187,9 +2012,9 @@ router.delete('/pagamentos/:id', requireAuth, async (req, res) => {
         
         const index = pagamentos.findIndex(p => p.id === paymentId);
         if (index === -1) {
-          return res.status(404).json({ error: 'Pagamento não encontrado' });
-        }
-        
+        return res.status(404).json({ error: 'Pagamento não encontrado' });
+      }
+      
         pagamentos.splice(index, 1);
         await writePagamentos({ pagamentos });
         
@@ -2197,7 +2022,7 @@ router.delete('/pagamentos/:id', requireAuth, async (req, res) => {
         return res.json({ ok: true, message: 'Pagamento deletado com sucesso' });
       }
       
-      console.log('✅ Pagamento deletado do MySQL:', paymentId);
+      // Pagamento deletado do MySQL
       return res.json({ ok: true, message: 'Pagamento deletado com sucesso' });
       
     } catch (dbError) {
@@ -2206,17 +2031,17 @@ router.delete('/pagamentos/:id', requireAuth, async (req, res) => {
       
       // Fallback para JSON
       try {
-        const data = await readPagamentos();
-        const pagamentos = data.pagamentos || [];
-        
+      const data = await readPagamentos();
+      const pagamentos = data.pagamentos || [];
+      
         const index = pagamentos.findIndex(p => p.id === paymentId);
-        if (index === -1) {
-          return res.status(404).json({ error: 'Pagamento não encontrado' });
-        }
-        
-        pagamentos.splice(index, 1);
-        await writePagamentos({ pagamentos });
-        
+      if (index === -1) {
+        return res.status(404).json({ error: 'Pagamento não encontrado' });
+      }
+      
+      pagamentos.splice(index, 1);
+      await writePagamentos({ pagamentos });
+      
         console.log('✅ Pagamento deletado do JSON:', paymentId);
         return res.json({ ok: true, message: 'Pagamento deletado com sucesso' });
       } catch (jsonError) {
@@ -2239,9 +2064,13 @@ router.post('/pagamentos', async (req, res) => {
     console.log('📥 Recebendo pagamento:', { paymentIntentId, nome, email, jornalId, valor });
     console.log('📥 Valor recebido (tipo):', typeof valor, 'Valor:', valor);
     
-    if (!paymentIntentId) {
-      return res.status(400).json({ error: 'paymentIntentId é obrigatório' });
+    // Validar paymentIntentId - não pode ser vazio ou apenas espaços
+    if (!paymentIntentId || typeof paymentIntentId !== 'string' || paymentIntentId.trim() === '') {
+      return res.status(400).json({ error: 'paymentIntentId é obrigatório e não pode estar vazio' });
     }
+    
+    // Garantir que paymentIntentId não está vazio após trim
+    const paymentIntentIdFinal = paymentIntentId.trim();
     
     // Validar e fornecer valores padrão para campos opcionais
     const nomeFinal = nome || 'Cliente';
@@ -2272,35 +2101,88 @@ router.post('/pagamentos', async (req, res) => {
     
     // Tentar salvar no MySQL primeiro
     try {
+      // Verificar quais colunas existem na tabela (paymentIntentId ou stripe_payment_id)
+      let columnName = 'paymentIntentId';
+      let columnExists = false;
+      let stripeColumnExists = false;
+      
+      try {
+        const [columns] = await pool.execute(
+          `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+           WHERE TABLE_SCHEMA = DATABASE() 
+           AND TABLE_NAME = 'pagamentos' 
+           AND (COLUMN_NAME = 'paymentIntentId' OR COLUMN_NAME = 'stripe_payment_id')`
+        );
+        
+        columnExists = columns.some(col => col.COLUMN_NAME === 'paymentIntentId');
+        stripeColumnExists = columns.some(col => col.COLUMN_NAME === 'stripe_payment_id');
+        
+        // Se existe stripe_payment_id mas não paymentIntentId, tentar corrigir automaticamente
+        if (!columnExists && stripeColumnExists) {
+          console.log('🔧 Detectada coluna stripe_payment_id. Tentando corrigir estrutura da tabela...');
+          try {
+            // Remover registros com stripe_payment_id vazio ou NULL
+            await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+            
+            // Renomear coluna stripe_payment_id para paymentIntentId
+            await pool.execute(`ALTER TABLE pagamentos CHANGE COLUMN stripe_payment_id paymentIntentId VARCHAR(255) NOT NULL UNIQUE`);
+            
+            // Adicionar índice se não existir
+            try {
+              await pool.execute(`CREATE INDEX idx_paymentIntentId ON pagamentos(paymentIntentId)`);
+            } catch (idxError) {
+              // Índice pode já existir, ignorar
+            }
+            
+            columnName = 'paymentIntentId';
+            columnExists = true;
+            console.log('✅ Estrutura da tabela corrigida automaticamente!');
+          } catch (fixError) {
+            console.error('❌ Erro ao corrigir estrutura automaticamente:', fixError.message);
+            console.warn('⚠️ Usando fallback JSON. Execute o script fix-stripe-payment-id.sql manualmente.');
+            // Forçar uso do fallback JSON
+            columnExists = false;
+          }
+        }
+      } catch (checkError) {
+        console.warn('⚠️ Erro ao verificar colunas, assumindo que não existem:', checkError.message);
+      }
+      
       // Verificar se o pagamento já existe
-      const [existing] = await pool.execute(
-        'SELECT * FROM pagamentos WHERE paymentIntentId = ?',
-        [paymentIntentId]
-      );
+      let existing = [];
+      if (columnExists) {
+        [existing] = await pool.execute(
+          `SELECT * FROM pagamentos WHERE ${columnName} = ?`,
+          [paymentIntentIdFinal]
+        );
+      } else {
+        console.warn('⚠️ Coluna paymentIntentId ou stripe_payment_id não existe na tabela pagamentos. Execute o script fix-stripe-payment-id.sql');
+      }
       
       if (existing.length > 0) {
         // Se o pagamento existente tem valor 0 e o novo tem valor, atualizar
         if (existing[0].valor === 0 && valorFinal > 0) {
-          console.log('🔄 Atualizando valor do pagamento existente de 0 para', valorFinal);
+          // Atualizando valor do pagamento existente
           await pool.execute(
-            'UPDATE pagamentos SET valor = ? WHERE paymentIntentId = ?',
-            [valorFinal, paymentIntentId]
+            `UPDATE pagamentos SET valor = ? WHERE ${columnName} = ?`,
+            [valorFinal, paymentIntentIdFinal]
           );
           // Buscar o pagamento atualizado
           const [updated] = await pool.execute(
-            'SELECT * FROM pagamentos WHERE paymentIntentId = ?',
-            [paymentIntentId]
+            `SELECT * FROM pagamentos WHERE ${columnName} = ?`,
+            [paymentIntentIdFinal]
           );
           return res.json({ message: 'Valor do pagamento atualizado', pagamento: updated[0] });
         }
         return res.json({ message: 'Pagamento já registrado', pagamento: existing[0] });
       }
       
-      // Inserir no MySQL
+      // Inserir no MySQL (só se a coluna existir)
+      if (columnExists) {
       const [result] = await pool.execute(
-        `INSERT INTO pagamentos (paymentIntentId, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
+        `INSERT INTO pagamentos (${columnName}, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [paymentIntentId, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
+        [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
       );
       
       // Buscar o pagamento inserido
@@ -2309,24 +2191,88 @@ router.post('/pagamentos', async (req, res) => {
         [result.insertId]
       );
       
-      console.log('✅ Pagamento registrado no MySQL:', result.insertId);
+        // Pagamento registrado no MySQL
       return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
+      } else {
+        // Se a coluna não existe, forçar erro para cair no fallback JSON
+        throw new Error('Coluna paymentIntentId não existe. Execute o script fix-pagamentos.sql');
+      }
       
     } catch (dbError) {
       console.error('❌ Erro ao salvar pagamento no MySQL:', dbError.message);
       console.error('❌ Stack:', dbError.stack);
       console.error('❌ Código do erro:', dbError.code);
       
+      // Se o erro for de duplicata (com stripe_payment_id ou paymentIntentId vazio), tentar corrigir
+      if (dbError.code === 'ER_DUP_ENTRY' && (
+        dbError.message.includes('stripe_payment_id') || 
+        dbError.message.includes('paymentIntentId')
+      )) {
+        console.log('🔧 Tentando corrigir erro de duplicata...');
+        try {
+          // Verificar qual coluna existe
+          const [columns] = await pool.execute(
+            `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+             WHERE TABLE_SCHEMA = DATABASE() 
+             AND TABLE_NAME = 'pagamentos' 
+             AND (COLUMN_NAME = 'paymentIntentId' OR COLUMN_NAME = 'stripe_payment_id')`
+          );
+          
+          const hasPaymentIntentId = columns.some(col => col.COLUMN_NAME === 'paymentIntentId');
+          const hasStripePaymentId = columns.some(col => col.COLUMN_NAME === 'stripe_payment_id');
+          
+          // Se existe stripe_payment_id, limpar registros vazios e renomear
+          if (hasStripePaymentId) {
+            console.log('🔧 Removendo registros com stripe_payment_id vazio...');
+            await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+            
+            if (!hasPaymentIntentId) {
+              console.log('🔧 Renomeando coluna stripe_payment_id para paymentIntentId...');
+              try {
+                await pool.execute(`ALTER TABLE pagamentos CHANGE COLUMN stripe_payment_id paymentIntentId VARCHAR(255) NOT NULL UNIQUE`);
+                console.log('✅ Coluna renomeada com sucesso!');
+              } catch (renameError) {
+                console.warn('⚠️ Erro ao renomear coluna (pode já ter sido renomeada):', renameError.message);
+              }
+            }
+          } else if (hasPaymentIntentId) {
+            // Se só existe paymentIntentId, limpar registros vazios
+            console.log('🔧 Removendo registros com paymentIntentId vazio...');
+            await pool.execute(`DELETE FROM pagamentos WHERE paymentIntentId IS NULL OR paymentIntentId = ''`);
+          }
+          
+          // Tentar inserir novamente
+          console.log('🔄 Tentando inserir novamente após correção...');
+          const [result] = await pool.execute(
+            `INSERT INTO pagamentos (paymentIntentId, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
+          );
+          
+          const [inserted] = await pool.execute(
+            'SELECT * FROM pagamentos WHERE id = ?',
+            [result.insertId]
+          );
+          
+          console.log('✅ Pagamento inserido após correção!');
+          return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
+        } catch (fixError) {
+          console.error('❌ Erro ao tentar corrigir:', fixError.message);
+          console.error('❌ Stack da correção:', fixError.stack);
+          // Continuar para o fallback JSON
+        }
+      }
+      
       // Fallback para JSON se MySQL falhar
       const data = await readPagamentos();
       const pagamentos = data.pagamentos || [];
       
       // Verificar se o pagamento já existe
-      const pagamentoExistente = pagamentos.find(p => p.paymentIntentId === paymentIntentId);
+      const pagamentoExistente = pagamentos.find(p => p.paymentIntentId === paymentIntentIdFinal);
       if (pagamentoExistente) {
         // Se o pagamento existente tem valor 0 e o novo tem valor, atualizar
         if (pagamentoExistente.valor === 0 && valorFinal > 0) {
-          console.log('🔄 Atualizando valor do pagamento existente (JSON) de 0 para', valorFinal);
+          // Atualizando valor do pagamento existente (JSON)
           pagamentoExistente.valor = valorFinal;
           await writePagamentos({ pagamentos });
           return res.json({ message: 'Valor do pagamento atualizado', pagamento: pagamentoExistente });
@@ -2337,7 +2283,7 @@ router.post('/pagamentos', async (req, res) => {
       // Criar novo pagamento
       const novoPagamento = {
         id: pagamentos.length > 0 ? Math.max(...pagamentos.map(p => p.id)) + 1 : 1,
-        paymentIntentId: String(paymentIntentId),
+        paymentIntentId: paymentIntentIdFinal,
         nome: String(nomeFinal),
         email: String(emailFinal),
         jornalId: String(jornalIdFinal),
@@ -2434,7 +2380,7 @@ router.post('/colunistas', requireAuth, async (req, res) => {
   try {
     const { nome, coluna, conteudo, instagram, ordem, ativo } = req.body;
     
-    console.log('📝 Criando novo colunista...');
+    // Criando novo colunista
     console.log('   Nome:', nome);
     console.log('   Coluna:', coluna);
     console.log('   Ativo:', ativo);
@@ -2469,7 +2415,7 @@ router.post('/colunistas', requireAuth, async (req, res) => {
     
     console.log(`✅ Colunista criado com sucesso! ID: ${newId}`);
     console.log(`   Total de colunistas depois: ${data.colunistas.length}`);
-    console.log(`   Arquivo salvo em: ${COLUNISTAS_FILE}`);
+    // Arquivo salvo
     
     res.status(201).json(novoColunista);
   } catch (error) {

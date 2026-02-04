@@ -168,5 +168,85 @@
     </main>
 
     <script src="/checkout/scripts/checkout.js"></script>
+    
+    <!-- Handler global para erros não tratados de extensões do navegador -->
+    <script>
+      // Capturar erros de promise não tratados (principalmente de extensões do Chrome)
+      window.addEventListener('unhandledrejection', function(event) {
+        const error = event.reason;
+        
+        // Verificar se é um erro de extensão do Chrome
+        if (error && typeof error === 'object') {
+          const errorString = JSON.stringify(error).toLowerCase();
+          const errorMessage = (error.message || '').toLowerCase();
+          const errorName = (error.name || '').toLowerCase();
+          const errorCode = error.code;
+          const httpStatus = error.httpStatus;
+          
+          // Verificar stack trace se disponível
+          let originalErrorStack = '';
+          if (error.originalError && error.originalError.stack) {
+            originalErrorStack = error.originalError.stack.toLowerCase();
+          }
+          
+          // Verificar reqInfo se disponível
+          let reqPath = '';
+          let reqPathPrefix = '';
+          if (error.reqInfo) {
+            reqPath = (error.reqInfo.path || '').toLowerCase();
+            reqPathPrefix = (error.reqInfo.pathPrefix || '').toLowerCase();
+          }
+          
+          // Ignorar erros de extensões do Chrome (permission errors, template_list, etc)
+          if (
+            errorCode === 403 ||
+            (httpStatus === 200 && errorCode === 403) ||
+            originalErrorStack.includes('background.js') ||
+            originalErrorStack.includes('chrome-extension') ||
+            reqPath.includes('/writing/') ||
+            reqPath.includes('/site_integration/') ||
+            reqPathPrefix.includes('/writing') ||
+            reqPathPrefix.includes('/site_integration') ||
+            errorMessage.includes('permission error') ||
+            errorMessage.includes('userautherror') ||
+            reqPath.includes('get_template_list') ||
+            reqPath.includes('template_list') ||
+            errorString.includes('site_integration') ||
+            errorString.includes('template_list') ||
+            errorString.includes('permission error') ||
+            errorString.includes('background.js') ||
+            errorString.includes('userautherror')
+          ) {
+            // Silenciar completamente - é de extensão do navegador
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+        }
+        
+        // Para outros erros, apenas logar sem mostrar no console como erro não tratado
+        console.warn('Promise rejeitada (já tratada):', error);
+        event.preventDefault();
+      });
+      
+      // Também capturar erros gerais não tratados
+      window.addEventListener('error', function(event) {
+        const error = event.error;
+        const errorSource = (event.filename || '').toLowerCase();
+        const errorMessage = (event.message || '').toLowerCase();
+        
+        // Ignorar erros de extensões
+        if (
+          errorSource.includes('chrome-extension') ||
+          errorSource.includes('background.js') ||
+          errorMessage.includes('permission error') ||
+          errorMessage.includes('template_list') ||
+          errorMessage.includes('get_template_list')
+        ) {
+          event.preventDefault();
+          return;
+        }
+      });
+    </script>
 </body>
 </html>

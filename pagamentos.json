@@ -23,6 +23,78 @@
       "moeda": "BRL",
       "dataPagamento": "2026-01-15T00:35:16.318Z",
       "dataCriacao": "2026-01-15T00:35:16.323Z"
+    },
+    {
+      "id": 6,
+      "paymentIntentId": "pi_3SwZWqQ3FoT9YAkC2QBjqAlu",
+      "nome": "JAILSON MOREIRA GOMES",
+      "email": "jailsonomreira831@gmail.com",
+      "jornalId": "2",
+      "jornalNome": "JORNAL DE JANEIRO",
+      "valor": 10,
+      "moeda": "BRL",
+      "dataPagamento": "2026-02-03T02:39:53.382Z",
+      "dataCriacao": "2026-02-03T02:39:53.386Z"
+    },
+    {
+      "id": 7,
+      "paymentIntentId": "pi_3Sx8nVQ3FoT9YAkC00Sz1R1c",
+      "nome": "JAILSON MOREIRA GOMES",
+      "email": "jailsonomreira831@gmail.com",
+      "jornalId": "3",
+      "jornalNome": "JORNAL DE JANEIRO",
+      "valor": 10,
+      "moeda": "BRL",
+      "dataPagamento": "2026-02-04T16:19:25.091Z",
+      "dataCriacao": "2026-02-04T16:19:25.094Z"
+    },
+    {
+      "id": 8,
+      "paymentIntentId": "pi_3Sx8xRQ3FoT9YAkC1W1vMAKu",
+      "nome": "JAILSON MOREIRA GOMES",
+      "email": "jailsonomreira831@gmail.com",
+      "jornalId": "3",
+      "jornalNome": "JORNAL DE JANEIRO",
+      "valor": 10,
+      "moeda": "BRL",
+      "dataPagamento": "2026-02-04T16:29:41.206Z",
+      "dataCriacao": "2026-02-04T16:29:41.209Z"
+    },
+    {
+      "id": 9,
+      "paymentIntentId": "pi_3Sx9icQ3FoT9YAkC19bqS0gI",
+      "nome": "JAILSON MOREIRA GOMES",
+      "email": "jailsonomreira831@gmail.com",
+      "jornalId": "4",
+      "jornalNome": "JORNAL DE FEVEREIRO",
+      "valor": 10,
+      "moeda": "BRL",
+      "dataPagamento": "2026-02-04T17:18:26.046Z",
+      "dataCriacao": "2026-02-04T17:18:26.050Z"
+    },
+    {
+      "id": 10,
+      "paymentIntentId": "pi_3Sx9xQQ3FoT9YAkC0eXSa6eH",
+      "nome": "JAILSON MOREIRA GOMES",
+      "email": "jailsonomreira831@gmail.com",
+      "jornalId": "4",
+      "jornalNome": "JORNAL DE FEVEREIRO",
+      "valor": 10,
+      "moeda": "BRL",
+      "dataPagamento": "2026-02-04T17:33:44.099Z",
+      "dataCriacao": "2026-02-04T17:33:44.102Z"
+    },
+    {
+      "id": 11,
+      "paymentIntentId": "pi_3SxA0sQ3FoT9YAkC0Achon2k",
+      "nome": "JAILSON MOREIRA GOMES",
+      "email": "jailsonomreira831@gmail.com",
+      "jornalId": "4",
+      "jornalNome": "JORNAL DE FEVEREIRO",
+      "valor": 10,
+      "moeda": "BRL",
+      "dataPagamento": "2026-02-04T17:37:17.970Z",
+      "dataCriacao": "2026-02-04T17:37:17.983Z"
     }
   ]
 }

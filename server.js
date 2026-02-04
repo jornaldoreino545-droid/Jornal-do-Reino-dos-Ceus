@@ -201,6 +201,66 @@ app.get("/checkout/success", (req, res) => {
   });
 });
 
+// ==================== ROTA DE DOWNLOAD PROTEGIDA ====================
+// Rota para servir PDFs após verificação de pagamento
+app.get('/api/download-file', async (req, res) => {
+  try {
+    const { payment_intent, file } = req.query;
+    
+    if (!payment_intent || !file) {
+      return res.status(400).json({ error: 'payment_intent e file são obrigatórios' });
+    }
+    
+    // Verificar se Stripe está configurado
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('❌ STRIPE_SECRET_KEY não configurada');
+      return res.status(500).json({ error: 'Sistema de pagamento não configurado' });
+    }
+    
+    // Verificar status do pagamento com Stripe
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent);
+    
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(403).json({ 
+        error: 'Pagamento não confirmado',
+        status: paymentIntent.status
+      });
+    }
+    
+    console.log('✅ Pagamento confirmado, servindo PDF:', file);
+    
+    // Decodificar caminho do arquivo
+    const filePath = decodeURIComponent(file);
+    
+    // Garantir que o caminho é seguro (não permite path traversal)
+    if (filePath.includes('..') || !filePath.startsWith('/uploads/')) {
+      return res.status(403).json({ error: 'Caminho de arquivo inválido' });
+    }
+    
+    // Construir caminho completo do arquivo
+    const fullPath = path.join(__dirname, 'dashboard-server', filePath);
+    
+    // Verificar se o arquivo existe
+    if (!await fs.pathExists(fullPath)) {
+      console.error('❌ Arquivo não encontrado:', fullPath);
+      return res.status(404).json({ error: 'PDF não encontrado' });
+    }
+    
+    // Servir o arquivo
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${path.basename(fullPath)}"`);
+    res.sendFile(fullPath);
+    
+  } catch (error) {
+    console.error('❌ Erro ao servir PDF:', error);
+    res.status(500).json({ 
+      error: 'Erro ao servir PDF',
+      message: error.message 
+    });
+  }
+});
+
 // ==================== ROTAS DE API - SITE PRINCIPAL ====================
 // (Colocadas antes das rotas do dashboard para ter prioridade nas rotas públicas)
 
