@@ -192,35 +192,44 @@ router.get('/api/download', async (req, res) => {
           const jornais = jornaisData.jornais || [];
           const jornal = jornais.find(j => j.id === parseInt(jornalId) || j.id === jornalId);
           
-          if (jornal && jornal.mes && jornal.ano) {
-            // Tentar encontrar PDF baseado no mês e ano
-            const mes = jornal.mes.toUpperCase();
-            const ano = jornal.ano.toString().slice(-2);
-            // Usar caminho relativo ao servidor de checkout
-            downloadUrl = `/download/JORNAL_DE_${mes}_${ano}.pdf`;
+          if (jornal) {
+            // Priorizar o campo pdf do jornal (caminho completo)
+            if (jornal.pdf) {
+              let pdfPath = jornal.pdf;
+              // Se começar com /uploads, usar caminho relativo
+              if (pdfPath.startsWith('/uploads/')) {
+                downloadUrl = pdfPath; // Já está no formato correto
+              } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
+                downloadUrl = pdfPath; // URL completa
+              } else {
+                // Caminho relativo, assumir que está em /uploads/pdfs/
+                downloadUrl = `/uploads/pdfs/${pdfPath}`;
+              }
+              console.log('✅ PDF encontrado no campo pdf do jornal:', downloadUrl);
+            } else if (jornal.mes && jornal.ano) {
+              // Fallback: tentar encontrar PDF baseado no mês e ano (não recomendado)
+              console.warn('⚠️ Jornal não tem campo pdf, usando fallback baseado em mês/ano');
+              const mes = jornal.mes.toUpperCase();
+              const ano = jornal.ano.toString().slice(-2);
+              downloadUrl = `/download/JORNAL_DE_${mes}_${ano}.pdf`;
+            }
           }
         }
       } catch (err) {
-        console.log('Erro ao buscar informações do jornal:', err.message);
-      }
-      
-      // Fallback: tentar diferentes caminhos possíveis
-      if (!downloadUrl) {
-        const downloadPaths = [
-          `/download/jornal-${jornalId}.pdf`,
-          `/download/JORNAL_DE_JANEIRO_24.pdf`,
-          `/download/JORNAL_DE_FEVEREIRO_24.pdf`,
-          `/download/JORNAL_DE_MARÇO_24.pdf`,
-        ];
-        downloadUrl = downloadPaths[0];
+        console.error('❌ Erro ao buscar informações do jornal:', err.message);
       }
     }
 
     if (!downloadUrl) {
-      return res.status(404).json({ error: 'PDF não encontrado' });
+      return res.status(404).json({ 
+        error: 'PDF não encontrado',
+        message: 'O PDF do jornal não foi encontrado. Entre em contato com o suporte.'
+      });
     }
 
-    res.json({ downloadUrl });
+    // Retornar URL de download protegida (que verifica pagamento antes de servir)
+    const protectedUrl = `/api/download-file?payment_intent=${payment_intent}&file=${encodeURIComponent(downloadUrl)}`;
+    res.json({ downloadUrl: protectedUrl });
   } catch (error) {
     console.error('Erro ao obter link de download:', error);
     res.status(500).json({ 

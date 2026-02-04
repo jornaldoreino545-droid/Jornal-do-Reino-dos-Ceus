@@ -261,19 +261,20 @@ async function getDownloadLink() {
         // Se já temos os dados do jornal carregados, usar eles
         if (jornalData && jornalData.pdf) {
             let pdfPath = jornalData.pdf;
-            // Se começar com /uploads, já está correto para o servidor principal
+            // Se começar com /uploads, usar rota protegida
             if (pdfPath.startsWith('/uploads/')) {
-                // Usar o caminho do servidor principal (porta 3000)
                 console.log('✅ Usando PDF do jornal:', pdfPath);
-                return `http://localhost:3000${pdfPath}`;
+                // Usar rota protegida que verifica pagamento
+                return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
             } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
-                // URL completa
+                // URL completa (não recomendado, mas suportado)
                 console.log('✅ Usando PDF do jornal (URL completa):', pdfPath);
                 return pdfPath;
             } else {
                 // Caminho relativo, assumir que está em /uploads/pdfs/
                 console.log('✅ Usando PDF do jornal (relativo):', pdfPath);
-                return `http://localhost:3000/uploads/pdfs/${pdfPath}`;
+                const fullPath = `/uploads/pdfs/${pdfPath}`;
+                return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
             }
         }
         
@@ -306,25 +307,21 @@ async function getDownloadLink() {
                                     let pdfPath = jornal.pdf;
                                     if (pdfPath.startsWith('/uploads/')) {
                                         console.log('✅ PDF encontrado do jornal:', pdfPath);
-                                        return `http://localhost:3000${pdfPath}`;
+                                        // Usar rota protegida que verifica pagamento
+                                        return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
                                     } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
+                                        // URL completa (não recomendado, mas suportado)
                                         return pdfPath;
                                     } else {
-                                        return `http://localhost:3000/uploads/pdfs/${pdfPath}`;
+                                        // Caminho relativo, assumir que está em /uploads/pdfs/
+                                        const fullPath = `/uploads/pdfs/${pdfPath}`;
+                                        return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
                                     }
                                 }
                                 
-                                // Se não tem PDF específico, tentar padrão baseado em mês/ano
-                                if (jornal.mes && jornal.ano) {
-                                    const mes = jornal.mes.toUpperCase();
-                                    const ano = jornal.ano.toString().slice(-2);
-                                    const pdfPaths = [
-                                        `http://localhost:3000/download/JORNAL_DE_${mes}_${ano}.pdf`,
-                                        `/checkout/download/JORNAL_DE_${mes}_${ano}.pdf`,
-                                        `/download/JORNAL_DE_${mes}_${ano}.pdf`
-                                    ];
-                                    return pdfPaths[0];
-                                }
+                                // Se não tem PDF específico, retornar erro (não usar fallback baseado em mês/ano)
+                                console.warn('⚠️ Jornal não possui campo PDF definido');
+                                return null;
                             }
                             break; // Se encontrou a API, não precisa tentar outras
                         }
@@ -337,30 +334,12 @@ async function getDownloadLink() {
                 console.log('Erro ao buscar informações do jornal:', err.message);
             }
             
-            // Fallback: tentar diferentes caminhos possíveis baseados no ID
-            const downloadPaths = [
-                `http://localhost:3000/uploads/pdfs/jornal-${jornalId}.pdf`,
-                `/uploads/pdfs/jornal-${jornalId}.pdf`,
-                `/download/jornal-${jornalId}.pdf`,
-                `/checkout/download/jornal-${jornalId}.pdf`
-            ];
-            
-            // Verificar qual caminho funciona
-            for (const path of downloadPaths) {
-                try {
-                    const testResponse = await fetch(path, { method: 'HEAD' });
-                    if (testResponse.ok || testResponse.status === 200) {
-                        console.log('✅ PDF encontrado em:', path);
-                        return path;
-                    }
-                } catch (err) {
-                    continue;
-                }
-            }
+            // Não usar fallback hardcoded - retornar null se não encontrar
+            console.warn('⚠️ Jornal não encontrado ou sem PDF definido');
         }
         
-        // Último fallback: download genérico
-        return 'http://localhost:3000/download/JORNAL_DE_JANEIRO_24.pdf';
+        // Retornar null se não encontrou PDF
+        return null;
         
     } catch (error) {
         console.error('Erro ao obter link de download:', error);
