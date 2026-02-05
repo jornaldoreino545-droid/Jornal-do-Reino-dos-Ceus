@@ -1346,7 +1346,22 @@ router.put('/site/video', requireAuth, (req, res, next) => {
 router.get('/site/responsaveis', async (req, res) => {
   try {
     const config = await readSiteConfig();
-    res.json(config?.responsaveis || []);
+    let responsaveis = config?.responsaveis || [];
+    
+    // Normalizar URLs das imagens - remover localhost:3000 hardcoded
+    responsaveis = responsaveis.map(resp => {
+      if (resp.imagem && typeof resp.imagem === 'string') {
+        // Remover http://localhost:3000 ou https://localhost:3000
+        resp.imagem = resp.imagem.replace(/https?:\/\/localhost:3000/g, '');
+        // Garantir que comece com / se não for URL externa
+        if (!resp.imagem.startsWith('http') && !resp.imagem.startsWith('/')) {
+          resp.imagem = '/' + resp.imagem;
+        }
+      }
+      return resp;
+    });
+    
+    res.json(responsaveis);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar responsáveis' });
   }
@@ -1988,23 +2003,46 @@ router.post('/pagamentos/atualizar-valores', requireAuth, async (req, res) => {
 // Rota para obter todos os pagamentos (requer autenticação)
 router.get('/pagamentos', requireAuth, async (req, res) => {
   try {
+    console.log('📥 Buscando pagamentos...');
     // Tentar buscar do MySQL primeiro
     try {
       const [rows] = await pool.execute(
         'SELECT * FROM pagamentos ORDER BY dataPagamento DESC, dataCriacao DESC'
       );
+      console.log(`✅ ${rows.length} pagamentos encontrados no MySQL`);
       return res.json(rows);
     } catch (dbError) {
       console.error('❌ Erro ao buscar pagamentos do MySQL:', dbError.message);
       console.error('❌ Stack:', dbError.stack);
       console.error('❌ Código do erro:', dbError.code);
+      
+      // Se a tabela não existe, tentar criar automaticamente
+      if (dbError.message.includes("doesn't exist") || dbError.message.includes("Table")) {
+        console.log('🔧 Tentando criar tabela pagamentos automaticamente...');
+        try {
+          const { initDatabase } = require('../config/init-database');
+          await initDatabase(pool);
+          // Tentar buscar novamente após criar a tabela
+          const [rows] = await pool.execute(
+            'SELECT * FROM pagamentos ORDER BY dataPagamento DESC, dataCriacao DESC'
+          );
+          console.log(`✅ ${rows.length} pagamentos encontrados após criar tabela`);
+          return res.json(rows);
+        } catch (createError) {
+          console.error('❌ Erro ao criar tabelas automaticamente:', createError.message);
+        }
+      }
+      
       // Fallback para JSON
+      console.log('⚠️ Usando fallback JSON...');
       const data = await readPagamentos();
-      return res.json(data.pagamentos || []);
+      const pagamentosJSON = data.pagamentos || [];
+      console.log(`✅ ${pagamentosJSON.length} pagamentos encontrados no JSON`);
+      return res.json(pagamentosJSON);
     }
   } catch (error) {
-    console.error('Erro ao buscar pagamentos:', error);
-    res.status(500).json({ error: 'Erro ao buscar pagamentos' });
+    console.error('❌ Erro ao buscar pagamentos:', error);
+    res.status(500).json({ error: 'Erro ao buscar pagamentos', message: error.message });
   }
 });
 
@@ -2340,9 +2378,22 @@ router.get('/colunistas', async (req, res) => {
     console.log('📚 Buscando colunistas para o site público (rota /colunistas)...');
     const data = await readColunistas();
     // Retornar apenas colunistas ativos e ordenados para o site
-    const colunistasAtivos = (data.colunistas || [])
+    let colunistasAtivos = (data.colunistas || [])
       .filter(c => c.ativo !== false)
       .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    
+    // Normalizar URLs das imagens - remover localhost:3000 hardcoded
+    colunistasAtivos = colunistasAtivos.map(colunista => {
+      if (colunista.imagem && typeof colunista.imagem === 'string') {
+        // Remover http://localhost:3000 ou https://localhost:3000
+        colunista.imagem = colunista.imagem.replace(/https?:\/\/localhost:3000/g, '');
+        // Garantir que comece com / se não for URL externa
+        if (!colunista.imagem.startsWith('http') && !colunista.imagem.startsWith('/')) {
+          colunista.imagem = '/' + colunista.imagem;
+        }
+      }
+      return colunista;
+    });
     
     console.log(`✅ ${colunistasAtivos.length} colunistas ativos encontrados`);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -2359,9 +2410,22 @@ router.get('/site/colunistas', async (req, res) => {
     console.log('📚 Buscando colunistas para o site público (rota /site/colunistas)...');
     const data = await readColunistas();
     // Retornar apenas colunistas ativos e ordenados para o site
-    const colunistasAtivos = (data.colunistas || [])
+    let colunistasAtivos = (data.colunistas || [])
       .filter(c => c.ativo !== false)
       .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    
+    // Normalizar URLs das imagens - remover localhost:3000 hardcoded
+    colunistasAtivos = colunistasAtivos.map(colunista => {
+      if (colunista.imagem && typeof colunista.imagem === 'string') {
+        // Remover http://localhost:3000 ou https://localhost:3000
+        colunista.imagem = colunista.imagem.replace(/https?:\/\/localhost:3000/g, '');
+        // Garantir que comece com / se não for URL externa
+        if (!colunista.imagem.startsWith('http') && !colunista.imagem.startsWith('/')) {
+          colunista.imagem = '/' + colunista.imagem;
+        }
+      }
+      return colunista;
+    });
     
     console.log(`✅ ${colunistasAtivos.length} colunistas ativos encontrados`);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -2376,7 +2440,22 @@ router.get('/site/colunistas', async (req, res) => {
 router.get('/admin/colunistas', requireAuth, async (req, res) => {
   try {
     const data = await readColunistas();
-    res.json(data);
+    let colunistas = data.colunistas || [];
+    
+    // Normalizar URLs das imagens - remover localhost:3000 hardcoded
+    colunistas = colunistas.map(colunista => {
+      if (colunista.imagem && typeof colunista.imagem === 'string') {
+        // Remover http://localhost:3000 ou https://localhost:3000
+        colunista.imagem = colunista.imagem.replace(/https?:\/\/localhost:3000/g, '');
+        // Garantir que comece com / se não for URL externa
+        if (!colunista.imagem.startsWith('http') && !colunista.imagem.startsWith('/')) {
+          colunista.imagem = '/' + colunista.imagem;
+        }
+      }
+      return colunista;
+    });
+    
+    res.json({ colunistas });
   } catch (error) {
     console.error('Erro ao listar colunistas:', error);
     res.status(500).json({ error: 'Erro ao listar colunistas' });
