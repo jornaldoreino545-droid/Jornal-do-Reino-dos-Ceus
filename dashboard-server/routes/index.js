@@ -161,6 +161,41 @@ async function saveJornal(jornal, isUpdate = false) {
       console.error('   Código:', dbError.code);
       console.error('   SQL State:', dbError.sqlState);
       console.error('   Stack:', dbError.stack);
+      console.error('   Dados que tentaram ser salvos:', {
+        nome: jornal.nome,
+        mes: jornal.mes,
+        ano: jornal.ano,
+        capa: jornal.capa,
+        pdf: jornal.pdf
+      });
+      
+      // Verificar se é um erro de tabela não existente
+      if (dbError.code === 'ER_NO_SUCH_TABLE' || dbError.message.includes("doesn't exist")) {
+        console.error('   ⚠️ Tabela "jornais" não existe! Tentando criar...');
+        try {
+          const { initDatabase } = require('../config/init-database');
+          await initDatabase(pool);
+          console.log('   ✅ Tabela criada. Tentando salvar novamente...');
+          // Tentar novamente após criar a tabela
+          const [result] = await pool.execute(
+            `INSERT INTO jornais 
+              (nome, mes, ano, descricao, linkCompra, ordem, ativo, capa, pdf, dataCriacao, dataAtualizacao)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [
+              jornal.nome, jornal.mes, jornal.ano, jornal.descricao || '',
+              jornal.linkCompra || '', jornal.ordem || 0, jornal.ativo ? 1 : 0,
+              jornal.capa || '', jornal.pdf || ''
+            ]
+          );
+          jornal.id = result.insertId;
+          console.log('   ✅ Jornal salvo após criar tabela! ID:', jornal.id);
+          // Não fazer fallback para JSON se salvou no MySQL
+          return jornal;
+        } catch (retryError) {
+          console.error('   ❌ Erro ao tentar salvar novamente:', retryError.message);
+        }
+      }
+      
       console.warn('⚠️ Usando fallback JSON...');
       // Fallback para JSON
       const data = await readJornais();
@@ -748,10 +783,67 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       dataAtualizacao: new Date().toISOString()
     };
 
-    console.log('Salvando jornal no MySQL e JSON...');
-    const jornalSalvo = await saveJornal(novoJornal, false);
+    console.log('📝 === INICIANDO SALVAMENTO DE JORNAL ===');
+    console.log('   Arquivos recebidos:');
+    console.log('   - Capa:', capaFile ? `${capaFile.filename} (${capaFile.size} bytes)` : 'Nenhuma');
+    console.log('   - PDF:', pdfFile ? `${pdfFile.filename} (${pdfFile.size} bytes)` : 'Nenhum');
+    console.log('   Dados do jornal:', {
+      nome: novoJornal.nome,
+      mes: novoJornal.mes,
+      ano: novoJornal.ano,
+      capa: novoJornal.capa,
+      pdf: novoJornal.pdf
+    });
     
-    console.log('Jornal criado com sucesso! ID:', jornalSalvo.id);
+    // Verificar se os arquivos foram realmente salvos
+    // Os arquivos são salvos em dashboard-server/uploads, não em public/uploads
+    if (capaFile) {
+      const capaPath = path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+      const capaExists = await fs.pathExists(capaPath);
+      console.log('   ✅ Arquivo de capa salvo?', capaExists, capaExists ? `em: ${capaPath}` : '');
+      if (!capaExists) {
+        console.error('   ❌ ERRO: Arquivo de capa não foi salvo!');
+        console.error('   Caminho esperado:', capaPath);
+      }
+    }
+    
+    if (pdfFile) {
+      const pdfPath = path.join(__dirname, '..', 'uploads', 'pdfs', pdfFile.filename);
+      const pdfExists = await fs.pathExists(pdfPath);
+      console.log('   ✅ Arquivo PDF salvo?', pdfExists, pdfExists ? `em: ${pdfPath}` : '');
+      if (!pdfExists) {
+        console.error('   ❌ ERRO: Arquivo PDF não foi salvo!');
+        console.error('   Caminho esperado:', pdfPath);
+      }
+    }
+    
+    console.log('💾 Salvando jornal no MySQL e JSON...');
+    let jornalSalvo;
+    try {
+      jornalSalvo = await saveJornal(novoJornal, false);
+      console.log('✅ Jornal salvo com sucesso! ID:', jornalSalvo.id);
+    } catch (saveError) {
+      console.error('❌ ERRO ao salvar jornal:', saveError);
+      console.error('   Stack:', saveError.stack);
+      throw saveError; // Re-throw para ser capturado pelo catch externo
+    }
+    
+    // Verificar se o jornal foi realmente salvo no banco
+    try {
+      const [verificacaoFinal] = await pool.execute('SELECT * FROM jornais WHERE id = ?', [jornalSalvo.id]);
+      if (verificacaoFinal.length > 0) {
+        console.log('✅ Verificação final: Jornal encontrado no banco de dados');
+        console.log('   Nome:', verificacaoFinal[0].nome);
+        console.log('   Capa:', verificacaoFinal[0].capa);
+      } else {
+        console.error('❌ ERRO CRÍTICO: Jornal não encontrado após salvamento!');
+        console.error('   ID esperado:', jornalSalvo.id);
+      }
+    } catch (verifyError) {
+      console.error('❌ Erro ao verificar jornal no banco:', verifyError.message);
+    }
+    
+    console.log('📝 === FIM DO SALVAMENTO ===');
     res.json({ ok: true, jornal: jornalSalvo });
   } catch (error) {
     console.error('=== ERRO AO CRIAR JORNAL ===');
@@ -2411,20 +2503,20 @@ router.post('/pagamentos', async (req, res) => {
         
         console.log(`💾 Inserindo pagamento usando coluna: ${insertColumn}`);
         
-        const [result] = await pool.execute(
+      const [result] = await pool.execute(
           `INSERT INTO pagamentos (${insertColumn}, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
-        );
+      );
       
-        // Buscar o pagamento inserido
-        const [inserted] = await pool.execute(
-          'SELECT * FROM pagamentos WHERE id = ?',
-          [result.insertId]
-        );
+      // Buscar o pagamento inserido
+      const [inserted] = await pool.execute(
+        'SELECT * FROM pagamentos WHERE id = ?',
+        [result.insertId]
+      );
       
         console.log('✅ Pagamento registrado no MySQL:', inserted[0]);
-        return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
+      return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
       } else {
         // Se nenhuma coluna existe, forçar erro para cair no fallback JSON
         throw new Error('Coluna paymentIntentId ou stripe_payment_id não existe. Execute o script fix-pagamentos.sql');
