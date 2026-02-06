@@ -2185,11 +2185,34 @@ router.post('/pagamentos', async (req, res) => {
         if (!columnExists && stripeColumnExists) {
           console.log('🔧 Detectada coluna stripe_payment_id. Tentando corrigir estrutura da tabela...');
           try {
-            // Remover registros com stripe_payment_id vazio ou NULL
-            await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+            // Primeiro, verificar se há foreign keys que precisam ser removidas
+            const [fks] = await pool.execute(
+              `SELECT CONSTRAINT_NAME 
+               FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+               WHERE TABLE_SCHEMA = DATABASE() 
+               AND TABLE_NAME = 'pagamentos' 
+               AND REFERENCED_TABLE_NAME IS NOT NULL`
+            );
+            
+            // Remover foreign keys temporariamente
+            for (const fk of fks) {
+              try {
+                await pool.execute(`ALTER TABLE pagamentos DROP FOREIGN KEY ${fk.CONSTRAINT_NAME}`);
+                console.log(`🔧 Foreign key ${fk.CONSTRAINT_NAME} removida temporariamente`);
+              } catch (fkError) {
+                console.warn(`⚠️ Erro ao remover FK ${fk.CONSTRAINT_NAME}:`, fkError.message);
+              }
+            }
+            
+            // Remover registros com stripe_payment_id vazio ou NULL (causam ER_DUP_ENTRY)
+            const [deleted] = await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+            console.log(`🔧 ${deleted.affectedRows} registros vazios removidos`);
             
             // Renomear coluna stripe_payment_id para paymentIntentId
             await pool.execute(`ALTER TABLE pagamentos CHANGE COLUMN stripe_payment_id paymentIntentId VARCHAR(255) NOT NULL UNIQUE`);
+            
+            // Recriar foreign keys se necessário
+            // (Normalmente não há FK em stripe_payment_id, mas verificamos)
             
             // Adicionar índice se não existir
             try {
@@ -2203,9 +2226,37 @@ router.post('/pagamentos', async (req, res) => {
             console.log('✅ Estrutura da tabela corrigida automaticamente!');
           } catch (fixError) {
             console.error('❌ Erro ao corrigir estrutura automaticamente:', fixError.message);
+            console.error('❌ Stack:', fixError.stack);
             console.warn('⚠️ Usando fallback JSON. Execute o script fix-stripe-payment-id.sql manualmente.');
             // Forçar uso do fallback JSON
             columnExists = false;
+          }
+        } else if (stripeColumnExists && columnExists) {
+          // Se ambas existem, limpar registros vazios de stripe_payment_id
+          console.log('🔧 Ambas as colunas existem. Limpando registros vazios...');
+          try {
+            const [deleted] = await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+            console.log(`🔧 ${deleted.affectedRows} registros vazios removidos de stripe_payment_id`);
+          } catch (cleanError) {
+            console.warn('⚠️ Erro ao limpar registros vazios:', cleanError.message);
+          }
+        } else if (columnExists) {
+          // Se só paymentIntentId existe, limpar registros vazios também
+          console.log('🔧 Limpando registros com paymentIntentId vazio...');
+          try {
+            const [deleted] = await pool.execute(`DELETE FROM pagamentos WHERE paymentIntentId IS NULL OR paymentIntentId = ''`);
+            console.log(`🔧 ${deleted.affectedRows} registros vazios removidos de paymentIntentId`);
+          } catch (cleanError) {
+            console.warn('⚠️ Erro ao limpar registros vazios:', cleanError.message);
+          }
+        } else if (stripeColumnExists && !columnExists) {
+          // Se só stripe_payment_id existe (renomeação falhou ou não foi feita), limpar registros vazios
+          console.log('🔧 Só stripe_payment_id existe. Limpando registros vazios antes de inserir...');
+          try {
+            const [deleted] = await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+            console.log(`🔧 ${deleted.affectedRows} registros vazios removidos de stripe_payment_id`);
+          } catch (cleanError) {
+            console.warn('⚠️ Erro ao limpar registros vazios:', cleanError.message);
           }
         }
       } catch (checkError) {
@@ -2215,8 +2266,15 @@ router.post('/pagamentos', async (req, res) => {
       // Verificar se o pagamento já existe
       let existing = [];
       if (columnExists) {
+        // Usar o nome da coluna correto (já foi renomeado se necessário)
         [existing] = await pool.execute(
           `SELECT * FROM pagamentos WHERE ${columnName} = ?`,
+          [paymentIntentIdFinal]
+        );
+      } else if (stripeColumnExists) {
+        // Se só existe stripe_payment_id (antes da renomeação), usar esse nome temporariamente
+        [existing] = await pool.execute(
+          `SELECT * FROM pagamentos WHERE stripe_payment_id = ?`,
           [paymentIntentIdFinal]
         );
       } else {
@@ -2242,24 +2300,29 @@ router.post('/pagamentos', async (req, res) => {
       }
       
       // Inserir no MySQL (só se a coluna existir)
-      if (columnExists) {
-      const [result] = await pool.execute(
-        `INSERT INTO pagamentos (${columnName}, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
-      );
+      if (columnExists || stripeColumnExists) {
+        // Determinar qual coluna usar para inserção
+        const insertColumn = columnExists ? columnName : 'stripe_payment_id';
+        
+        console.log(`💾 Inserindo pagamento usando coluna: ${insertColumn}`);
+        
+        const [result] = await pool.execute(
+          `INSERT INTO pagamentos (${insertColumn}, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
+        );
       
-      // Buscar o pagamento inserido
-      const [inserted] = await pool.execute(
-        'SELECT * FROM pagamentos WHERE id = ?',
-        [result.insertId]
-      );
+        // Buscar o pagamento inserido
+        const [inserted] = await pool.execute(
+          'SELECT * FROM pagamentos WHERE id = ?',
+          [result.insertId]
+        );
       
-        // Pagamento registrado no MySQL
-      return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
+        console.log('✅ Pagamento registrado no MySQL:', inserted[0]);
+        return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
       } else {
-        // Se a coluna não existe, forçar erro para cair no fallback JSON
-        throw new Error('Coluna paymentIntentId não existe. Execute o script fix-pagamentos.sql');
+        // Se nenhuma coluna existe, forçar erro para cair no fallback JSON
+        throw new Error('Coluna paymentIntentId ou stripe_payment_id não existe. Execute o script fix-pagamentos.sql');
       }
       
     } catch (dbError) {
