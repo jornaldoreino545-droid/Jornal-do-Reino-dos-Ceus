@@ -1,46 +1,18 @@
 {
   "jornais": [
     {
-      "id": 4,
-      "nome": "JORNAL DE FEVEREIRO",
-      "mes": "Fevereiro",
-      "ano": 2026,
-      "descricao": "asdasdfas sada sdha sdha sdfh asdjhif asjid fasdjf asjdf asjd fasjd fjasd fjas dfj",
-      "linkCompra": "",
-      "ordem": 1,
-      "ativo": 1,
-      "capa": "/uploads/capas/capa-1770225416713-418129060.jpg",
-      "pdf": "/uploads/pdfs/jornal-1770225416716-276206302.pdf",
-      "dataCriacao": "2026-02-04T17:16:56.000Z",
-      "dataAtualizacao": "2026-02-04T17:16:56.000Z"
-    },
-    {
-      "id": 2,
-      "nome": "JORNAL DE JANEIRO",
-      "mes": "jaineiro",
-      "ano": 2025,
-      "descricao": "12QAASDFsad",
-      "linkCompra": "",
-      "ordem": 1,
-      "ativo": 1,
-      "capa": "/uploads/capas/capa-1770051973238-857466963.png",
-      "pdf": "/uploads/pdfs/jornal-1770051973245-57183223.pdf",
-      "dataCriacao": "2026-02-02T17:06:13.000Z",
-      "dataAtualizacao": "2026-02-02T17:06:13.000Z"
-    },
-    {
-      "id": 3,
-      "nome": "JORNAL DE JANEIRO",
+      "id": 5,
+      "nome": "JAILSON MOREIRA GOMES",
       "mes": "jaineiro",
       "ano": 2026,
-      "descricao": "asfdsadgad a rgdrgasdrgerg as ger gwdgdg dqeg qgrqwefqw",
+      "descricao": "asdasdd asd asd asas das das dasd as d",
       "linkCompra": "",
-      "ordem": 2,
+      "ordem": 4,
       "ativo": 1,
-      "capa": "/uploads/capas/capa-1770221278655-746538673.jpeg",
-      "pdf": "/uploads/pdfs/jornal-1770221278661-231066272.pdf",
-      "dataCriacao": "2026-02-04T16:07:58.000Z",
-      "dataAtualizacao": "2026-02-04T16:07:58.000Z"
+      "capa": "/uploads/capas/capa-1770417839631-961757383.png",
+      "pdf": "/uploads/pdfs/jornal-1770417839633-946475633.pdf",
+      "dataCriacao": "2026-02-06T22:43:59.000Z",
+      "dataAtualizacao": "2026-02-06T22:43:59.000Z"
     }
   ]
 }
