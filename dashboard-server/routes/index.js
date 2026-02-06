@@ -16,37 +16,47 @@ const COLUNISTAS_FILE = path.join(__dirname, '..', '..', 'colunistas.json');
 
 // ==================== FUNÇÕES AUXILIARES PARA JORNAIS ====================
 
-// Ler jornais do MySQL ou JSON (fallback)
+// Ler jornais do MySQL (fonte de verdade)
+// JSON é apenas backup - não usar como fonte principal
 async function readJornais() {
   try {
-    // Tentar buscar do MySQL primeiro
+    // SEMPRE tentar buscar do MySQL primeiro
     try {
       const [rows] = await pool.execute(
         'SELECT * FROM jornais ORDER BY ordem ASC, ano DESC, id DESC'
       );
+      console.log(`📖 Lendo jornais do MySQL: ${rows.length} encontrados`);
       return { jornais: rows };
     } catch (dbError) {
-      console.warn('⚠️ Erro ao buscar jornais do MySQL, usando JSON:', dbError.message);
-      console.warn('   Banco configurado:', process.env.DB_NAME || 'ebook_checkout');
-      console.warn('   Host:', process.env.DB_HOST || 'localhost');
+      console.error('❌ ERRO ao buscar jornais do MySQL:', dbError.message);
+      console.error('   Banco configurado:', process.env.DB_NAME || 'ebook_checkout');
+      console.error('   Host:', process.env.DB_HOST || 'localhost');
+      console.error('   Código:', dbError.code);
       
       // Se a tabela não existe, tentar criar automaticamente
-      if (dbError.message.includes("doesn't exist") || dbError.message.includes("Table")) {
-        console.log('🔧 Tentando criar tabela jornais automaticamente...');
+      if (dbError.code === 'ER_NO_SUCH_TABLE' || dbError.message.includes("doesn't exist") || dbError.message.includes("Table")) {
+        console.log('🔧 Tabela "jornais" não existe! Tentando criar automaticamente...');
         try {
           const { initDatabase } = require('../config/init-database');
           await initDatabase(pool);
+          console.log('✅ Tabela criada. Tentando ler novamente...');
+          // Tentar ler novamente após criar a tabela
+          const [rows] = await pool.execute(
+            'SELECT * FROM jornais ORDER BY ordem ASC, ano DESC, id DESC'
+          );
+          return { jornais: rows };
         } catch (createError) {
           console.error('❌ Erro ao criar tabelas automaticamente:', createError.message);
+          // Se falhar, retornar array vazio em vez de usar JSON
+          return { jornais: [] };
         }
       }
-      // Fallback para JSON
-    const exists = await fs.pathExists(JORNAIS_FILE);
-    if (!exists) {
-      await fs.writeJson(JORNAIS_FILE, { jornais: [] }, { spaces: 2 });
+      
+      // Se não for erro de tabela, lançar erro em vez de usar JSON
+      // O MySQL é a fonte de verdade
+      console.error('❌ Não foi possível ler do MySQL. Retornando array vazio.');
+      console.error('   O sistema NÃO usará JSON como fallback para leitura.');
       return { jornais: [] };
-    }
-    return await fs.readJson(JORNAIS_FILE);
     }
   } catch (error) {
     console.error('Erro ao ler jornais:', error);
@@ -57,6 +67,21 @@ async function readJornais() {
 // Salvar jornal no MySQL e JSON (backup)
 async function saveJornal(jornal, isUpdate = false) {
   try {
+    // Verificar se o pool está conectado antes de tentar salvar
+    try {
+      const testConnection = await pool.getConnection();
+      await testConnection.execute('SELECT 1');
+      testConnection.release();
+      console.log('✅ Conexão com banco de dados verificada');
+    } catch (connError) {
+      console.error('❌ ERRO CRÍTICO: Não foi possível conectar ao banco de dados!');
+      console.error('   Mensagem:', connError.message);
+      console.error('   Código:', connError.code);
+      console.error('   Stack:', connError.stack);
+      // Não fazer fallback silencioso - lançar erro para que seja reportado
+      throw new Error(`Erro de conexão com banco de dados: ${connError.message}`);
+    }
+    
     // Salvar no MySQL
     try {
       if (isUpdate) {
@@ -196,27 +221,31 @@ async function saveJornal(jornal, isUpdate = false) {
         }
       }
       
-      console.warn('⚠️ Usando fallback JSON...');
-      // Fallback para JSON
-      const data = await readJornais();
-      if (isUpdate) {
-        const index = data.jornais.findIndex(j => j.id === jornal.id);
-        if (index !== -1) {
-          data.jornais[index] = jornal;
-        }
-      } else {
-        if (!jornal.id) {
-          jornal.id = data.jornais.length > 0 
-            ? Math.max(...data.jornais.map(j => j.id)) + 1 
-            : 1;
-        }
-        data.jornais.push(jornal);
-      }
-      await writeJornaisJSON(data);
-      return jornal;
+      // SEMPRE lançar erro se o MySQL falhar - NÃO fazer fallback para JSON
+      // O MySQL é a fonte de verdade, o JSON é apenas backup
+      console.error('❌ ERRO CRÍTICO: Não foi possível salvar no MySQL!');
+      console.error('   O sistema NÃO fará fallback para JSON.');
+      console.error('   Verifique:');
+      console.error('   1. Se o banco de dados está acessível');
+      console.error('   2. Se as variáveis de ambiente estão configuradas corretamente');
+      console.error('   3. Se a tabela "jornais" existe no banco de dados');
+      console.error('   4. Se o usuário tem permissões para INSERT na tabela');
+      console.error('   5. Configuração atual do banco:');
+      console.error('      - DB_HOST:', process.env.DB_HOST || 'localhost');
+      console.error('      - DB_PORT:', process.env.DB_PORT || '3306');
+      console.error('      - DB_USER:', process.env.DB_USER || 'jornal');
+      console.error('      - DB_NAME:', process.env.DB_NAME || 'ebook_checkout');
+      
+      // Lançar erro para que seja reportado ao usuário
+      throw new Error(`Falha ao salvar jornal no banco de dados MySQL: ${dbError.message}. Verifique os logs do servidor para mais detalhes.`);
     }
     
-    // Também salvar no JSON como backup
+    // IMPORTANTE: O jornal JÁ foi salvo no MySQL acima
+    // O JSON é apenas um backup secundário
+    console.log('💾 Jornal salvo no MySQL com sucesso! ID:', jornal.id);
+    console.log('   Salvando backup JSON...');
+    
+    // Também salvar no JSON como backup (não crítico se falhar)
     try {
       const data = await readJornais();
       if (isUpdate) {
@@ -232,10 +261,14 @@ async function saveJornal(jornal, isUpdate = false) {
         }
       }
       await writeJornaisJSON(data);
+      console.log('✅ Backup JSON salvo com sucesso');
     } catch (jsonError) {
+      // Não é crítico se o backup JSON falhar - o MySQL já foi salvo
       console.warn('⚠️ Erro ao salvar backup JSON (não crítico):', jsonError.message);
+      console.warn('   O jornal já foi salvo no MySQL, então este erro pode ser ignorado');
     }
     
+    // Retornar o jornal salvo no MySQL
     return jornal;
   } catch (error) {
     console.error('Erro ao salvar jornal:', error);
@@ -853,9 +886,20 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     console.error('============================');
     
     if (!res.headersSent) {
+      // Retornar erro detalhado para ajudar no diagnóstico
+      const errorMessage = error.message || 'Erro desconhecido ao criar jornal';
+      const isDbError = error.message && (
+        error.message.includes('banco de dados') || 
+        error.message.includes('MySQL') ||
+        error.message.includes('ER_') ||
+        error.message.includes('connection')
+      );
+      
       res.status(500).json({ 
+        ok: false,
         error: 'Erro ao criar jornal', 
-        message: error.message
+        message: errorMessage,
+        details: isDbError ? 'Erro de conexão com banco de dados. Verifique os logs do servidor.' : undefined
       });
     }
   }
