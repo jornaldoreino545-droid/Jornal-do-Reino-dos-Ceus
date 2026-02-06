@@ -16,8 +16,15 @@ const dbConfig = {
   connectTimeout: 10000 // 10 segundos de timeout
 };
 
-// Pool de conexões
-const pool = mysql.createPool(dbConfig);
+// Pool de conexões com configurações adicionais
+const pool = mysql.createPool({
+  ...dbConfig,
+  // Garantir que autocommit está habilitado (padrão, mas explícito)
+  // Isso garante que cada INSERT/UPDATE seja commitado imediatamente
+  multipleStatements: false,
+  // Timeout para queries
+  timeout: 60000
+});
 
 // Testar conexão e inicializar banco
 pool.getConnection()

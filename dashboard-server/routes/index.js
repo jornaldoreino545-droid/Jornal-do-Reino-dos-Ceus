@@ -60,7 +60,8 @@ async function saveJornal(jornal, isUpdate = false) {
     // Salvar no MySQL
     try {
       if (isUpdate) {
-        await pool.execute(
+        console.log('💾 Atualizando jornal no MySQL, ID:', jornal.id);
+        const [updateResult] = await pool.execute(
           `UPDATE jornais SET 
             nome = ?, mes = ?, ano = ?, descricao = ?, linkCompra = ?, 
             ordem = ?, ativo = ?, capa = ?, pdf = ?, dataAtualizacao = NOW()
@@ -71,23 +72,60 @@ async function saveJornal(jornal, isUpdate = false) {
             jornal.capa || '', jornal.pdf || '', jornal.id
           ]
         );
-        // Jornal atualizado no MySQL
+        console.log('✅ Jornal atualizado no MySQL. Linhas afetadas:', updateResult.affectedRows);
       } else {
-        const [result] = await pool.execute(
-          `INSERT INTO jornais 
-            (nome, mes, ano, descricao, linkCompra, ordem, ativo, capa, pdf, dataCriacao, dataAtualizacao)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-          [
-            jornal.nome, jornal.mes, jornal.ano, jornal.descricao || '',
-            jornal.linkCompra || '', jornal.ordem || 0, jornal.ativo ? 1 : 0,
-            jornal.capa || '', jornal.pdf || ''
-          ]
-        );
-        jornal.id = result.insertId;
-        // Jornal salvo no MySQL
+        console.log('💾 Inserindo novo jornal no MySQL...');
+        console.log('   Dados:', {
+          nome: jornal.nome,
+          mes: jornal.mes,
+          ano: jornal.ano,
+          ordem: jornal.ordem,
+          ativo: jornal.ativo
+        });
+        
+        // Obter uma conexão do pool para garantir commit
+        const connection = await pool.getConnection();
+        try {
+          const [result] = await connection.execute(
+            `INSERT INTO jornais 
+              (nome, mes, ano, descricao, linkCompra, ordem, ativo, capa, pdf, dataCriacao, dataAtualizacao)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [
+              jornal.nome, jornal.mes, jornal.ano, jornal.descricao || '',
+              jornal.linkCompra || '', jornal.ordem || 0, jornal.ativo ? 1 : 0,
+              jornal.capa || '', jornal.pdf || ''
+            ]
+          );
+          
+          // Garantir commit explícito (embora autocommit já faça isso)
+          await connection.commit();
+          
+          jornal.id = result.insertId;
+          console.log('✅ Jornal salvo no MySQL com sucesso!');
+          console.log('   ID inserido:', result.insertId);
+          console.log('   Linhas afetadas:', result.affectedRows);
+          
+          // Verificar se realmente foi inserido (usar a mesma conexão)
+          const [verify] = await connection.execute('SELECT * FROM jornais WHERE id = ?', [result.insertId]);
+          if (verify.length > 0) {
+            console.log('✅ Verificação: Jornal encontrado no banco de dados');
+            console.log('   Nome do jornal:', verify[0].nome);
+          } else {
+            console.error('❌ ERRO CRÍTICO: Jornal não encontrado após inserção!');
+            console.error('   ID esperado:', result.insertId);
+          }
+        } finally {
+          // Sempre liberar a conexão
+          connection.release();
+        }
       }
     } catch (dbError) {
-      console.warn('⚠️ Erro ao salvar jornal no MySQL, usando JSON:', dbError.message);
+      console.error('❌ ERRO ao salvar jornal no MySQL:');
+      console.error('   Mensagem:', dbError.message);
+      console.error('   Código:', dbError.code);
+      console.error('   SQL State:', dbError.sqlState);
+      console.error('   Stack:', dbError.stack);
+      console.warn('⚠️ Usando fallback JSON...');
       // Fallback para JSON
       const data = await readJornais();
       if (isUpdate) {
