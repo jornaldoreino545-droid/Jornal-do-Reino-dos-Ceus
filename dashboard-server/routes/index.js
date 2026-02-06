@@ -1209,12 +1209,116 @@ async function writeSiteConfig(data) {
 
 // Funções readMaterias e writeMaterias foram movidas para cima (com suporte MySQL)
 
+// ==================== FUNÇÕES MYSQL PARA CARROSSEL ====================
+
+// Ler carrossel do MySQL
+async function readCarrossel() {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT * FROM carrossel WHERE ativo = 1 ORDER BY ordem ASC'
+    );
+    return rows;
+  } catch (dbError) {
+    console.error('❌ Erro ao ler carrossel do MySQL:', dbError.message);
+    return [];
+  }
+}
+
+// Salvar item do carrossel no MySQL
+async function saveCarrosselItem(item, isUpdate = false) {
+  try {
+    if (isUpdate) {
+      await pool.execute(
+        `UPDATE carrossel SET 
+          imagem = ?, link = ?, ordem = ?, ativo = ?, dataAtualizacao = NOW()
+        WHERE id = ?`,
+        [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0, item.id]
+      );
+      return item;
+    } else {
+      const [result] = await pool.execute(
+        `INSERT INTO carrossel (imagem, link, ordem, ativo, dataCriacao, dataAtualizacao)
+        VALUES (?, ?, ?, ?, NOW(), NOW())`,
+        [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0]
+      );
+      item.id = result.insertId;
+      return item;
+    }
+  } catch (dbError) {
+    console.error('❌ Erro ao salvar carrossel no MySQL:', dbError.message);
+    throw dbError;
+  }
+}
+
+// Deletar item do carrossel
+async function deleteCarrosselItem(id) {
+  try {
+    await pool.execute('DELETE FROM carrossel WHERE id = ?', [id]);
+    return true;
+  } catch (dbError) {
+    console.error('❌ Erro ao deletar carrossel do MySQL:', dbError.message);
+    throw dbError;
+  }
+}
+
+// ==================== FUNÇÕES MYSQL PARA CARROSSEL MÉDIO ====================
+
+// Ler carrossel médio do MySQL
+async function readCarrosselMedio() {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT * FROM carrossel_medio WHERE ativo = 1 ORDER BY ordem ASC'
+    );
+    return rows;
+  } catch (dbError) {
+    console.error('❌ Erro ao ler carrossel_medio do MySQL:', dbError.message);
+    return [];
+  }
+}
+
+// Salvar item do carrossel médio no MySQL
+async function saveCarrosselMedioItem(item, isUpdate = false) {
+  try {
+    if (isUpdate) {
+      await pool.execute(
+        `UPDATE carrossel_medio SET 
+          imagem = ?, link = ?, ordem = ?, ativo = ?, dataAtualizacao = NOW()
+        WHERE id = ?`,
+        [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0, item.id]
+      );
+      return item;
+    } else {
+      const [result] = await pool.execute(
+        `INSERT INTO carrossel_medio (imagem, link, ordem, ativo, dataCriacao, dataAtualizacao)
+        VALUES (?, ?, ?, ?, NOW(), NOW())`,
+        [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0]
+      );
+      item.id = result.insertId;
+      return item;
+    }
+  } catch (dbError) {
+    console.error('❌ Erro ao salvar carrossel_medio no MySQL:', dbError.message);
+    throw dbError;
+  }
+}
+
+// Deletar item do carrossel médio
+async function deleteCarrosselMedioItem(id) {
+  try {
+    await pool.execute('DELETE FROM carrossel_medio WHERE id = ?', [id]);
+    return true;
+  } catch (dbError) {
+    console.error('❌ Erro ao deletar carrossel_medio do MySQL:', dbError.message);
+    throw dbError;
+  }
+}
+
 // ==================== CARROSSEL DE MATÉRIAS ====================
 
 router.get('/site/carrossel', async (req, res) => {
   try {
-    const config = await readSiteConfig();
-    res.json(config?.carrosselMaterias || []);
+    const carrossel = await readCarrossel();
+    res.json(carrossel);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar carrossel' });
   }
@@ -1223,11 +1327,6 @@ router.get('/site/carrossel', async (req, res) => {
 router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { ordem, link } = req.body;
-    const config = await readSiteConfig();
-    
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
 
     const novaImagem = req.file 
       ? `/uploads/materias/${req.file.filename}`
@@ -1237,20 +1336,22 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
       return res.status(400).json({ error: 'Imagem é obrigatória' });
     }
 
-    const novoId = config.carrosselMaterias.length > 0
-      ? Math.max(...config.carrosselMaterias.map(c => c.id)) + 1
-      : 1;
+    // Obter próxima ordem se não fornecida
+    let proximaOrdem = ordem ? parseInt(ordem) : 1;
+    if (!ordem) {
+      const carrossel = await readCarrossel();
+      proximaOrdem = carrossel.length > 0 ? Math.max(...carrossel.map(c => c.ordem || 0)) + 1 : 1;
+    }
 
-    config.carrosselMaterias.push({
-      id: novoId,
+    const novoItem = {
       imagem: novaImagem,
-      ordem: ordem ? parseInt(ordem) : config.carrosselMaterias.length + 1,
+      ordem: proximaOrdem,
       ativo: true,
       link: link || null
-    });
+    };
 
-    await writeSiteConfig(config);
-    res.json({ ok: true, item: config.carrosselMaterias[config.carrosselMaterias.length - 1] });
+    const itemSalvo = await saveCarrosselItem(novoItem, false);
+    res.json({ ok: true, item: itemSalvo });
   } catch (error) {
     console.error('Erro ao criar item do carrossel:', error);
     res.status(500).json({ error: 'Erro ao criar item' });
@@ -1261,26 +1362,25 @@ router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) =
   try {
     const id = parseInt(req.params.id);
     const { ordem, ativo, link } = req.body;
-    const config = await readSiteConfig();
     
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
-    const index = config.carrosselMaterias.findIndex(c => c.id === id);
-    if (index === -1) {
+    // Verificar se o item existe
+    const [existing] = await pool.execute('SELECT * FROM carrossel WHERE id = ?', [id]);
+    if (existing.length === 0) {
       return res.status(404).json({ error: 'Item não encontrado' });
     }
 
-    if (req.file) {
-      config.carrosselMaterias[index].imagem = `/uploads/materias/${req.file.filename}`;
-    }
-    if (ordem !== undefined) config.carrosselMaterias[index].ordem = parseInt(ordem);
-    if (ativo !== undefined) config.carrosselMaterias[index].ativo = ativo === 'true' || ativo === true;
-    if (link !== undefined) config.carrosselMaterias[index].link = link || null;
+    const item = { ...existing[0] };
+    item.id = id;
 
-    await writeSiteConfig(config);
-    res.json({ ok: true, item: config.carrosselMaterias[index] });
+    if (req.file) {
+      item.imagem = `/uploads/materias/${req.file.filename}`;
+    }
+    if (ordem !== undefined) item.ordem = parseInt(ordem);
+    if (ativo !== undefined) item.ativo = ativo === 'true' || ativo === true;
+    if (link !== undefined) item.link = link || null;
+
+    const itemAtualizado = await saveCarrosselItem(item, true);
+    res.json({ ok: true, item: itemAtualizado });
   } catch (error) {
     console.error('Erro ao atualizar item do carrossel:', error);
     res.status(500).json({ error: 'Erro ao atualizar item' });
@@ -1290,19 +1390,14 @@ router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) =
 router.delete('/site/carrossel/:id', requireAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const config = await readSiteConfig();
     
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
-    const index = config.carrosselMaterias.findIndex(c => c.id === id);
-    if (index === -1) {
+    // Verificar se o item existe
+    const [existing] = await pool.execute('SELECT id FROM carrossel WHERE id = ?', [id]);
+    if (existing.length === 0) {
       return res.status(404).json({ error: 'Item não encontrado' });
     }
 
-    config.carrosselMaterias.splice(index, 1);
-    await writeSiteConfig(config);
+    await deleteCarrosselItem(id);
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro ao deletar item do carrossel:', error);
@@ -1314,8 +1409,8 @@ router.delete('/site/carrossel/:id', requireAuth, async (req, res) => {
 
 router.get('/site/carrossel-medio', async (req, res) => {
   try {
-    const config = await readSiteConfig();
-    res.json(config?.carrosselMedio || []);
+    const carrosselMedio = await readCarrosselMedio();
+    res.json(carrosselMedio);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar carrossel médio' });
   }
@@ -1324,16 +1419,6 @@ router.get('/site/carrossel-medio', async (req, res) => {
 router.post('/site/carrossel-medio', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { ordem } = req.body;
-    const config = await readSiteConfig();
-    
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
-    // Inicializar carrosselMedio se não existir
-    if (!config.carrosselMedio) {
-      config.carrosselMedio = [];
-    }
 
     const novaImagem = req.file 
       ? `/uploads/materias/${req.file.filename}`
@@ -1343,19 +1428,21 @@ router.post('/site/carrossel-medio', requireAuth, uploadMateria, async (req, res
       return res.status(400).json({ error: 'Imagem é obrigatória' });
     }
 
-    const novoId = config.carrosselMedio.length > 0
-      ? Math.max(...config.carrosselMedio.map(c => c.id)) + 1
-      : 1;
+    // Obter próxima ordem se não fornecida
+    let proximaOrdem = ordem ? parseInt(ordem) : 1;
+    if (!ordem) {
+      const carrosselMedio = await readCarrosselMedio();
+      proximaOrdem = carrosselMedio.length > 0 ? Math.max(...carrosselMedio.map(c => c.ordem || 0)) + 1 : 1;
+    }
 
-    config.carrosselMedio.push({
-      id: novoId,
+    const novoItem = {
       imagem: novaImagem,
-      ordem: ordem ? parseInt(ordem) : config.carrosselMedio.length + 1,
+      ordem: proximaOrdem,
       ativo: true
-    });
+    };
 
-    await writeSiteConfig(config);
-    res.json({ ok: true, item: config.carrosselMedio[config.carrosselMedio.length - 1] });
+    const itemSalvo = await saveCarrosselMedioItem(novoItem, false);
+    res.json({ ok: true, item: itemSalvo });
   } catch (error) {
     console.error('Erro ao criar item do carrossel médio:', error);
     res.status(500).json({ error: 'Erro ao criar item' });
@@ -1366,30 +1453,24 @@ router.put('/site/carrossel-medio/:id', requireAuth, uploadMateria, async (req, 
   try {
     const id = parseInt(req.params.id);
     const { ordem, ativo } = req.body;
-    const config = await readSiteConfig();
     
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
-    // Inicializar carrosselMedio se não existir
-    if (!config.carrosselMedio) {
-      config.carrosselMedio = [];
-    }
-
-    const index = config.carrosselMedio.findIndex(c => c.id === id);
-    if (index === -1) {
+    // Verificar se o item existe
+    const [existing] = await pool.execute('SELECT * FROM carrossel_medio WHERE id = ?', [id]);
+    if (existing.length === 0) {
       return res.status(404).json({ error: 'Item não encontrado' });
     }
 
-    if (req.file) {
-      config.carrosselMedio[index].imagem = `/uploads/materias/${req.file.filename}`;
-    }
-    if (ordem !== undefined) config.carrosselMedio[index].ordem = parseInt(ordem);
-    if (ativo !== undefined) config.carrosselMedio[index].ativo = ativo === 'true' || ativo === true;
+    const item = { ...existing[0] };
+    item.id = id;
 
-    await writeSiteConfig(config);
-    res.json({ ok: true, item: config.carrosselMedio[index] });
+    if (req.file) {
+      item.imagem = `/uploads/materias/${req.file.filename}`;
+    }
+    if (ordem !== undefined) item.ordem = parseInt(ordem);
+    if (ativo !== undefined) item.ativo = ativo === 'true' || ativo === true;
+
+    const itemAtualizado = await saveCarrosselMedioItem(item, true);
+    res.json({ ok: true, item: itemAtualizado });
   } catch (error) {
     console.error('Erro ao atualizar item do carrossel médio:', error);
     res.status(500).json({ error: 'Erro ao atualizar item' });
@@ -1399,24 +1480,14 @@ router.put('/site/carrossel-medio/:id', requireAuth, uploadMateria, async (req, 
 router.delete('/site/carrossel-medio/:id', requireAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const config = await readSiteConfig();
     
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
-    // Inicializar carrosselMedio se não existir
-    if (!config.carrosselMedio) {
-      config.carrosselMedio = [];
-    }
-
-    const index = config.carrosselMedio.findIndex(c => c.id === id);
-    if (index === -1) {
+    // Verificar se o item existe
+    const [existing] = await pool.execute('SELECT id FROM carrossel_medio WHERE id = ?', [id]);
+    if (existing.length === 0) {
       return res.status(404).json({ error: 'Item não encontrado' });
     }
 
-    config.carrosselMedio.splice(index, 1);
-    await writeSiteConfig(config);
+    await deleteCarrosselMedioItem(id);
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro ao deletar item do carrossel médio:', error);
