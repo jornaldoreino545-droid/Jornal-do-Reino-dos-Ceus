@@ -2185,6 +2185,7 @@ router.post('/pagamentos', async (req, res) => {
         if (!columnExists && stripeColumnExists) {
           console.log('🔧 Detectada coluna stripe_payment_id. Tentando corrigir estrutura da tabela...');
           try {
+
             // Primeiro, verificar se há foreign keys que precisam ser removidas
             const [fks] = await pool.execute(
               `SELECT CONSTRAINT_NAME 
@@ -2207,13 +2208,20 @@ router.post('/pagamentos', async (req, res) => {
             // Remover registros com stripe_payment_id vazio ou NULL (causam ER_DUP_ENTRY)
             const [deleted] = await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
             console.log(`🔧 ${deleted.affectedRows} registros vazios removidos`);
+
+            // Remover registros com stripe_payment_id vazio ou NULL
+            await pool.execute(`DELETE FROM pagamentos WHERE stripe_payment_id IS NULL OR stripe_payment_id = ''`);
+
             
             // Renomear coluna stripe_payment_id para paymentIntentId
             await pool.execute(`ALTER TABLE pagamentos CHANGE COLUMN stripe_payment_id paymentIntentId VARCHAR(255) NOT NULL UNIQUE`);
             
+
             // Recriar foreign keys se necessário
             // (Normalmente não há FK em stripe_payment_id, mas verificamos)
             
+
+
             // Adicionar índice se não existir
             try {
               await pool.execute(`CREATE INDEX idx_paymentIntentId ON pagamentos(paymentIntentId)`);
@@ -2226,11 +2234,14 @@ router.post('/pagamentos', async (req, res) => {
             console.log('✅ Estrutura da tabela corrigida automaticamente!');
           } catch (fixError) {
             console.error('❌ Erro ao corrigir estrutura automaticamente:', fixError.message);
+
             console.error('❌ Stack:', fixError.stack);
+
             console.warn('⚠️ Usando fallback JSON. Execute o script fix-stripe-payment-id.sql manualmente.');
             // Forçar uso do fallback JSON
             columnExists = false;
           }
+
         } else if (stripeColumnExists && columnExists) {
           // Se ambas existem, limpar registros vazios de stripe_payment_id
           console.log('🔧 Ambas as colunas existem. Limpando registros vazios...');
@@ -2258,6 +2269,8 @@ router.post('/pagamentos', async (req, res) => {
           } catch (cleanError) {
             console.warn('⚠️ Erro ao limpar registros vazios:', cleanError.message);
           }
+
+
         }
       } catch (checkError) {
         console.warn('⚠️ Erro ao verificar colunas, assumindo que não existem:', checkError.message);
@@ -2266,7 +2279,10 @@ router.post('/pagamentos', async (req, res) => {
       // Verificar se o pagamento já existe
       let existing = [];
       if (columnExists) {
+
         // Usar o nome da coluna correto (já foi renomeado se necessário)
+
+
         [existing] = await pool.execute(
           `SELECT * FROM pagamentos WHERE ${columnName} = ?`,
           [paymentIntentIdFinal]
@@ -2277,6 +2293,8 @@ router.post('/pagamentos', async (req, res) => {
           `SELECT * FROM pagamentos WHERE stripe_payment_id = ?`,
           [paymentIntentIdFinal]
         );
+
+
       } else {
         console.warn('⚠️ Coluna paymentIntentId ou stripe_payment_id não existe na tabela pagamentos. Execute o script fix-stripe-payment-id.sql');
       }
