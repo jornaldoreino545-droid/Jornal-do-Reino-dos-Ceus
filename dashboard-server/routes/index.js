@@ -83,9 +83,23 @@ async function saveJornal(jornal, isUpdate = false) {
           ativo: jornal.ativo
         });
         
-        // Obter uma conexão do pool para garantir commit
+        // Verificar qual banco estamos usando
+        const [dbInfo] = await pool.execute('SELECT DATABASE() as db, USER() as user, @@hostname as hostname');
+        console.log('🔍 Informações do banco de dados:');
+        console.log('   Banco atual:', dbInfo[0]?.db || 'desconhecido');
+        console.log('   Usuário:', dbInfo[0]?.user || 'desconhecido');
+        console.log('   Hostname:', dbInfo[0]?.hostname || 'desconhecido');
+        
+        // Contar registros antes da inserção
+        const [countBefore] = await pool.execute('SELECT COUNT(*) as total FROM jornais');
+        console.log('   Registros ANTES da inserção:', countBefore[0]?.total || 0);
+        
+        // Obter uma conexão do pool
         const connection = await pool.getConnection();
         try {
+          // Garantir que autocommit está habilitado
+          await connection.execute('SET autocommit = 1');
+          
           const [result] = await connection.execute(
             `INSERT INTO jornais 
               (nome, mes, ano, descricao, linkCompra, ordem, ativo, capa, pdf, dataCriacao, dataAtualizacao)
@@ -97,23 +111,45 @@ async function saveJornal(jornal, isUpdate = false) {
             ]
           );
           
-          // Garantir commit explícito (embora autocommit já faça isso)
-          await connection.commit();
-          
           jornal.id = result.insertId;
-          console.log('✅ Jornal salvo no MySQL com sucesso!');
+          console.log('✅ INSERT executado com sucesso!');
           console.log('   ID inserido:', result.insertId);
           console.log('   Linhas afetadas:', result.affectedRows);
           
-          // Verificar se realmente foi inserido (usar a mesma conexão)
+          // Verificar imediatamente na mesma conexão
           const [verify] = await connection.execute('SELECT * FROM jornais WHERE id = ?', [result.insertId]);
           if (verify.length > 0) {
-            console.log('✅ Verificação: Jornal encontrado no banco de dados');
-            console.log('   Nome do jornal:', verify[0].nome);
+            console.log('✅ Verificação (mesma conexão): Jornal encontrado!');
+            console.log('   Nome:', verify[0].nome);
+            console.log('   ID:', verify[0].id);
           } else {
-            console.error('❌ ERRO CRÍTICO: Jornal não encontrado após inserção!');
-            console.error('   ID esperado:', result.insertId);
+            console.error('❌ ERRO: Jornal NÃO encontrado na mesma conexão!');
           }
+          
+          // Verificar com uma nova query usando pool (simula o que o phpMyAdmin faz)
+          const [verifyPool] = await pool.execute('SELECT * FROM jornais WHERE id = ?', [result.insertId]);
+          if (verifyPool.length > 0) {
+            console.log('✅ Verificação (nova conexão): Jornal encontrado!');
+          } else {
+            console.error('❌ ERRO CRÍTICO: Jornal NÃO encontrado em nova conexão!');
+            console.error('   Isso indica que o commit não foi aplicado!');
+          }
+          
+          // Contar registros depois da inserção
+          const [countAfter] = await connection.execute('SELECT COUNT(*) as total FROM jornais');
+          console.log('   Registros DEPOIS da inserção:', countAfter[0]?.total || 0);
+          
+          // Listar todos os IDs para debug
+          const [allIds] = await connection.execute('SELECT id, nome FROM jornais ORDER BY id DESC LIMIT 10');
+          console.log('   Últimos 10 jornais no banco:');
+          allIds.forEach(j => console.log(`      - ID ${j.id}: ${j.nome}`));
+          
+        } catch (insertError) {
+          console.error('❌ ERRO durante inserção:');
+          console.error('   Mensagem:', insertError.message);
+          console.error('   Código:', insertError.code);
+          console.error('   SQL State:', insertError.sqlState);
+          throw insertError;
         } finally {
           // Sempre liberar a conexão
           connection.release();
