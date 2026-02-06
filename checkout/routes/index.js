@@ -119,7 +119,8 @@ router.get('/api/download', async (req, res) => {
       console.log('💰 Valor calculado (reais):', valorCalculado);
       
       // Usar URL do servidor atual (funciona em produção e desenvolvimento)
-      const protocol = req.protocol || (req.secure ? 'https' : 'http');
+      // Forçar HTTPS em produção para evitar redirects
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : (req.protocol || (req.secure ? 'https' : 'http'));
       const host = req.get('host') || 'localhost:3000';
       const baseUrl = process.env.BASE_URL || `${protocol}://${host}`;
       const saveUrl = `${baseUrl}/api/pagamentos`;
@@ -127,50 +128,64 @@ router.get('/api/download', async (req, res) => {
       console.log('📡 Salvando pagamento em:', saveUrl);
       
       // Usar http/https nativo (disponível em todos os ambientes)
-      const http = require(protocol === 'https' ? 'https' : 'http');
+      const http = require('https'); // Sempre usar HTTPS em produção
       const url = require('url');
       
       const parsedUrl = url.parse(saveUrl);
       const postData = JSON.stringify(paymentData);
       
       await new Promise((resolve, reject) => {
-        const saveRequest = http.request({
-          hostname: parsedUrl.hostname || 'localhost',
-          port: parsedUrl.port || (protocol === 'https' ? 443 : 80),
-          path: '/api/pagamentos',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(postData)
-          },
-          timeout: 10000
-        }, (res) => {
-          let data = '';
-          res.on('data', (chunk) => { data += chunk; });
-          res.on('end', () => {
-            if (res.statusCode === 200 || res.statusCode === 201) {
-              console.log('✅ Pagamento salvo no dashboard:', data);
-              resolve(data);
-            } else {
-              console.error('❌ Erro ao salvar pagamento no dashboard:', res.statusCode, data);
-              reject(new Error(`HTTP ${res.statusCode}: ${data}`));
-            }
+        const makeRequest = (urlObj, isRedirect = false) => {
+          const requestOptions = {
+            hostname: urlObj.hostname || 'localhost',
+            port: urlObj.port || 443,
+            path: urlObj.path || '/api/pagamentos',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': Buffer.byteLength(postData)
+            },
+            timeout: 10000
+          };
+          
+          const saveRequest = http.request(requestOptions, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+              // Seguir redirects 301, 302, 307, 308
+              if ((res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307 || res.statusCode === 308) && res.headers.location) {
+                console.log(`🔄 Seguindo redirect ${res.statusCode} para:`, res.headers.location);
+                const redirectUrl = url.parse(res.headers.location);
+                makeRequest(redirectUrl, true);
+                return;
+              }
+              
+              if (res.statusCode === 200 || res.statusCode === 201) {
+                console.log('✅ Pagamento salvo no dashboard:', data);
+                resolve(data);
+              } else {
+                console.error('❌ Erro ao salvar pagamento no dashboard:', res.statusCode, data);
+                reject(new Error(`HTTP ${res.statusCode}: ${data || res.statusMessage || 'Unknown error'}`));
+              }
+            });
           });
-        });
+          
+          saveRequest.on('error', (err) => {
+            console.error('❌ Erro ao conectar com dashboard para salvar pagamento:', err.message);
+            reject(err);
+          });
+          
+          saveRequest.on('timeout', () => {
+            console.error('❌ Timeout ao salvar pagamento no dashboard');
+            saveRequest.destroy();
+            reject(new Error('Timeout'));
+          });
+          
+          saveRequest.write(postData);
+          saveRequest.end();
+        };
         
-        saveRequest.on('error', (err) => {
-          console.error('❌ Erro ao conectar com dashboard para salvar pagamento:', err.message);
-          reject(err);
-        });
-        
-        saveRequest.on('timeout', () => {
-          console.error('❌ Timeout ao salvar pagamento no dashboard');
-          saveRequest.destroy();
-          reject(new Error('Timeout'));
-        });
-        
-        saveRequest.write(postData);
-        saveRequest.end();
+        makeRequest(parsedUrl);
       });
     } catch (err) {
       console.error('❌ Erro ao salvar pagamento no dashboard:', err.message);
@@ -186,46 +201,63 @@ router.get('/api/download', async (req, res) => {
       // Buscar informações do jornal para encontrar o PDF correspondente
       try {
         // Usar a mesma base URL do servidor
-        const protocol = req.protocol || (req.secure ? 'https' : 'http');
+        // Forçar HTTPS em produção para evitar redirects
+        const protocol = process.env.NODE_ENV === 'production' ? 'https' : (req.protocol || (req.secure ? 'https' : 'http'));
         const host = req.get('host') || 'localhost:3000';
         const baseUrl = process.env.BASE_URL || `${protocol}://${host}`;
         const jornaisUrl = `${baseUrl}/api/jornais`;
         
         console.log('📚 Buscando informações do jornal em:', jornaisUrl);
         
-        // Usar http/https nativo
-        const http = require(protocol === 'https' ? 'https' : 'http');
+        // Usar http/https nativo - sempre HTTPS em produção
+        const http = require('https');
         const url = require('url');
         
         const parsedUrl = url.parse(jornaisUrl);
         const jornaisData = await new Promise((resolve, reject) => {
-          const httpReq = http.request({
-            hostname: parsedUrl.hostname || 'localhost',
-            port: parsedUrl.port || (protocol === 'https' ? 443 : 80),
-            path: '/api/jornais',
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            timeout: 10000
-          }, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-              try {
-                resolve(JSON.parse(data));
-              } catch (err) {
-                reject(err);
-              }
+          const makeRequest = (urlObj) => {
+            const httpReq = http.request({
+              hostname: urlObj.hostname || 'localhost',
+              port: urlObj.port || 443,
+              path: urlObj.path || '/api/jornais',
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              timeout: 10000
+            }, (res) => {
+              let data = '';
+              res.on('data', (chunk) => { data += chunk; });
+              res.on('end', () => {
+                // Seguir redirects 301, 302, 307, 308
+                if ((res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307 || res.statusCode === 308) && res.headers.location) {
+                  console.log(`🔄 Seguindo redirect ${res.statusCode} para:`, res.headers.location);
+                  const redirectUrl = url.parse(res.headers.location);
+                  makeRequest(redirectUrl);
+                  return;
+                }
+                
+                if (res.statusCode === 200) {
+                  try {
+                    resolve(JSON.parse(data));
+                  } catch (err) {
+                    reject(new Error('Erro ao parsear JSON: ' + err.message));
+                  }
+                } else {
+                  reject(new Error(`HTTP ${res.statusCode}: ${data || res.statusMessage || 'Unknown error'}`));
+                }
+              });
             });
-          });
+            
+            httpReq.on('error', reject);
+            httpReq.on('timeout', () => {
+              httpReq.destroy();
+              reject(new Error('Timeout'));
+            });
+            httpReq.end();
+          };
           
-          httpReq.on('error', reject);
-          httpReq.on('timeout', () => {
-            httpReq.destroy();
-            reject(new Error('Timeout'));
-          });
-          httpReq.end();
+          makeRequest(parsedUrl);
         });
         
         if (jornaisData && jornaisData.jornais) {
