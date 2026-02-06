@@ -94,8 +94,6 @@ router.get('/api/download', async (req, res) => {
 
     // Salvar informações do pagamento no dashboard
     try {
-      const http = require('http');
-      
       // Extrair jornalId do product
       let jornalId = paymentIntent.metadata.productId || '';
       if (!jornalId && product) {
@@ -119,38 +117,64 @@ router.get('/api/download', async (req, res) => {
       console.log('💰 Tentando salvar pagamento no dashboard:', paymentData);
       console.log('💰 PaymentIntent amount (centavos):', paymentIntent.amount);
       console.log('💰 Valor calculado (reais):', valorCalculado);
+      
+      // Usar URL do servidor atual (funciona em produção e desenvolvimento)
+      const protocol = req.protocol || (req.secure ? 'https' : 'http');
+      const host = req.get('host') || 'localhost:3000';
+      const baseUrl = process.env.BASE_URL || `${protocol}://${host}`;
+      const saveUrl = `${baseUrl}/api/pagamentos`;
+      
+      console.log('📡 Salvando pagamento em:', saveUrl);
+      
+      // Usar http/https nativo (disponível em todos os ambientes)
+      const http = require(protocol === 'https' ? 'https' : 'http');
+      const url = require('url');
+      
+      const parsedUrl = url.parse(saveUrl);
       const postData = JSON.stringify(paymentData);
       
-      const saveRequest = http.request({
-        hostname: 'localhost',
-        port: process.env.PORT || 3000,
-        path: '/api/pagamentos',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(postData)
-        },
-        timeout: 5000
-      }, (res) => {
-        let data = '';
-        res.on('data', (chunk) => { data += chunk; });
-        res.on('end', () => {
-          if (res.statusCode === 200 || res.statusCode === 201) {
-            console.log('✅ Pagamento salvo no dashboard:', data);
-          } else {
-            console.log('⚠️ Erro ao salvar pagamento no dashboard:', res.statusCode, data);
-          }
+      await new Promise((resolve, reject) => {
+        const saveRequest = http.request({
+          hostname: parsedUrl.hostname || 'localhost',
+          port: parsedUrl.port || (protocol === 'https' ? 443 : 80),
+          path: '/api/pagamentos',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData)
+          },
+          timeout: 10000
+        }, (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => {
+            if (res.statusCode === 200 || res.statusCode === 201) {
+              console.log('✅ Pagamento salvo no dashboard:', data);
+              resolve(data);
+            } else {
+              console.error('❌ Erro ao salvar pagamento no dashboard:', res.statusCode, data);
+              reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+            }
+          });
         });
+        
+        saveRequest.on('error', (err) => {
+          console.error('❌ Erro ao conectar com dashboard para salvar pagamento:', err.message);
+          reject(err);
+        });
+        
+        saveRequest.on('timeout', () => {
+          console.error('❌ Timeout ao salvar pagamento no dashboard');
+          saveRequest.destroy();
+          reject(new Error('Timeout'));
+        });
+        
+        saveRequest.write(postData);
+        saveRequest.end();
       });
-      
-      saveRequest.on('error', (err) => {
-        console.log('⚠️ Erro ao conectar com dashboard para salvar pagamento:', err.message);
-      });
-      
-      saveRequest.write(postData);
-      saveRequest.end();
     } catch (err) {
-      console.log('⚠️ Erro ao salvar pagamento no dashboard:', err.message);
+      console.error('❌ Erro ao salvar pagamento no dashboard:', err.message);
+      console.error('❌ Stack:', err.stack);
     }
 
     // Buscar PDF baseado no product ID
@@ -161,17 +185,29 @@ router.get('/api/download', async (req, res) => {
       
       // Buscar informações do jornal para encontrar o PDF correspondente
       try {
-        // Tentar buscar jornais da API principal usando http nativo
-        const http = require('http');
+        // Usar a mesma base URL do servidor
+        const protocol = req.protocol || (req.secure ? 'https' : 'http');
+        const host = req.get('host') || 'localhost:3000';
+        const baseUrl = process.env.BASE_URL || `${protocol}://${host}`;
+        const jornaisUrl = `${baseUrl}/api/jornais`;
+        
+        console.log('📚 Buscando informações do jornal em:', jornaisUrl);
+        
+        // Usar http/https nativo
+        const http = require(protocol === 'https' ? 'https' : 'http');
+        const url = require('url');
+        
+        const parsedUrl = url.parse(jornaisUrl);
         const jornaisData = await new Promise((resolve, reject) => {
-          const req = http.request({
-            hostname: 'localhost',
-            port: process.env.PORT || 3000,
+          const httpReq = http.request({
+            hostname: parsedUrl.hostname || 'localhost',
+            port: parsedUrl.port || (protocol === 'https' ? 443 : 80),
             path: '/api/jornais',
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
-            }
+            },
+            timeout: 10000
           }, (res) => {
             let data = '';
             res.on('data', (chunk) => { data += chunk; });
@@ -184,8 +220,12 @@ router.get('/api/download', async (req, res) => {
             });
           });
           
-          req.on('error', reject);
-          req.end();
+          httpReq.on('error', reject);
+          httpReq.on('timeout', () => {
+            httpReq.destroy();
+            reject(new Error('Timeout'));
+          });
+          httpReq.end();
         });
         
         if (jornaisData && jornaisData.jornais) {
