@@ -1908,7 +1908,8 @@ function setupTabs() {
         'banner': 'Banner Modal',
         'noticias': 'Notícias',
         'colunistas': 'Colunistas',
-        'pagamentos': 'Pagamentos'
+        'pagamentos': 'Pagamentos',
+        'verificar-banco': 'Verificar Banco de Dados'
     };
     
     tabButtons.forEach(btn => {
@@ -1973,6 +1974,9 @@ function loadTabData(tabName) {
             break;
         case 'pagamentos':
             loadPagamentos();
+            break;
+        case 'verificar-banco':
+            verificarBancoDados();
             break;
     }
 }
@@ -6092,3 +6096,137 @@ window.addEventListener('error', function(event) {
     // Logar outros erros para debug
     console.error('⚠️ Erro JavaScript:', event.message, 'em', event.filename, 'linha', event.lineno);
 });
+
+// ==================== VERIFICAR BANCO DE DADOS ====================
+
+async function verificarBancoDados() {
+    const loading = document.getElementById('verificarBancoLoading');
+    const results = document.getElementById('verificarBancoResults');
+    const errorDiv = document.getElementById('verificarBancoError');
+    const successDiv = document.getElementById('verificarBancoSuccess');
+    
+    if (!loading || !results || !errorDiv || !successDiv) {
+        console.error('Elementos de verificação não encontrados');
+        return;
+    }
+    
+    loading.style.display = 'block';
+    results.style.display = 'none';
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_BASE}/jornais/verificar-banco`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('Você precisa estar logado para acessar esta ferramenta.');
+            }
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.ok) {
+            throw new Error(data.error || 'Erro desconhecido');
+        }
+        
+        // Preencher informações de conexão
+        const conexaoTbody = document.querySelector('#conexaoTable tbody');
+        if (conexaoTbody) {
+            conexaoTbody.innerHTML = '';
+            
+            const conexaoData = [
+                ['Database', data.conexao.database],
+                ['User', data.conexao.user],
+                ['Hostname', data.conexao.hostname],
+                ['Port', data.conexao.port],
+                ['Connection ID', data.conexao.connectionId],
+                ['Config - Host', data.conexao.configuracao.host],
+                ['Config - Port', data.conexao.configuracao.port],
+                ['Config - User', data.conexao.configuracao.user],
+                ['Config - Database', data.conexao.configuracao.database]
+            ];
+            
+            conexaoData.forEach(([prop, value]) => {
+                const row = conexaoTbody.insertRow();
+                row.insertCell(0).textContent = prop;
+                const cell2 = row.insertCell(1);
+                cell2.innerHTML = `<code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">${value || 'N/A'}</code>`;
+            });
+        }
+        
+        // Preencher informações de transação
+        const transacaoTbody = document.querySelector('#transacaoTable tbody');
+        if (transacaoTbody) {
+            transacaoTbody.innerHTML = '';
+            
+            const transacaoData = [
+                ['Autocommit', data.transacao.autocommit],
+                ['Isolation Level', data.transacao.isolation]
+            ];
+            
+            transacaoData.forEach(([prop, value]) => {
+                const row = transacaoTbody.insertRow();
+                row.insertCell(0).textContent = prop;
+                const cell2 = row.insertCell(1);
+                cell2.innerHTML = `<code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">${value || 'N/A'}</code>`;
+            });
+        }
+        
+        // Preencher lista de jornais
+        const totalJornais = document.getElementById('totalJornaisVerificar');
+        if (totalJornais) {
+            totalJornais.textContent = data.jornais.total;
+        }
+        
+        const jornaisList = document.getElementById('jornaisVerificarList');
+        if (jornaisList) {
+            jornaisList.innerHTML = '';
+            
+            if (data.jornais.lista.length === 0) {
+                jornaisList.innerHTML = '<p style="color: #666; padding: 1rem;">Nenhum jornal encontrado no banco de dados.</p>';
+            } else {
+                data.jornais.lista.forEach(jornal => {
+                    const card = document.createElement('div');
+                    card.className = 'jornal-card';
+                    card.style.cssText = 'background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #28a745;';
+                    card.innerHTML = `
+                        <h3 style="color: #333; margin-bottom: 0.5rem;">${jornal.nome}</h3>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>ID:</strong> ${jornal.id}</p>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Mês/Ano:</strong> ${jornal.mes} ${jornal.ano}</p>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Status:</strong> ${jornal.ativo ? '✅ ATIVO' : '❌ INATIVO'}</p>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Criado em:</strong> ${new Date(jornal.dataCriacao).toLocaleString('pt-BR')}</p>
+                        ${jornal.capa ? `<p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Capa:</strong> ${jornal.capa}</p>` : ''}
+                    `;
+                    jornaisList.appendChild(card);
+                });
+            }
+        }
+        
+        // Mostrar mensagem de sucesso
+        successDiv.style.display = 'block';
+        successDiv.innerHTML = `
+            <strong>✅ Verificação concluída com sucesso!</strong><br>
+            ${data.mensagem || 'Use estas informações para verificar se o phpMyAdmin está conectado ao mesmo banco.'}
+        `;
+        
+        results.style.display = 'block';
+        
+    } catch (error) {
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
+        console.error('Erro ao verificar banco:', error);
+    } finally {
+        loading.style.display = 'none';
+    }
+}
+
+// Tornar função global
+window.verificarBancoDados = verificarBancoDados;

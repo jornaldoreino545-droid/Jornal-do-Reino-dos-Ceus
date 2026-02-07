@@ -144,6 +144,12 @@ app.get(["/dashboard", "/dashboard/"], (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard-server', 'public', 'index.html'));
 });
 
+// Rota para verificar jornais no banco (ferramenta de diagnóstico)
+app.get('/verificar-jornais', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'verificar-jornais-via-api.html'));
+});
+
 // Servir o gerador
 app.get("/gerador", (req, res) => {
   res.sendFile(path.join(__dirname, "gerador", "public", "index.html"));
