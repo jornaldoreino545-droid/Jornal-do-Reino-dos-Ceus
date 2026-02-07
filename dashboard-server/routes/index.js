@@ -269,12 +269,13 @@ async function saveJornal(jornal, isUpdate = false) {
     }
     
     // IMPORTANTE: O jornal JÁ foi salvo no MySQL acima
-    // O JSON é apenas um backup secundário
+    // Agora salvar também no JSON como backup
     console.log('💾 Jornal salvo no MySQL com sucesso! ID:', jornal.id);
     console.log('   Salvando backup JSON...');
     
-    // Também salvar no JSON como backup (não crítico se falhar)
+    // Salvar no JSON também (backup)
     try {
+      // Ler jornais do MySQL para sincronizar com JSON
       const data = await readJornais();
       if (isUpdate) {
         const index = data.jornais.findIndex(j => j.id === jornal.id);
@@ -569,7 +570,7 @@ async function saveVideo(video) {
           [video.url, video.titulo || '', video.descricao || '', video.thumbnail || '', existing[0].id]
         );
         video.id = existing[0].id;
-        // Vídeo atualizado no MySQL
+        console.log('✅ Vídeo atualizado no MySQL');
       } else {
         // Criar novo vídeo
         const [result] = await pool.execute(
@@ -578,7 +579,7 @@ async function saveVideo(video) {
           [video.url, video.titulo || '', video.descricao || '', video.thumbnail || '']
         );
         video.id = result.insertId;
-        // Vídeo salvo no MySQL
+        console.log('✅ Vídeo salvo no MySQL');
       }
     } catch (dbError) {
       console.warn('⚠️ Erro ao salvar vídeo no MySQL, usando JSON:', dbError.message);
@@ -587,17 +588,23 @@ async function saveVideo(video) {
       if (!config) {
         throw new Error('Erro ao ler configuração');
       }
-      config.video = video;
+      config.videoPrincipal = video;
       await writeSiteConfig(config);
       return video;
     }
     
-    // Também salvar no JSON como backup
+    // Salvar também no JSON como backup
     try {
       const config = await readSiteConfig();
       if (config) {
-        config.video = video;
+        config.videoPrincipal = {
+          url: video.url,
+          titulo: video.titulo,
+          subtitulo: video.descricao,
+          ativo: video.ativo !== false
+        };
         await writeSiteConfig(config);
+        console.log('✅ Vídeo salvo no JSON também');
       }
     } catch (jsonError) {
       console.warn('⚠️ Erro ao salvar backup JSON (não crítico):', jsonError.message);
@@ -730,6 +737,68 @@ router.get('/auth/check', (req, res) => {
 
 // ==================== JORNAIS ====================
 
+// Rota de diagnóstico para verificar conexão e jornais no banco
+// IMPORTANTE: Esta rota deve vir ANTES de /jornais/:id para não ser capturada como parâmetro
+router.get('/jornais/verificar-banco', requireAuth, async (req, res) => {
+  try {
+    console.log('🔍 Verificação de banco de dados solicitada...');
+    console.log('   URL:', req.originalUrl);
+    console.log('   Path:', req.path);
+    
+    // Informações da conexão
+    const [dbInfo] = await pool.execute('SELECT DATABASE() as db, USER() as user, @@hostname as hostname, @@port as port, CONNECTION_ID() as connection_id');
+    
+    // Contar jornais
+    const [count] = await pool.execute('SELECT COUNT(*) as total FROM jornais');
+    
+    // Listar todos os jornais
+    const [jornais] = await pool.execute('SELECT id, nome, mes, ano, ativo, dataCriacao, capa FROM jornais ORDER BY id DESC LIMIT 50');
+    
+    // Informações de transação
+    const [txInfo] = await pool.execute('SELECT @@autocommit as autocommit, @@transaction_isolation as isolation');
+    
+    res.json({
+      ok: true,
+      conexao: {
+        database: dbInfo[0]?.db,
+        user: dbInfo[0]?.user,
+        hostname: dbInfo[0]?.hostname,
+        port: dbInfo[0]?.port,
+        connectionId: dbInfo[0]?.connection_id,
+        configuracao: {
+          host: process.env.DB_HOST || 'localhost',
+          port: process.env.DB_PORT || '3306',
+          user: process.env.DB_USER || 'jornal',
+          database: process.env.DB_NAME || 'ebook_checkout'
+        }
+      },
+      transacao: {
+        autocommit: txInfo[0]?.autocommit,
+        isolation: txInfo[0]?.isolation
+      },
+      jornais: {
+        total: count[0]?.total,
+        lista: jornais
+      },
+      mensagem: 'Use estas informações para verificar se o phpMyAdmin está conectado ao mesmo banco'
+    });
+  } catch (error) {
+    console.error('Erro ao verificar banco:', error);
+    res.status(500).json({ 
+      ok: false, 
+      error: error.message,
+      conexao: {
+        configuracao: {
+          host: process.env.DB_HOST || 'localhost',
+          port: process.env.DB_PORT || '3306',
+          user: process.env.DB_USER || 'jornal',
+          database: process.env.DB_NAME || 'ebook_checkout'
+        }
+      }
+    });
+  }
+});
+
 // Listar todos os jornais
 // Se não estiver autenticado, retorna apenas jornais ativos (para o site público)
 // Se estiver autenticado, retorna todos os jornais (para o dashboard)
@@ -848,6 +917,27 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     console.log('   Arquivos recebidos:');
     console.log('   - Capa:', capaFile ? `${capaFile.filename} (${capaFile.size} bytes)` : 'Nenhuma');
     console.log('   - PDF:', pdfFile ? `${pdfFile.filename} (${pdfFile.size} bytes)` : 'Nenhum');
+    
+    // Verificar se os arquivos foram salvos corretamente
+    if (capaFile) {
+      const capaPath = path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+      const capaExists = await fs.pathExists(capaPath);
+      console.log('   ✅ Arquivo de capa salvo?', capaExists, capaExists ? `em: ${capaPath}` : '');
+      if (!capaExists) {
+        console.error('   ❌ ERRO: Arquivo de capa não foi salvo!');
+        console.error('   Caminho esperado:', capaPath);
+      }
+    }
+    
+    if (pdfFile) {
+      const pdfPath = path.join(__dirname, '..', 'uploads', 'pdfs', pdfFile.filename);
+      const pdfExists = await fs.pathExists(pdfPath);
+      console.log('   ✅ Arquivo PDF salvo?', pdfExists, pdfExists ? `em: ${pdfPath}` : '');
+      if (!pdfExists) {
+        console.error('   ❌ ERRO: Arquivo PDF não foi salvo!');
+        console.error('   Caminho esperado:', pdfPath);
+      }
+    }
     console.log('   Dados do jornal:', {
       nome: novoJornal.nome,
       mes: novoJornal.mes,
@@ -1270,7 +1360,7 @@ async function readCarrossel() {
   }
 }
 
-// Salvar item do carrossel no MySQL
+// Salvar item do carrossel no MySQL e JSON
 async function saveCarrosselItem(item, isUpdate = false) {
   try {
     if (isUpdate) {
@@ -1280,7 +1370,6 @@ async function saveCarrosselItem(item, isUpdate = false) {
         WHERE id = ?`,
         [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0, item.id]
       );
-      return item;
     } else {
       const [result] = await pool.execute(
         `INSERT INTO carrossel (imagem, link, ordem, ativo, dataCriacao, dataAtualizacao)
@@ -1288,18 +1377,55 @@ async function saveCarrosselItem(item, isUpdate = false) {
         [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0]
       );
       item.id = result.insertId;
-      return item;
     }
+    
+    // Salvar também no JSON (backup)
+    try {
+      const config = await readSiteConfig();
+      if (!config.carrosselMaterias) config.carrosselMaterias = [];
+      
+      if (isUpdate) {
+        const index = config.carrosselMaterias.findIndex(c => c.id === item.id);
+        if (index !== -1) {
+          config.carrosselMaterias[index] = item;
+        } else {
+          config.carrosselMaterias.push(item);
+        }
+      } else {
+        config.carrosselMaterias.push(item);
+      }
+      await writeSiteConfig(config);
+      console.log('✅ Carrossel salvo no JSON também');
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao salvar carrossel no JSON:', jsonError.message);
+    }
+    
+    return item;
   } catch (dbError) {
     console.error('❌ Erro ao salvar carrossel no MySQL:', dbError.message);
     throw dbError;
   }
 }
 
-// Deletar item do carrossel
+// Deletar item do carrossel (MySQL e JSON)
 async function deleteCarrosselItem(id) {
   try {
     await pool.execute('DELETE FROM carrossel WHERE id = ?', [id]);
+    
+    // Deletar também do JSON
+    try {
+      const config = await readSiteConfig();
+      if (config.carrosselMaterias) {
+        const index = config.carrosselMaterias.findIndex(c => c.id === id);
+        if (index !== -1) {
+          config.carrosselMaterias.splice(index, 1);
+          await writeSiteConfig(config);
+        }
+      }
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao deletar carrossel do JSON:', jsonError.message);
+    }
+    
     return true;
   } catch (dbError) {
     console.error('❌ Erro ao deletar carrossel do MySQL:', dbError.message);
@@ -1309,20 +1435,36 @@ async function deleteCarrosselItem(id) {
 
 // ==================== FUNÇÕES MYSQL PARA CARROSSEL MÉDIO ====================
 
-// Ler carrossel médio do MySQL
+// Ler carrossel médio do MySQL e sincronizar com JSON
 async function readCarrosselMedio() {
   try {
     const [rows] = await pool.execute(
       'SELECT * FROM carrossel_medio WHERE ativo = 1 ORDER BY ordem ASC'
     );
+    
+    // Sincronizar com JSON (backup)
+    try {
+      const config = await readSiteConfig();
+      config.carrosselMedio = rows;
+      await writeSiteConfig(config);
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao sincronizar carrossel_medio com JSON:', jsonError.message);
+    }
+    
     return rows;
   } catch (dbError) {
     console.error('❌ Erro ao ler carrossel_medio do MySQL:', dbError.message);
-    return [];
+    // Fallback para JSON
+    try {
+      const config = await readSiteConfig();
+      return config?.carrosselMedio || [];
+    } catch (jsonError) {
+      return [];
+    }
   }
 }
 
-// Salvar item do carrossel médio no MySQL
+// Salvar item do carrossel médio no MySQL e JSON
 async function saveCarrosselMedioItem(item, isUpdate = false) {
   try {
     if (isUpdate) {
@@ -1332,7 +1474,6 @@ async function saveCarrosselMedioItem(item, isUpdate = false) {
         WHERE id = ?`,
         [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0, item.id]
       );
-      return item;
     } else {
       const [result] = await pool.execute(
         `INSERT INTO carrossel_medio (imagem, link, ordem, ativo, dataCriacao, dataAtualizacao)
@@ -1340,18 +1481,55 @@ async function saveCarrosselMedioItem(item, isUpdate = false) {
         [item.imagem, item.link || null, item.ordem || 0, item.ativo ? 1 : 0]
       );
       item.id = result.insertId;
-      return item;
     }
+    
+    // Salvar também no JSON (backup)
+    try {
+      const config = await readSiteConfig();
+      if (!config.carrosselMedio) config.carrosselMedio = [];
+      
+      if (isUpdate) {
+        const index = config.carrosselMedio.findIndex(c => c.id === item.id);
+        if (index !== -1) {
+          config.carrosselMedio[index] = item;
+        } else {
+          config.carrosselMedio.push(item);
+        }
+      } else {
+        config.carrosselMedio.push(item);
+      }
+      await writeSiteConfig(config);
+      console.log('✅ Carrossel médio salvo no JSON também');
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao salvar carrossel_medio no JSON:', jsonError.message);
+    }
+    
+    return item;
   } catch (dbError) {
     console.error('❌ Erro ao salvar carrossel_medio no MySQL:', dbError.message);
     throw dbError;
   }
 }
 
-// Deletar item do carrossel médio
+// Deletar item do carrossel médio (MySQL e JSON)
 async function deleteCarrosselMedioItem(id) {
   try {
     await pool.execute('DELETE FROM carrossel_medio WHERE id = ?', [id]);
+    
+    // Deletar também do JSON
+    try {
+      const config = await readSiteConfig();
+      if (config.carrosselMedio) {
+        const index = config.carrosselMedio.findIndex(c => c.id === id);
+        if (index !== -1) {
+          config.carrosselMedio.splice(index, 1);
+          await writeSiteConfig(config);
+        }
+      }
+    } catch (jsonError) {
+      console.warn('⚠️ Erro ao deletar carrossel_medio do JSON:', jsonError.message);
+    }
+    
     return true;
   } catch (dbError) {
     console.error('❌ Erro ao deletar carrossel_medio do MySQL:', dbError.message);
@@ -1420,6 +1598,13 @@ router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) =
 
     if (req.file) {
       item.imagem = `/uploads/materias/${req.file.filename}`;
+      // Verificar se a imagem foi salva corretamente
+      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+      const imagemExists = await fs.pathExists(imagemPath);
+      console.log('   ✅ Imagem do carrossel atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
+      if (!imagemExists) {
+        console.error('   ❌ ERRO: Imagem do carrossel não foi salva!');
+      }
     }
     if (ordem !== undefined) item.ordem = parseInt(ordem);
     if (ativo !== undefined) item.ativo = ativo === 'true' || ativo === true;
@@ -1511,6 +1696,13 @@ router.put('/site/carrossel-medio/:id', requireAuth, uploadMateria, async (req, 
 
     if (req.file) {
       item.imagem = `/uploads/materias/${req.file.filename}`;
+      // Verificar se a imagem foi salva corretamente
+      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+      const imagemExists = await fs.pathExists(imagemPath);
+      console.log('   ✅ Imagem do carrossel atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
+      if (!imagemExists) {
+        console.error('   ❌ ERRO: Imagem do carrossel não foi salva!');
+      }
     }
     if (ordem !== undefined) item.ordem = parseInt(ordem);
     if (ativo !== undefined) item.ativo = ativo === 'true' || ativo === true;
@@ -1710,6 +1902,16 @@ router.post('/site/responsaveis', requireAuth, uploadMateria, async (req, res) =
     const novaImagem = req.file 
       ? `/uploads/materias/${req.file.filename}`
       : req.body.imagem;
+    
+    // Verificar se a imagem foi salva corretamente
+    if (req.file) {
+      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+      const imagemExists = await fs.pathExists(imagemPath);
+      console.log('   ✅ Imagem do responsável salva?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
+      if (!imagemExists) {
+        console.error('   ❌ ERRO: Imagem do responsável não foi salva!');
+      }
+    }
 
     const novoId = config.responsaveis.length > 0
       ? Math.max(...config.responsaveis.map(r => r.id)) + 1
@@ -1749,7 +1951,16 @@ router.put('/site/responsaveis/:id', requireAuth, uploadMateria, async (req, res
 
     if (nome) config.responsaveis[index].nome = nome;
     if (cargo) config.responsaveis[index].cargo = cargo;
-    if (req.file) config.responsaveis[index].imagem = `/uploads/materias/${req.file.filename}`;
+    if (req.file) {
+      config.responsaveis[index].imagem = `/uploads/materias/${req.file.filename}`;
+      // Verificar se a imagem foi salva corretamente
+      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+      const imagemExists = await fs.pathExists(imagemPath);
+      console.log('   ✅ Imagem do responsável atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
+      if (!imagemExists) {
+        console.error('   ❌ ERRO: Imagem do responsável não foi salva!');
+      }
+    }
     if (ordem !== undefined) config.responsaveis[index].ordem = parseInt(ordem);
     if (ativo !== undefined) config.responsaveis[index].ativo = ativo === 'true' || ativo === true;
 
@@ -2055,7 +2266,16 @@ router.put('/site/banner-modal', requireAuth, uploadMateria, async (req, res) =>
       return res.status(500).json({ error: 'Erro ao ler configuração' });
     }
 
-    if (req.file) config.bannerModal.imagem = `/uploads/materias/${req.file.filename}`;
+    if (req.file) {
+      config.bannerModal.imagem = `/uploads/materias/${req.file.filename}`;
+      // Verificar se a imagem foi salva corretamente
+      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+      const imagemExists = await fs.pathExists(imagemPath);
+      console.log('   ✅ Imagem do banner modal salva?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
+      if (!imagemExists) {
+        console.error('   ❌ ERRO: Imagem do banner modal não foi salva!');
+      }
+    }
     if (link) config.bannerModal.link = link;
     if (ativo !== undefined) config.bannerModal.ativo = ativo === 'true' || ativo === true;
 
@@ -2676,7 +2896,35 @@ router.post('/pagamentos', async (req, res) => {
         [result.insertId]
       );
       
-        console.log('✅ Pagamento registrado no MySQL:', inserted[0]);
+      console.log('✅ Pagamento registrado no MySQL:', inserted[0]);
+      
+      // Salvar também no JSON (backup)
+      try {
+        const data = await readPagamentos();
+        const pagamentos = data.pagamentos || [];
+        
+        // Verificar se já existe no JSON
+        const existeNoJson = pagamentos.find(p => p.paymentIntentId === paymentIntentIdFinal);
+        if (!existeNoJson) {
+          pagamentos.push({
+            id: inserted[0].id,
+            paymentIntentId: inserted[0].paymentIntentId,
+            nome: inserted[0].nome,
+            email: inserted[0].email,
+            jornalId: inserted[0].jornalId,
+            jornalNome: inserted[0].jornalNome,
+            valor: inserted[0].valor,
+            moeda: inserted[0].moeda,
+            dataPagamento: inserted[0].dataPagamento,
+            dataCriacao: inserted[0].dataCriacao
+          });
+          await writePagamentos({ pagamentos });
+          console.log('✅ Pagamento salvo no JSON também');
+        }
+      } catch (jsonError) {
+        console.warn('⚠️ Erro ao salvar pagamento no JSON:', jsonError.message);
+      }
+      
       return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
       } else {
         // Se nenhuma coluna existe, forçar erro para cair no fallback JSON
@@ -2740,6 +2988,34 @@ router.post('/pagamentos', async (req, res) => {
           );
           
           console.log('✅ Pagamento inserido após correção!');
+          
+          // Salvar também no JSON (backup)
+          try {
+            const data = await readPagamentos();
+            const pagamentos = data.pagamentos || [];
+            
+            // Verificar se já existe no JSON
+            const existeNoJson = pagamentos.find(p => p.paymentIntentId === paymentIntentIdFinal);
+            if (!existeNoJson) {
+              pagamentos.push({
+                id: inserted[0].id,
+                paymentIntentId: inserted[0].paymentIntentId,
+                nome: inserted[0].nome,
+                email: inserted[0].email,
+                jornalId: inserted[0].jornalId,
+                jornalNome: inserted[0].jornalNome,
+                valor: inserted[0].valor,
+                moeda: inserted[0].moeda,
+                dataPagamento: inserted[0].dataPagamento,
+                dataCriacao: inserted[0].dataCriacao
+              });
+              await writePagamentos({ pagamentos });
+              console.log('✅ Pagamento salvo no JSON também');
+            }
+          } catch (jsonError) {
+            console.warn('⚠️ Erro ao salvar pagamento no JSON:', jsonError.message);
+          }
+          
           return res.json({ message: 'Pagamento registrado com sucesso', pagamento: inserted[0] });
         } catch (fixError) {
           console.error('❌ Erro ao tentar corrigir:', fixError.message);
@@ -2902,7 +3178,7 @@ router.get('/colunistas/:id', async (req, res) => {
 });
 
 // Criar novo colunista
-router.post('/colunistas', requireAuth, async (req, res) => {
+router.post('/colunistas', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { nome, coluna, conteudo, instagram, ordem, ativo } = req.body;
     
@@ -2923,6 +3199,13 @@ router.post('/colunistas', requireAuth, async (req, res) => {
       ? Math.max(...data.colunistas.map(c => c.id)) + 1 
       : 1;
     
+    // Obter imagem do upload ou do body
+    const imagem = req.file 
+      ? `/uploads/materias/${req.file.filename}`
+      : (req.body.imagem || '');
+    
+    console.log('   Imagem salva:', imagem);
+    
     const novoColunista = {
       id: newId,
       nome: nome.trim(),
@@ -2931,7 +3214,7 @@ router.post('/colunistas', requireAuth, async (req, res) => {
       instagram: instagram ? instagram.trim() : '',
       ordem: ordem || 0,
       ativo: ativo !== false,
-      imagem: req.body.imagem || '',
+      imagem: imagem,
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString()
     };
@@ -2941,6 +3224,7 @@ router.post('/colunistas', requireAuth, async (req, res) => {
     
     console.log(`✅ Colunista criado com sucesso! ID: ${newId}`);
     console.log(`   Total de colunistas depois: ${data.colunistas.length}`);
+    console.log(`   Imagem: ${imagem}`);
     // Arquivo salvo
     
     res.status(201).json(novoColunista);
@@ -2951,7 +3235,7 @@ router.post('/colunistas', requireAuth, async (req, res) => {
 });
 
 // Atualizar colunista
-router.put('/colunistas/:id', requireAuth, async (req, res) => {
+router.put('/colunistas/:id', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { id } = req.params;
     const { nome, coluna, conteudo, instagram, ordem, ativo, imagem } = req.body;
@@ -2970,7 +3254,21 @@ router.put('/colunistas/:id', requireAuth, async (req, res) => {
     if (instagram !== undefined) data.colunistas[index].instagram = instagram.trim();
     if (ordem !== undefined) data.colunistas[index].ordem = ordem || 0;
     if (ativo !== undefined) data.colunistas[index].ativo = ativo !== false;
-    if (imagem !== undefined) data.colunistas[index].imagem = imagem;
+    
+    // Se houver upload de nova imagem, usar ela; senão, usar a do body se fornecida
+    if (req.file) {
+      data.colunistas[index].imagem = `/uploads/materias/${req.file.filename}`;
+      console.log('   Nova imagem salva:', data.colunistas[index].imagem);
+      // Verificar se a imagem foi salva corretamente
+      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+      const imagemExists = await fs.pathExists(imagemPath);
+      console.log('   ✅ Imagem do colunista atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
+      if (!imagemExists) {
+        console.error('   ❌ ERRO: Imagem do colunista não foi salva!');
+      }
+    } else if (imagem !== undefined) {
+      data.colunistas[index].imagem = imagem;
+    }
     
     data.colunistas[index].dataAtualizacao = new Date().toISOString();
     

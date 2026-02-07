@@ -540,6 +540,10 @@
                             <i class='bx bx-credit-card'></i>
                             <span>Pagamentos</span>
                         </button>
+                        <button class="nav-item" data-tab="verificar-banco">
+                            <i class='bx bx-search-alt'></i>
+                            <span>Verificar Banco</span>
+                        </button>
                     </nav>
                     
                     <div class="sidebar-footer">
@@ -648,6 +652,68 @@
                         <button id="updatePaymentValuesBtn" class="btn btn-secondary" onclick="if(typeof window.updatePaymentValues === 'function') { window.updatePaymentValues(); } else { console.error('updatePaymentValues não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">🔄 Atualizar Valores dos Pagamentos</button>
                     </div>
                     <div id="pagamentosList"></div>
+                </div>
+
+                <!-- Tab Verificar Banco -->
+                <div class="tab-content" id="tab-verificar-banco">
+                    <div class="dashboard-actions">
+                        <button id="verificarBancoBtn" class="btn btn-primary" onclick="if(typeof window.verificarBancoDados === 'function') { window.verificarBancoDados(); } else { console.error('verificarBancoDados não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">
+                            <i class='bx bx-search-alt'></i> Verificar Banco de Dados
+                        </button>
+                        <button id="refreshVerificarBtn" class="btn btn-secondary" onclick="if(typeof window.verificarBancoDados === 'function') { window.verificarBancoDados(); } else { console.error('verificarBancoDados não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">
+                            <i class='bx bx-refresh'></i> Atualizar
+                        </button>
+                    </div>
+                    
+                    <div id="verificarBancoLoading" class="loading" style="display: none; text-align: center; padding: 2rem; color: #666;">
+                        <p>⏳ Verificando banco de dados...</p>
+                    </div>
+                    
+                    <div id="verificarBancoResults" style="display: none;">
+                        <!-- Informações de Conexão -->
+                        <div class="info-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #007bff;">
+                            <h2 style="color: #007bff; margin-bottom: 1rem; font-size: 1.5rem;">
+                                <i class='bx bx-server'></i> Informações de Conexão
+                            </h2>
+                            <table id="conexaoTable" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #e9ecef;">
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Propriedade</th>
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Status de Transação -->
+                        <div class="info-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #28a745;">
+                            <h2 style="color: #28a745; margin-bottom: 1rem; font-size: 1.5rem;">
+                                <i class='bx bx-lock'></i> Status de Transação
+                            </h2>
+                            <table id="transacaoTable" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #e9ecef;">
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Propriedade</th>
+                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Lista de Jornais -->
+                        <div class="info-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #ffc107;">
+                            <h2 style="color: #ffc107; margin-bottom: 1rem; font-size: 1.5rem;">
+                                <i class='bx bx-book'></i> Jornais no Banco (<span id="totalJornaisVerificar">0</span>)
+                            </h2>
+                            <div id="jornaisVerificarList" class="jornais-grid"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="verificarBancoError" class="error-message" style="display: none; background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545; margin-top: 1rem;"></div>
+                    
+                    <div id="verificarBancoSuccess" class="success-message" style="display: none; background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; border-left: 4px solid #28a745; margin-top: 1rem;"></div>
                 </div>
                     </main>
                 </div>
