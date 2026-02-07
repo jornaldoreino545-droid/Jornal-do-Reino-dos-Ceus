@@ -109,11 +109,17 @@ async function saveJornal(jornal, isUpdate = false) {
         });
         
         // Verificar qual banco estamos usando
-        const [dbInfo] = await pool.execute('SELECT DATABASE() as db, USER() as user, @@hostname as hostname');
+        const [dbInfo] = await pool.execute('SELECT DATABASE() as db, USER() as user, @@hostname as hostname, @@port as port');
         console.log('🔍 Informações do banco de dados:');
         console.log('   Banco atual:', dbInfo[0]?.db || 'desconhecido');
         console.log('   Usuário:', dbInfo[0]?.user || 'desconhecido');
         console.log('   Hostname:', dbInfo[0]?.hostname || 'desconhecido');
+        console.log('   Porta:', dbInfo[0]?.port || 'desconhecido');
+        console.log('   Configuração do pool:');
+        console.log('     DB_HOST:', process.env.DB_HOST || 'localhost');
+        console.log('     DB_PORT:', process.env.DB_PORT || '3306');
+        console.log('     DB_USER:', process.env.DB_USER || 'jornal');
+        console.log('     DB_NAME:', process.env.DB_NAME || 'ebook_checkout');
         
         // Contar registros antes da inserção
         const [countBefore] = await pool.execute('SELECT COUNT(*) as total FROM jornais');
@@ -168,6 +174,28 @@ async function saveJornal(jornal, isUpdate = false) {
           const [allIds] = await connection.execute('SELECT id, nome FROM jornais ORDER BY id DESC LIMIT 10');
           console.log('   Últimos 10 jornais no banco:');
           allIds.forEach(j => console.log(`      - ID ${j.id}: ${j.nome}`));
+          
+          // Verificar informações completas do banco para debug
+          const [fullDbInfo] = await connection.execute(
+            `SELECT 
+              DATABASE() as db, 
+              USER() as user, 
+              @@hostname as hostname,
+              @@port as port,
+              CONNECTION_ID() as connection_id,
+              @@autocommit as autocommit`
+          );
+          console.log('   🔍 Informações completas da conexão:');
+          console.log(`     Database: ${fullDbInfo[0]?.db}`);
+          console.log(`     User: ${fullDbInfo[0]?.user}`);
+          console.log(`     Hostname: ${fullDbInfo[0]?.hostname}`);
+          console.log(`     Port: ${fullDbInfo[0]?.port}`);
+          console.log(`     Connection ID: ${fullDbInfo[0]?.connection_id}`);
+          console.log(`     Autocommit: ${fullDbInfo[0]?.autocommit}`);
+          
+          // Forçar commit explícito (mesmo com autocommit)
+          await connection.commit();
+          console.log('   ✅ Commit explícito executado');
           
         } catch (insertError) {
           console.error('❌ ERRO durante inserção:');
@@ -863,11 +891,29 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     
     // Verificar se o jornal foi realmente salvo no banco
     try {
+      // Aguardar um pouco para garantir que o commit foi aplicado
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const [verificacaoFinal] = await pool.execute('SELECT * FROM jornais WHERE id = ?', [jornalSalvo.id]);
       if (verificacaoFinal.length > 0) {
         console.log('✅ Verificação final: Jornal encontrado no banco de dados');
         console.log('   Nome:', verificacaoFinal[0].nome);
         console.log('   Capa:', verificacaoFinal[0].capa);
+        console.log('   ID:', verificacaoFinal[0].id);
+        
+        // Verificar informações do banco usado
+        const [dbInfoFinal] = await pool.execute('SELECT DATABASE() as db, USER() as user, @@hostname as hostname, @@port as port');
+        console.log('   🔍 Banco de dados usado na verificação final:');
+        console.log(`     Database: ${dbInfoFinal[0]?.db}`);
+        console.log(`     User: ${dbInfoFinal[0]?.user}`);
+        console.log(`     Hostname: ${dbInfoFinal[0]?.hostname}`);
+        console.log(`     Port: ${dbInfoFinal[0]?.port}`);
+        console.log('   ⚠️  IMPORTANTE: Verifique se o phpMyAdmin está conectado ao mesmo banco!');
+        console.log('   ⚠️  O phpMyAdmin deve estar conectado a:');
+        console.log(`     - Database: ${dbInfoFinal[0]?.db}`);
+        console.log(`     - Host: ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '3306'}`);
+        console.log(`     - User: ${process.env.DB_USER || 'jornal'}`);
+        console.log(`     - Hostname do servidor MySQL: ${dbInfoFinal[0]?.hostname}`);
       } else {
         console.error('❌ ERRO CRÍTICO: Jornal não encontrado após salvamento!');
         console.error('   ID esperado:', jornalSalvo.id);
