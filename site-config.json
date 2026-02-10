@@ -220,92 +220,137 @@
     {
       "id": 1,
       "imagem": "/uploads/materias/materia-1768261529027-427613895.png",
+      "link": null,
       "ordem": 1,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 2,
       "imagem": "/uploads/materias/materia-1768261536396-291307647.png",
+      "link": null,
       "ordem": 2,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 3,
       "imagem": "/uploads/materias/materia-1768261547842-194198261.png",
+      "link": null,
       "ordem": 3,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 4,
       "imagem": "/uploads/materias/materia-1768354656489-155442215.jpeg",
+      "link": null,
       "ordem": 4,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 5,
       "imagem": "/uploads/materias/materia-1768354669220-669977782.jpeg",
+      "link": null,
       "ordem": 5,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 6,
       "imagem": "/uploads/materias/materia-1768354685830-726517464.jpeg",
+      "link": null,
       "ordem": 6,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 7,
       "imagem": "/uploads/materias/materia-1768354698908-932679413.jpeg",
+      "link": null,
       "ordem": 7,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 8,
       "imagem": "/uploads/materias/materia-1768354710153-408106357.jpeg",
+      "link": null,
       "ordem": 8,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 9,
       "imagem": "/uploads/materias/materia-1768354720476-612817657.jpeg",
+      "link": null,
       "ordem": 9,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 10,
       "imagem": "/uploads/materias/materia-1768354738972-491169755.jpeg",
+      "link": null,
       "ordem": 10,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 11,
       "imagem": "/uploads/materias/materia-1768354757213-876789570.jpeg",
+      "link": null,
       "ordem": 11,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 12,
       "imagem": "/uploads/materias/materia-1768354768966-174453460.jpeg",
+      "link": null,
       "ordem": 12,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 13,
       "imagem": "/uploads/materias/materia-1768354777552-811131479.jpeg",
+      "link": null,
       "ordem": 13,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 14,
       "imagem": "/uploads/materias/materia-1768354790512-296029169.jpeg",
+      "link": null,
       "ordem": 14,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     },
     {
       "id": 15,
       "imagem": "/uploads/materias/materia-1768354806765-188961232.jpeg",
+      "link": null,
       "ordem": 15,
-      "ativo": true
+      "ativo": 1,
+      "dataCriacao": "2026-02-06T23:32:50.000Z",
+      "dataAtualizacao": "2026-02-06T23:32:50.000Z"
     }
   ]
 }
