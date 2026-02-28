@@ -115,8 +115,19 @@ CREATE TABLE IF NOT EXISTS pagamentos (
     moeda VARCHAR(10) DEFAULT 'BRL',
     dataPagamento DATETIME,
     dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    santuario VARCHAR(255) NULL COMMENT 'Santuário que o cliente frequenta',
+    souNovoSantuario TINYINT(1) DEFAULT 0 COMMENT '1 = sou novo no santuário',
     INDEX idx_paymentIntentId (paymentIntentId),
     INDEX idx_dataPagamento (dataPagamento),
     INDEX idx_dataCriacao (dataCriacao),
     INDEX idx_jornalId (jornalId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabela de Santuários (opções no checkout)
+CREATE TABLE IF NOT EXISTS santuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    ordem INT DEFAULT 0,
+    dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ordem (ordem)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

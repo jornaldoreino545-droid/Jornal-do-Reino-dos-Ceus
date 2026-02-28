@@ -13,6 +13,7 @@ const SITE_CONFIG_FILE = path.join(__dirname, '..', '..', 'site-config.json');
 const MATERIAS_FILE = path.join(__dirname, '..', '..', 'public', 'Noticias', 'materias.json');
 const PAGAMENTOS_FILE = path.join(__dirname, '..', '..', 'pagamentos.json');
 const COLUNISTAS_FILE = path.join(__dirname, '..', '..', 'colunistas.json');
+const SANTUARIOS_FILE = path.join(__dirname, '..', '..', 'santuarios.json');
 
 // ==================== FUNÇÕES AUXILIARES PARA JORNAIS ====================
 
@@ -2670,9 +2671,12 @@ router.delete('/pagamentos/:id', requireAuth, async (req, res) => {
 // Rota para salvar um novo pagamento (pública para ser chamada pelo checkout)
 router.post('/pagamentos', async (req, res) => {
   try {
-    const { paymentIntentId, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento } = req.body;
+    const { paymentIntentId, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, santuario, souNovoSantuario } = req.body;
     
-    console.log('📥 Recebendo pagamento:', { paymentIntentId, nome, email, jornalId, valor });
+    const santuarioFinal = (santuario != null && santuario !== '') ? String(santuario) : '';
+    const souNovoSantuarioFinal = (souNovoSantuario === 1 || souNovoSantuario === '1' || souNovoSantuario === true || souNovoSantuario === 'sim') ? 1 : 0;
+    
+    console.log('📥 Recebendo pagamento:', { paymentIntentId, nome, email, jornalId, valor, santuario: santuarioFinal, souNovoSantuario: souNovoSantuarioFinal });
     console.log('📥 Valor recebido (tipo):', typeof valor, 'Valor:', valor);
     
     // Validar paymentIntentId - não pode ser vazio ou apenas espaços
@@ -2879,15 +2883,36 @@ router.post('/pagamentos', async (req, res) => {
       
       // Inserir no MySQL (só se a coluna existir)
       if (columnExists || stripeColumnExists) {
+        // Garantir que colunas santuario e souNovoSantuario existem (para tabelas antigas)
+        try {
+          const [cols] = await pool.execute(
+            `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pagamentos' 
+             AND COLUMN_NAME IN ('santuario', 'souNovoSantuario')`
+          );
+          const hasSantuario = cols.some(c => c.COLUMN_NAME === 'santuario');
+          const hasSouNovo = cols.some(c => c.COLUMN_NAME === 'souNovoSantuario');
+          if (!hasSantuario) {
+            await pool.execute('ALTER TABLE pagamentos ADD COLUMN santuario VARCHAR(255) NULL');
+            console.log('✅ Coluna santuario adicionada à tabela pagamentos');
+          }
+          if (!hasSouNovo) {
+            await pool.execute('ALTER TABLE pagamentos ADD COLUMN souNovoSantuario TINYINT(1) DEFAULT 0');
+            console.log('✅ Coluna souNovoSantuario adicionada à tabela pagamentos');
+          }
+        } catch (alterErr) {
+          console.warn('⚠️ Ao adicionar colunas santuario/souNovoSantuario:', alterErr.message);
+        }
+        
         // Determinar qual coluna usar para inserção
         const insertColumn = columnExists ? columnName : 'stripe_payment_id';
         
         console.log(`💾 Inserindo pagamento usando coluna: ${insertColumn}`);
         
       const [result] = await pool.execute(
-          `INSERT INTO pagamentos (${insertColumn}, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal]
+          `INSERT INTO pagamentos (${insertColumn}, nome, email, jornalId, jornalNome, valor, moeda, dataPagamento, dataCriacao, santuario, souNovoSantuario) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [paymentIntentIdFinal, nomeFinal, emailFinal, jornalIdFinal, jornalNomeFinal, valorFinal, moedaFinal, dataPagamentoFinal, dataCriacaoFinal, santuarioFinal, souNovoSantuarioFinal]
       );
       
       // Buscar o pagamento inserido
@@ -2916,7 +2941,9 @@ router.post('/pagamentos', async (req, res) => {
             valor: inserted[0].valor,
             moeda: inserted[0].moeda,
             dataPagamento: inserted[0].dataPagamento,
-            dataCriacao: inserted[0].dataCriacao
+            dataCriacao: inserted[0].dataCriacao,
+            santuario: inserted[0].santuario != null ? inserted[0].santuario : santuarioFinal,
+            souNovoSantuario: inserted[0].souNovoSantuario != null ? inserted[0].souNovoSantuario : souNovoSantuarioFinal
           });
           await writePagamentos({ pagamentos });
           console.log('✅ Pagamento salvo no JSON também');
@@ -3007,7 +3034,9 @@ router.post('/pagamentos', async (req, res) => {
                 valor: inserted[0].valor,
                 moeda: inserted[0].moeda,
                 dataPagamento: inserted[0].dataPagamento,
-                dataCriacao: inserted[0].dataCriacao
+                dataCriacao: inserted[0].dataCriacao,
+                santuario: inserted[0].santuario != null ? inserted[0].santuario : santuarioFinal,
+                souNovoSantuario: inserted[0].souNovoSantuario != null ? inserted[0].souNovoSantuario : souNovoSantuarioFinal
               });
               await writePagamentos({ pagamentos });
               console.log('✅ Pagamento salvo no JSON também');
@@ -3052,7 +3081,9 @@ router.post('/pagamentos', async (req, res) => {
         valor: valorFinal,
         moeda: moedaFinal,
         dataPagamento: dataPagamentoFinal,
-        dataCriacao: dataCriacaoFinal
+        dataCriacao: dataCriacaoFinal,
+        santuario: santuarioFinal,
+        souNovoSantuario: souNovoSantuarioFinal
       };
       
       pagamentos.push(novoPagamento);
@@ -3064,6 +3095,128 @@ router.post('/pagamentos', async (req, res) => {
   } catch (error) {
     console.error('Erro ao salvar pagamento:', error);
     res.status(500).json({ error: 'Erro ao salvar pagamento' });
+  }
+});
+
+// ==================== SANTUÁRIOS ====================
+// Lista de santuários para o checkout (público) e para o dashboard (com auth)
+
+function normalizarSantuario(s) {
+  if (s == null) return null;
+  if (typeof s === 'string') return { id: 0, nome: s, ordem: 0, dataCriacao: null };
+  return {
+    id: s.id != null ? Number(s.id) : 0,
+    nome: s.nome != null ? String(s.nome) : '',
+    ordem: s.ordem != null ? Number(s.ordem) : 0,
+    dataCriacao: s.dataCriacao != null ? s.dataCriacao : null
+  };
+}
+
+async function readSantuarios() {
+  try {
+    try {
+      const [rows] = await pool.execute('SELECT id, nome, ordem, dataCriacao FROM santuarios ORDER BY ordem ASC, id ASC');
+      const lista = (rows || []).map(r => normalizarSantuario(r));
+      return { santuarios: lista };
+    } catch (dbErr) {
+      console.warn('⚠️ Tabela santuarios não encontrada, usando JSON:', dbErr.message);
+    }
+    const exists = await fs.pathExists(SANTUARIOS_FILE);
+    if (!exists) {
+      await fs.writeJson(SANTUARIOS_FILE, { santuarios: [] }, { spaces: 2, encoding: 'utf8' });
+      return { santuarios: [] };
+    }
+    const data = await fs.readJson(SANTUARIOS_FILE, { encoding: 'utf8' });
+    const santuarios = (data.santuarios || []).map(s => normalizarSantuario(s));
+    return { santuarios };
+  } catch (e) {
+    console.error('Erro ao ler santuarios.json:', e);
+    return { santuarios: [] };
+  }
+}
+
+async function writeSantuarios(data) {
+  const dir = path.dirname(SANTUARIOS_FILE);
+  await fs.ensureDir(dir);
+  await fs.writeJson(SANTUARIOS_FILE, data, { spaces: 2, encoding: 'utf8' });
+}
+
+// GET /api/santuarios — público (usado pelo checkout)
+router.get('/santuarios', async (req, res) => {
+  try {
+    const data = await readSantuarios();
+    const lista = (data.santuarios || []).map(s => (typeof s === 'string' ? s : (s.nome || s)));
+    res.json({ santuarios: lista });
+  } catch (error) {
+    console.error('Erro ao listar santuários:', error);
+    res.status(500).json({ error: 'Erro ao listar santuários', santuarios: [] });
+  }
+});
+
+// GET /api/santuarios/admin — lista completa com id para o dashboard (requer auth)
+router.get('/santuarios/admin', requireAuth, async (req, res) => {
+  try {
+    const data = await readSantuarios();
+    const lista = Array.isArray(data.santuarios) ? data.santuarios : [];
+    res.json({ santuarios: lista });
+  } catch (error) {
+    console.error('Erro ao listar santuários (admin):', error);
+    res.status(500).json({ error: 'Erro ao listar santuários', santuarios: [] });
+  }
+});
+
+// POST /api/santuarios — adicionar santuário (requer auth)
+router.post('/santuarios', requireAuth, async (req, res) => {
+  try {
+    const { nome } = req.body || {};
+    const nomeTrim = (nome && String(nome).trim()) || '';
+    if (!nomeTrim) {
+      return res.status(400).json({ error: 'Nome do santuário é obrigatório' });
+    }
+    try {
+      const [result] = await pool.execute('INSERT INTO santuarios (nome, ordem) VALUES (?, 0)', [nomeTrim]);
+      const insertId = result.insertId;
+      const [rows] = await pool.execute('SELECT id, nome, ordem, dataCriacao FROM santuarios WHERE id = ?', [insertId]);
+      const novo = rows && rows[0];
+      const data = await readSantuarios();
+      await writeSantuarios(data);
+      return res.json({ message: 'Santuário adicionado', santuario: normalizarSantuario(novo) || { id: insertId, nome: nomeTrim } });
+    } catch (dbErr) {
+      if (dbErr.code === 'ER_NO_SUCH_TABLE') {
+        const { initDatabase } = require('../config/init-database');
+        await initDatabase(pool);
+        const [result] = await pool.execute('INSERT INTO santuarios (nome, ordem) VALUES (?, 0)', [nomeTrim]);
+        const insertId = result.insertId;
+        const data = await readSantuarios();
+        await writeSantuarios(data);
+        return res.json({ message: 'Santuário adicionado', santuario: { id: insertId, nome: nomeTrim } });
+      }
+      throw dbErr;
+    }
+  } catch (error) {
+    console.error('Erro ao adicionar santuário:', error);
+    res.status(500).json({ error: 'Erro ao adicionar santuário', message: error.message });
+  }
+});
+
+// DELETE /api/santuarios/:id
+router.delete('/santuarios/:id', requireAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID inválido' });
+    try {
+      await pool.execute('DELETE FROM santuarios WHERE id = ?', [id]);
+    } catch (dbErr) {
+      if (dbErr.code === 'ER_NO_SUCH_TABLE') return res.json({ ok: true });
+    }
+    const data = await readSantuarios();
+    let santuarios = data.santuarios || [];
+    santuarios = santuarios.filter(s => parseInt(s.id, 10) !== id);
+    await writeSantuarios({ santuarios });
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro ao excluir santuário:', error);
+    res.status(500).json({ error: 'Erro ao excluir santuário' });
   }
 });
 

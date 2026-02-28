@@ -1909,6 +1909,7 @@ function setupTabs() {
         'noticias': 'Notícias',
         'colunistas': 'Colunistas',
         'pagamentos': 'Pagamentos',
+        'santuarios': 'Santuários',
         'verificar-banco': 'Verificar Banco de Dados'
     };
     
@@ -1974,6 +1975,9 @@ function loadTabData(tabName) {
             break;
         case 'pagamentos':
             loadPagamentos();
+            break;
+        case 'santuarios':
+            loadSantuarios();
             break;
         case 'verificar-banco':
             verificarBancoDados();
@@ -3571,39 +3575,58 @@ function renderPagamentos() {
                 }).format(valorNumerico);
                 
                 return `
-                    <div class="jornal-card" style="animation: fadeInUp 0.4s ease-out;">
+                    <div class="jornal-card pagamento-receipt-card" style="animation: fadeInUp 0.4s ease-out; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, #00095b 0%, #001a7a 100%); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 42px; height: 42px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class='bx bx-receipt' style="font-size: 22px; color: #fff;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.75); margin-bottom: 2px;">Comprovante de pagamento</div>
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: #fff;">${pagamento.nome || 'Cliente'}</div>
+                                </div>
+                            </div>
+                            <div style="flex-shrink: 0; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 10px; text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #fff; white-space: nowrap;">${valorFormatado}</div>
+                                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.85);">${pagamento.moeda || 'BRL'}</div>
+                            </div>
+                        </div>
                         <div style="padding: 24px;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #f1f5f9;">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                        <i class='bx bx-user' style="font-size: 20px; color: #00095b;"></i>
-                                        <h3 style="margin: 0; color: #00095b; font-size: 1.25rem; font-weight: 700;">${pagamento.nome || 'Nome não informado'}</h3>
-                                    </div>
-                                    <p style="margin: 0; color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;"><i class='bx bx-envelope' style="font-size: 14px;"></i> ${pagamento.email || 'Email não informado'}</p>
-                                </div>
-                                <div style="text-align: right; padding: 12px 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin-bottom: 4px; font-family: 'Inter', sans-serif;">${valorFormatado}</div>
-                                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${pagamento.moeda || 'BRL'}</div>
-                                </div>
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">E-mail</div>
+                                <div style="font-size: 0.95rem; color: #334155;">${pagamento.email || '—'}</div>
                             </div>
                             
                             <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
                                 <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                                     <i class='bx bx-book' style="font-size: 16px; color: #00095b;"></i>
-                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Jornal:</strong>
+                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Produto</strong>
                                 </div>
                                 <div style="color: #00095b; font-weight: 600; font-size: 0.95rem; padding-left: 24px;">${pagamento.jornalNome || `ID: ${pagamento.jornalId}`}</div>
                                 
                                 <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px;">
                                     <i class='bx bx-calendar' style="font-size: 16px; color: #64748b;"></i>
-                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Data do Pagamento:</strong>
+                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Data e hora</strong>
                                 </div>
                                 <div style="color: #64748b; font-size: 0.9rem; padding-left: 24px; margin-top: 6px;">${dataFormatada}</div>
                                 
                                 <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <i class='bx bx-church' style="font-size: 16px; color: #00095b;"></i>
+                                        <strong style="color: #475569; font-size: 0.85rem;">Santuário:</strong>
+                                    </div>
+                                    <div style="color: #00095b; font-size: 0.9rem; padding-left: 24px; margin-bottom: ${(pagamento.souNovoSantuario === 1 || pagamento.souNovoSantuario === '1' || pagamento.souNovoSantuario === true) ? '8px' : '0'};">${pagamento.santuario && String(pagamento.santuario).trim() ? pagamento.santuario : 'Não informado'}</div>
+                                    ${pagamento.souNovoSantuario === 1 || pagamento.souNovoSantuario === '1' || pagamento.souNovoSantuario === true ? `
+                                    <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+                                        <span style="font-size: 0.8rem; padding: 4px 10px; background: #fef3c7; color: #b45309; border-radius: 6px; font-weight: 600;"><i class='bx bx-star' style="font-size: 12px; vertical-align: middle; margin-right: 4px;"></i> Sou novo no santuário</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                                
+                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                         <i class='bx bx-hash' style="font-size: 16px; color: #64748b;"></i>
-                                        <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Payment Intent ID:</strong>
+                                        <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Código da transação</strong>
                                     </div>
                                     <div style="color: #64748b; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.8rem; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; word-break: break-all; margin-left: 24px;">${pagamento.paymentIntentId}</div>
                                 </div>
@@ -3614,7 +3637,7 @@ function renderPagamentos() {
                                         class="btn-delete-pagamento"
                                         type="button">
                                     <i class='bx bx-trash'></i>
-                                    Excluir Comprovante
+                                    Excluir comprovante
                                 </button>
                             </div>
                         </div>
@@ -3734,6 +3757,122 @@ window.updatePaymentValues = async function() {
             btn.disabled = false;
             btn.textContent = '🔄 Atualizar Valores dos Pagamentos';
         }
+    }
+};
+
+// ==================== SANTUÁRIOS ====================
+let santuariosList = [];
+
+async function loadSantuarios() {
+    const listDiv = document.getElementById('santuariosList');
+    if (!listDiv) return;
+    listDiv.innerHTML = '<div class="loading">Carregando santuários...</div>';
+    try {
+        const response = await fetch(`${API_BASE}/santuarios/admin`, { credentials: 'include' });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            if (response.status === 401) {
+                listDiv.innerHTML = '<div class="error-message">Sessão expirada. Faça login novamente para ver e gerenciar os santuários.</div>';
+            } else {
+                listDiv.innerHTML = '<div class="error-message">Erro ao carregar santuários. Tente novamente.</div>';
+            }
+            santuariosList = [];
+            setupSantuariosAddButton();
+            return;
+        }
+        santuariosList = Array.isArray(data.santuarios) ? data.santuarios : (Array.isArray(data) ? data : []);
+        renderSantuarios();
+        setupSantuariosAddButton();
+    } catch (err) {
+        console.error('Erro ao carregar santuários:', err);
+        santuariosList = [];
+        listDiv.innerHTML = '<div class="error-message">Erro ao carregar santuários. Tente novamente.</div>';
+        setupSantuariosAddButton();
+    }
+}
+
+function renderSantuarios() {
+    const listDiv = document.getElementById('santuariosList');
+    if (!listDiv) return;
+    if (santuariosList.length === 0) {
+        listDiv.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-state-icon">⛪</div>
+                <div class="empty-state-title">Nenhum santuário cadastrado</div>
+                <div class="empty-state-message">Adicione santuários acima para que apareçam como opções no checkout.</div>
+            </div>
+        `;
+        return;
+    }
+    listDiv.innerHTML = santuariosList.map(s => {
+        const nome = typeof s === 'string' ? s : (s.nome || '');
+        const id = typeof s === 'object' && s.id != null ? s.id : 0;
+        return `
+            <div class="jornal-card" style="max-width: 400px;">
+                <div style="padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class='bx bx-church' style="font-size: 28px; color: #00095b;"></i>
+                        <span style="font-size: 1.1rem; font-weight: 600; color: #1e293b;">${nome}</span>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-small" onclick="if(typeof window.deleteSantuario === 'function') { window.deleteSantuario(${id}, '${(nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); }">
+                        <i class='bx bx-trash'></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function setupSantuariosAddButton() {
+    const btn = document.getElementById('addSantuarioBtn');
+    const input = document.getElementById('santuarioNomeInput');
+    if (!btn || !input) return;
+    btn.onclick = async () => {
+        const nome = (input.value || '').trim();
+        if (!nome) {
+            showToast('Digite o nome do santuário.', 'error');
+            return;
+        }
+        btn.disabled = true;
+        try {
+            const response = await fetch(`${API_BASE}/santuarios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ nome })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (response.ok) {
+                showToast(data.message || 'Santuário adicionado!', 'success');
+                input.value = '';
+                loadSantuarios();
+            } else {
+                showToast(data.error || 'Erro ao adicionar santuário', 'error');
+            }
+        } catch (err) {
+            showToast('Erro ao adicionar santuário: ' + (err.message || ''), 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    };
+}
+
+window.deleteSantuario = async function(id, nome) {
+    if (!confirm(`Excluir o santuário "${nome || id}"?`)) return;
+    try {
+        const response = await fetch(`${API_BASE}/santuarios/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && (data.ok === true || response.status === 200)) {
+            showToast('Santuário excluído.', 'success');
+            loadSantuarios();
+        } else {
+            showToast(data.error || 'Erro ao excluir santuário', 'error');
+        }
+    } catch (err) {
+        showToast('Erro ao excluir santuário: ' + (err.message || ''), 'error');
     }
 };
 

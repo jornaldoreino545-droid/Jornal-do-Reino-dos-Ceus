@@ -123,6 +123,37 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="santuarioSearch">
+                                <i class='bx bx-church'></i>
+                                Santuário que você frequenta
+                            </label>
+                            <div class="santuario-dropdown" id="santuarioDropdown">
+                                <input type="hidden" id="santuario" name="santuario" value="">
+                                <button type="button" class="santuario-trigger" id="santuarioTrigger" aria-expanded="false" aria-haspopup="listbox" aria-label="Selecione seu santuário">
+                                    <span class="santuario-trigger-text" id="santuarioTriggerText">Selecione seu santuário</span>
+                                    <i class='bx bx-chevron-down santuario-trigger-icon'></i>
+                                </button>
+                                <div class="santuario-panel hidden" id="santuarioPanel" role="listbox">
+                                    <div class="santuario-search-wrap">
+                                        <i class='bx bx-search santuario-search-icon'></i>
+                                        <input type="text" class="santuario-search" id="santuarioSearch" placeholder="Pesquisar santuário..." autocomplete="off" aria-label="Pesquisar santuário">
+                                    </div>
+                                    <ul class="santuario-list" id="santuarioList" role="listbox">
+                                        <!-- Opções preenchidas via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group form-group-checkbox">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="souNovoSantuario" name="souNovoSantuario" value="sim">
+                                <span class="checkbox-text">Sou novo no santuário</span>
+                            </label>
+                            <small class="form-hint">Marque se esta é sua primeira vez no santuário</small>
+                        </div>
+
+                        <div class="form-group">
                             <label for="cardElement">
                                 <i class='bx bx-credit-card'></i>
                                 Dados do Cartão

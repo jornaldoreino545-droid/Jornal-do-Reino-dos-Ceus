@@ -1,3 +1,32 @@
 {
-  "jornais": []
+  "jornais": [
+    {
+      "id": 8,
+      "nome": "JORNAL TESTE",
+      "mes": "jaineiro",
+      "ano": 2026,
+      "descricao": "asdasdasdasdasdasdasd",
+      "linkCompra": "",
+      "ordem": 1,
+      "ativo": 1,
+      "capa": "/uploads/capas/capa-1772226900986-731359393.png",
+      "pdf": "/uploads/pdfs/jornal-1772226901006-355323500.pdf",
+      "dataCriacao": "2026-02-27T21:15:01.000Z",
+      "dataAtualizacao": "2026-02-27T21:15:01.000Z"
+    },
+    {
+      "id": 7,
+      "nome": "JORNAL TESTE",
+      "mes": "jaineiro",
+      "ano": 2026,
+      "descricao": "asdasdasdasdasdasdasd",
+      "linkCompra": "",
+      "ordem": 1,
+      "ativo": 1,
+      "capa": "/uploads/capas/capa-1772226900992-432739439.png",
+      "pdf": "/uploads/pdfs/jornal-1772226901008-697155061.pdf",
+      "dataCriacao": "2026-02-27T21:15:01.000Z",
+      "dataAtualizacao": "2026-02-27T21:15:01.000Z"
+    }
+  ]
 }

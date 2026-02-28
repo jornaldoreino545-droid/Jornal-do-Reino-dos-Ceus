@@ -540,6 +540,10 @@
                             <i class='bx bx-credit-card'></i>
                             <span>Pagamentos</span>
                         </button>
+                        <button class="nav-item" data-tab="santuarios">
+                            <i class='bx bx-church'></i>
+                            <span>Santuários</span>
+                        </button>
                         <button class="nav-item" data-tab="verificar-banco">
                             <i class='bx bx-search-alt'></i>
                             <span>Verificar Banco</span>
@@ -652,6 +656,18 @@
                         <button id="updatePaymentValuesBtn" class="btn btn-secondary" onclick="if(typeof window.updatePaymentValues === 'function') { window.updatePaymentValues(); } else { console.error('updatePaymentValues não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">🔄 Atualizar Valores dos Pagamentos</button>
                     </div>
                     <div id="pagamentosList"></div>
+                </div>
+
+                <!-- Tab Santuários -->
+                <div class="tab-content" id="tab-santuarios">
+                    <div class="dashboard-actions">
+                        <div class="santuarios-add-form">
+                            <input type="text" id="santuarioNomeInput" placeholder="Nome do santuário" class="form-input santuario-input">
+                            <button type="button" id="addSantuarioBtn" class="btn btn-primary">+ Adicionar Santuário</button>
+                        </div>
+                    </div>
+                    <p class="form-hint" style="margin-bottom: 1rem;">Os santuários cadastrados aqui aparecem como opções no checkout, na etapa de finalizar compra.</p>
+                    <div id="santuariosList" class="jornais-grid"></div>
                 </div>
 
                 <!-- Tab Verificar Banco -->

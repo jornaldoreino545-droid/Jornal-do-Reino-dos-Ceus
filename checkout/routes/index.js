@@ -23,7 +23,7 @@ router.post('/api/create-payment-intent', async (req, res) => {
     }
     
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    const { amount, currency, productId, productName, customerName, customerEmail } = req.body;
+    const { amount, currency, productId, productName, customerName, customerEmail, santuario, souNovoSantuario } = req.body;
 
     if (!amount || !currency) {
       return res.status(400).json({ error: 'Amount e currency são obrigatórios' });
@@ -31,15 +31,17 @@ router.post('/api/create-payment-intent', async (req, res) => {
     
     console.log('💰 Criando Payment Intent:', { amount, currency, productId, productName });
 
-    // Criar Payment Intent
+    // Criar Payment Intent (Stripe metadata limita valores a 500 chars cada)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: currency,
       metadata: {
-        productId: productId || '',
-        productName: productName || '',
-        customerName: customerName || '',
-        customerEmail: customerEmail || ''
+        productId: (productId || '').toString(),
+        productName: (productName || '').toString().slice(0, 499),
+        customerName: (customerName || '').toString().slice(0, 499),
+        customerEmail: (customerEmail || '').toString().slice(0, 499),
+        santuario: (santuario || '').toString().slice(0, 499),
+        souNovoSantuario: (souNovoSantuario === 'sim' || souNovoSantuario === true) ? 'sim' : 'não'
       },
       automatic_payment_methods: {
         enabled: true,
@@ -111,7 +113,9 @@ router.get('/api/download', async (req, res) => {
         jornalNome: paymentIntent.metadata.productName || 'Jornal do Reino dos Céus',
         valor: valorCalculado, // Converter de centavos para unidade
         moeda: (paymentIntent.currency || 'brl').toUpperCase(),
-        dataPagamento: new Date().toISOString()
+        dataPagamento: new Date().toISOString(),
+        santuario: paymentIntent.metadata.santuario || '',
+        souNovoSantuario: paymentIntent.metadata.souNovoSantuario === 'sim' ? 1 : 0
       };
       
       console.log('💰 Tentando salvar pagamento no dashboard:', paymentData);
@@ -127,18 +131,18 @@ router.get('/api/download', async (req, res) => {
       
       console.log('📡 Salvando pagamento em:', saveUrl);
       
-      // Usar http/https nativo (disponível em todos os ambientes)
-      const http = require('https'); // Sempre usar HTTPS em produção
       const url = require('url');
-      
       const parsedUrl = url.parse(saveUrl);
       const postData = JSON.stringify(paymentData);
       
       await new Promise((resolve, reject) => {
         const makeRequest = (urlObj, isRedirect = false) => {
+          const useHttps = urlObj.protocol === 'https:';
+          const mod = useHttps ? require('https') : require('http');
+          const port = urlObj.port || (useHttps ? 443 : (urlObj.hostname === 'localhost' ? 3000 : 80));
           const requestOptions = {
             hostname: urlObj.hostname || 'localhost',
-            port: urlObj.port || 443,
+            port: port,
             path: urlObj.path || '/api/pagamentos',
             method: 'POST',
             headers: {
@@ -148,7 +152,7 @@ router.get('/api/download', async (req, res) => {
             timeout: 10000
           };
           
-          const saveRequest = http.request(requestOptions, (res) => {
+          const saveRequest = mod.request(requestOptions, (res) => {
             let data = '';
             res.on('data', (chunk) => { data += chunk; });
             res.on('end', () => {
@@ -209,16 +213,16 @@ router.get('/api/download', async (req, res) => {
         
         console.log('📚 Buscando informações do jornal em:', jornaisUrl);
         
-        // Usar http/https nativo - sempre HTTPS em produção
-        const http = require('https');
         const url = require('url');
-        
         const parsedUrl = url.parse(jornaisUrl);
         const jornaisData = await new Promise((resolve, reject) => {
           const makeRequest = (urlObj) => {
-            const httpReq = http.request({
+            const useHttps = urlObj.protocol === 'https:';
+            const httpModule = useHttps ? require('https') : require('http');
+            const port = urlObj.port || (useHttps ? 443 : (urlObj.hostname === 'localhost' ? 3000 : 80));
+            const httpReq = httpModule.request({
               hostname: urlObj.hostname || 'localhost',
-              port: urlObj.port || 443,
+              port: port,
               path: urlObj.path || '/api/jornais',
               method: 'GET',
               headers: {

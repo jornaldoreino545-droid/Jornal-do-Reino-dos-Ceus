@@ -9,10 +9,21 @@ let productData = null;
 
 console.log('🚀 checkout.js carregado!');
 
+// Lista de santuários (fallback estático; a lista real vem da API /api/santuarios)
+const SANTUARIOS_FALLBACK = [
+    'Santuário de Belo Horizonte',
+    'Lugar - Santuário Sede de Goiânia',
+    'Santuário do Jardim Industrial',
+    'Outro'
+];
+let santuariosOpcoes = [...SANTUARIOS_FALLBACK];
+
 // Inicialização
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
         console.log('📋 DOM carregado, inicializando checkout...');
+        await fetchSantuarios();
+        initSantuarioDropdown();
         try {
             await initializeCheckout();
         } catch (error) {
@@ -23,6 +34,8 @@ if (document.readyState === 'loading') {
 } else {
     console.log('📋 DOM já pronto, inicializando checkout...');
     (async () => {
+        await fetchSantuarios();
+        initSantuarioDropdown();
         try {
             await initializeCheckout();
         } catch (error) {
@@ -30,6 +43,111 @@ if (document.readyState === 'loading') {
             showErrorMessage('Erro ao carregar checkout. Por favor, recarregue a página.');
         }
     })();
+}
+
+/**
+ * Busca lista de santuários da API do dashboard (usada no dropdown do checkout)
+ */
+async function fetchSantuarios() {
+    const urls = [`${window.location.origin}/api/santuarios`, '/api/santuarios'];
+    for (const url of urls) {
+        try {
+            const res = await fetch(url, { method: 'GET', credentials: 'omit' });
+            if (res.ok) {
+                const data = await res.json();
+                const list = data.santuarios;
+                if (Array.isArray(list) && list.length > 0) {
+                    santuariosOpcoes = list.map(s => typeof s === 'string' ? s : (s.nome || s));
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Não foi possível carregar santuários de', url, e.message);
+        }
+    }
+    santuariosOpcoes = [...SANTUARIOS_FALLBACK];
+}
+
+/**
+ * Dropdown de santuário com barra de pesquisa
+ */
+function initSantuarioDropdown() {
+    const trigger = document.getElementById('santuarioTrigger');
+    const panel = document.getElementById('santuarioPanel');
+    const triggerText = document.getElementById('santuarioTriggerText');
+    const hiddenInput = document.getElementById('santuario');
+    const searchInput = document.getElementById('santuarioSearch');
+    const listEl = document.getElementById('santuarioList');
+
+    if (!trigger || !panel || !listEl) return;
+
+    function renderList(filter) {
+        const term = (filter || '').trim().toLowerCase();
+        const filtered = term
+            ? santuariosOpcoes.filter(s => String(s).toLowerCase().includes(term))
+            : santuariosOpcoes;
+
+        listEl.innerHTML = '';
+        if (filtered.length === 0) {
+            const li = document.createElement('li');
+            li.className = 'santuario-empty';
+            li.textContent = 'Nenhum santuário encontrado';
+            li.setAttribute('role', 'option');
+            listEl.appendChild(li);
+        } else {
+            filtered.forEach(nome => {
+                const li = document.createElement('li');
+                li.textContent = nome;
+                li.setAttribute('role', 'option');
+                li.setAttribute('aria-selected', 'false');
+                li.addEventListener('click', () => selectSantuario(nome));
+                listEl.appendChild(li);
+            });
+        }
+    }
+
+    function selectSantuario(nome) {
+        hiddenInput.value = nome;
+        triggerText.textContent = nome;
+        triggerText.classList.remove('placeholder');
+        trigger.setAttribute('aria-expanded', 'false');
+        panel.classList.add('hidden');
+        searchInput.value = '';
+        renderList('');
+    }
+
+    function openPanel() {
+        trigger.setAttribute('aria-expanded', 'true');
+        panel.classList.remove('hidden');
+        renderList(searchInput.value);
+        searchInput.focus();
+    }
+
+    function closePanel() {
+        trigger.setAttribute('aria-expanded', 'false');
+        panel.classList.add('hidden');
+        searchInput.value = '';
+        renderList('');
+    }
+
+    trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isOpen = panel.classList.contains('hidden');
+        if (isOpen) openPanel();
+        else closePanel();
+    });
+
+    searchInput.addEventListener('input', () => renderList(searchInput.value));
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePanel();
+    });
+
+    document.addEventListener('click', (e) => {
+        const dd = document.getElementById('santuarioDropdown');
+        if (dd && !dd.contains(e.target)) closePanel();
+    });
+
+    renderList('');
 }
 
 /**
@@ -335,6 +453,8 @@ async function handleSubmit(event) {
     
     const nome = document.getElementById('nome').value.trim();
     const email = document.getElementById('email').value.trim();
+    const santuario = (document.getElementById('santuario') && document.getElementById('santuario').value) || '';
+    const souNovoSantuario = document.getElementById('souNovoSantuario') && document.getElementById('souNovoSantuario').checked;
     
     if (!nome || !email) {
         showErrorMessage('Por favor, preencha todos os campos.');
@@ -375,6 +495,8 @@ async function handleSubmit(event) {
                         productName: productData.nome,
                         customerName: nome,
                         customerEmail: email,
+                        santuario: santuario || '',
+                        souNovoSantuario: souNovoSantuario ? 'sim' : 'não',
                     }),
                 });
                 
@@ -421,9 +543,11 @@ async function handleSubmit(event) {
         
         if (paymentIntent.status === 'succeeded') {
             // Redirecionar para página de sucesso
-            // Usar jornal_ID para manter consistência com o formato esperado
+            const urlParams = new URLSearchParams(window.location.search);
             const productIdForUrl = productData.id ? `jornal_${productData.id}` : urlParams.get('product');
-            const successUrl = `/checkout/success?payment_intent=${paymentIntent.id}&product=${productIdForUrl}&email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome)}`;
+            let successUrl = `/checkout/success?payment_intent=${paymentIntent.id}&product=${productIdForUrl}&email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome)}`;
+            if (santuario) successUrl += `&santuario=${encodeURIComponent(santuario)}`;
+            if (souNovoSantuario) successUrl += `&souNovoSantuario=sim`;
             window.location.href = successUrl;
         } else {
             showLoading(false);

@@ -1,0 +1,22 @@
+{
+  "santuarios": [
+    {
+      "id": 1,
+      "nome": "Santuário do Lagoa",
+      "ordem": 0,
+      "dataCriacao": "2026-02-28T00:05:10.000Z"
+    },
+    {
+      "id": 2,
+      "nome": "Santuário de Belo Horizonte",
+      "ordem": 0,
+      "dataCriacao": "2026-02-28T00:06:28.000Z"
+    },
+    {
+      "id": 3,
+      "nome": "Santuário Sede de Goiânia",
+      "ordem": 0,
+      "dataCriacao": "2026-02-28T00:07:06.000Z"
+    }
+  ]
+}
