@@ -131,3 +131,15 @@ CREATE TABLE IF NOT EXISTS santuarios (
     dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_ordem (ordem)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabela de capas dos jornais (fotos de capa exibidas)
+CREATE TABLE IF NOT EXISTS capas_jornais (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    caminho VARCHAR(500) NOT NULL COMMENT 'Caminho do arquivo, ex: /uploads/capas/capa-xxx.png',
+    nome_arquivo VARCHAR(255) NOT NULL COMMENT 'Nome do arquivo salvo',
+    jornal_id INT NULL COMMENT 'ID do jornal que exibe esta capa (opcional)',
+    dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_jornal_id (jornal_id),
+    INDEX idx_dataCriacao (dataCriacao),
+    CONSTRAINT fk_capas_jornal FOREIGN KEY (jornal_id) REFERENCES jornais(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

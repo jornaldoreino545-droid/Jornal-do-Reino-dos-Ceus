@@ -974,6 +974,17 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     try {
       jornalSalvo = await saveJornal(novoJornal, false);
       console.log('✅ Jornal salvo com sucesso! ID:', jornalSalvo.id);
+      if (capaFile && novoJornal.capa) {
+        try {
+          await pool.execute(
+            'INSERT INTO capas_jornais (caminho, nome_arquivo, jornal_id) VALUES (?, ?, ?)',
+            [novoJornal.capa, capaFile.filename, jornalSalvo.id]
+          );
+          console.log('✅ Capa registrada na tabela capas_jornais');
+        } catch (capasErr) {
+          console.warn('⚠️ Tabela capas_jornais não disponível ou erro ao inserir:', capasErr.message);
+        }
+      }
     } catch (saveError) {
       console.error('❌ ERRO ao salvar jornal:', saveError);
       console.error('   Stack:', saveError.stack);
@@ -1122,6 +1133,15 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
         }
       }
       jornalAtual.capa = `/uploads/capas/${capaFile.filename}`;
+      try {
+        await pool.execute(
+          'INSERT INTO capas_jornais (caminho, nome_arquivo, jornal_id) VALUES (?, ?, ?)',
+          [jornalAtual.capa, capaFile.filename, jornalAtual.id]
+        );
+        console.log('✅ Capa registrada na tabela capas_jornais (atualização)');
+      } catch (capasErr) {
+        console.warn('⚠️ Tabela capas_jornais não disponível ou erro ao inserir:', capasErr.message);
+      }
     }
     
     // Se novo PDF foi enviado
