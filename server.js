@@ -416,9 +416,10 @@ app.use((req, res) => {
 // ==================== INICIALIZAÇÃO DO SERVIDOR ====================
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; // 0.0.0.0 para aceitar conexões no Docker
 
-const server = app.listen(PORT, () => {
-  console.log(`\n🚀 Servidor unificado rodando em http://localhost:${PORT}`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`\n🚀 Servidor unificado rodando em http://${HOST}:${PORT}`);
   console.log(`📚 Sistema completo pronto!`);
   console.log(`\n💡 URLs disponíveis:`);
   console.log(`   Site principal: http://localhost:${PORT}/`);
