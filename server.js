@@ -320,24 +320,33 @@ app.post('/api/verificar', async (req, res) => {
 
 // ==================== ROTAS DE API - DASHBOARD ====================
 
-// Importar rotas do dashboard (montadas em /api)
-console.log('📦 Carregando rotas do dashboard...');
-const dashboardRoutes = require('./dashboard-server/routes');
-console.log('✅ Rotas do dashboard carregadas');
-
-// Montar rotas do dashboard em /api
-app.use('/api', dashboardRoutes);
-console.log('✅ Rotas do dashboard montadas em /api');
-
-// Log de teste para verificar se as rotas estão sendo registradas
-console.log('🔍 Verificando rotas registradas...');
-console.log('   Rotas disponíveis no router:', Object.keys(dashboardRoutes.stack || {}).length > 0 ? 'Sim' : 'Não');
+let dashboardRoutes;
+let checkoutRoutes;
+try {
+  console.log('📦 Carregando rotas do dashboard...');
+  dashboardRoutes = require('./dashboard-server/routes');
+  console.log('✅ Rotas do dashboard carregadas');
+  app.use('/api', dashboardRoutes);
+} catch (err) {
+  console.error('❌ ERRO ao carregar dashboard (veja os logs do Dokploy):');
+  console.error(err.message);
+  console.error(err.stack);
+  throw err;
+}
 
 // ==================== ROTAS DE API - CHECKOUT ====================
 
-// Importar rotas do checkout
-const checkoutRoutes = require('./checkout/routes');
-app.use('/', checkoutRoutes);
+try {
+  console.log('📦 Carregando rotas do checkout...');
+  checkoutRoutes = require('./checkout/routes');
+  app.use('/', checkoutRoutes);
+  console.log('✅ Rotas do checkout carregadas');
+} catch (err) {
+  console.error('❌ ERRO ao carregar checkout (veja os logs do Dokploy):');
+  console.error(err.message);
+  console.error(err.stack);
+  throw err;
+}
 
 // ==================== ROTAS ADMIN ====================
 function requireAuth(req, res, next){
@@ -416,10 +425,9 @@ app.use((req, res) => {
 // ==================== INICIALIZAÇÃO DO SERVIDOR ====================
 
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0'; // 0.0.0.0 para aceitar conexões no Docker
 
-const server = app.listen(PORT, HOST, () => {
-  console.log(`\n🚀 Servidor unificado rodando em http://${HOST}:${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`\n🚀 Servidor unificado rodando em http://localhost:${PORT}`);
   console.log(`📚 Sistema completo pronto!`);
   console.log(`\n💡 URLs disponíveis:`);
   console.log(`   Site principal: http://localhost:${PORT}/`);
