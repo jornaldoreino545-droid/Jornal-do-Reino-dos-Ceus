@@ -757,6 +757,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               if (imagemUrl.startsWith('/uploads/')) {
                 // Já está correto
               }
+              // Se é imagem no banco (BLOB) - servida por GET /api/fotos/:id
+              else if (imagemUrl.startsWith('/api/fotos/')) {
+                // Manter como está
+              }
               // Se começa com http, manter (URL externa)
               else if (imagemUrl.startsWith('http')) {
                 // Já está correto

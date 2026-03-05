@@ -135,11 +135,11 @@ async function checkTables(dbPool) {
       SELECT TABLE_NAME 
       FROM INFORMATION_SCHEMA.TABLES 
       WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME IN ('jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos')
+      AND TABLE_NAME IN ('jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos', 'pdfs')
     `);
     
     const existingTables = tables.map(t => t.TABLE_NAME);
-    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos'];
+    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos', 'pdfs'];
     const missingTables = requiredTables.filter(t => !existingTables.includes(t));
     
     if (missingTables.length > 0) {
@@ -195,4 +195,28 @@ async function ensureFotosBlobColumn(dbPool) {
   }
 }
 
-module.exports = { initDatabase, checkTables, ensureFotosBlobColumn };
+/**
+ * Garante que a tabela pdfs existe (para armazenar PDFs em BLOB).
+ * @param {Object} dbPool - Pool MySQL
+ */
+async function ensurePdfsTable(dbPool) {
+  const pool = dbPool || require('./database');
+  try {
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS pdfs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nome_arquivo VARCHAR(255) NOT NULL,
+        dados_pdf LONGBLOB NOT NULL,
+        jornal_id INT NULL,
+        tamanho BIGINT NULL,
+        dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_jornal_id (jornal_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('  ✅ Tabela pdfs verificada/criada');
+  } catch (err) {
+    console.warn('  ⚠️  Tabela pdfs:', err.message);
+  }
+}
+
+module.exports = { initDatabase, checkTables, ensureFotosBlobColumn, ensurePdfsTable };

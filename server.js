@@ -242,24 +242,43 @@ app.get('/api/download-file', async (req, res) => {
     
     console.log('✅ Pagamento confirmado, servindo PDF:', file);
     
-    // Decodificar caminho do arquivo
     const filePath = decodeURIComponent(file);
     
-    // Garantir que o caminho é seguro (não permite path traversal)
+    // PDF armazenado no banco (BLOB) - /api/pdfs/:id
+    if (filePath.startsWith('/api/pdfs/')) {
+      const match = filePath.match(/^\/api\/pdfs\/(\d+)$/);
+      if (!match) {
+        return res.status(403).json({ error: 'ID de PDF inválido' });
+      }
+      const pdfId = parseInt(match[1], 10);
+      try {
+        const pool = require('./dashboard-server/config/database');
+        const [rows] = await pool.execute('SELECT dados_pdf, nome_arquivo FROM pdfs WHERE id = ?', [pdfId]);
+        if (!rows.length || !rows[0].dados_pdf) {
+          return res.status(404).json({ error: 'PDF não encontrado no banco' });
+        }
+        const filename = rows[0].nome_arquivo || 'jornal.pdf';
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(rows[0].dados_pdf);
+        return;
+      } catch (dbErr) {
+        console.error('❌ Erro ao buscar PDF no banco:', dbErr.message);
+        return res.status(500).json({ error: 'Erro ao carregar PDF' });
+      }
+    }
+    
+    // PDF em disco - /uploads/pdfs/...
     if (filePath.includes('..') || !filePath.startsWith('/uploads/')) {
       return res.status(403).json({ error: 'Caminho de arquivo inválido' });
     }
     
-    // Construir caminho completo do arquivo
     const fullPath = path.join(__dirname, 'dashboard-server', filePath);
-    
-    // Verificar se o arquivo existe
     if (!await fs.pathExists(fullPath)) {
       console.error('❌ Arquivo não encontrado:', fullPath);
-      return res.status(404).json({ error: 'PDF não encontrado' });
+      return res.status(404).json({ error: 'O arquivo não está disponível no site. O PDF pode ter sido perdido após um deploy; use a opção de salvar PDF no banco.' });
     }
     
-    // Servir o arquivo
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(fullPath)}"`);
     res.sendFile(fullPath);

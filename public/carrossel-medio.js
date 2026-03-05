@@ -31,7 +31,10 @@
   // Função para normalizar URL da imagem
   function normalizarUrlImagem(url) {
     if (!url) return '';
-    
+    // Imagem no banco (BLOB) - servida por GET /api/fotos/:id
+    if (url.startsWith('/api/fotos/')) {
+      return url;
+    }
     if (url.startsWith('/uploads/')) {
       return url;
     } else if (url.startsWith('http')) {

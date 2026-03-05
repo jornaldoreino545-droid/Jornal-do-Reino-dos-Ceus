@@ -29,7 +29,7 @@ router.post('/api/create-payment-intent', async (req, res) => {
       return res.status(400).json({ error: 'Amount e currency são obrigatórios' });
     }
     
-    console.log('💰 Criando Payment Intent:', { amount, currency, productId, productName });
+    console.log('💰 Criando Payment Intent:', { amount, currency, productId, productName, santuario: santuario || '(vazio)', souNovoSantuario });
 
     // Criar Payment Intent (Stripe metadata limita valores a 500 chars cada)
     const paymentIntent = await stripe.paymentIntents.create({
@@ -66,7 +66,7 @@ router.post('/api/create-payment-intent', async (req, res) => {
 // Rota para obter link de download
 router.get('/api/download', async (req, res) => {
   try {
-    const { payment_intent, product } = req.query;
+    const { payment_intent, product, santuario: santuarioQuery, souNovoSantuario: souNovoQuery } = req.query;
 
     if (!payment_intent || !product) {
       return res.status(400).json({ error: 'payment_intent e product são obrigatórios' });
@@ -105,6 +105,14 @@ router.get('/api/download', async (req, res) => {
       // Garantir que o valor seja calculado corretamente
       const valorCalculado = paymentIntent.amount ? (paymentIntent.amount / 100) : 0;
       
+      // Santuário: priorizar metadata do Stripe; se vazio, usar parâmetros da URL (enviados pela página de sucesso)
+      const santuarioMeta = (paymentIntent.metadata && paymentIntent.metadata.santuario) ? String(paymentIntent.metadata.santuario).trim() : '';
+      const santuarioFromUrl = (santuarioQuery != null && String(santuarioQuery).trim() !== '') ? decodeURIComponent(String(santuarioQuery).trim()) : '';
+      const santuarioFinal = santuarioMeta || santuarioFromUrl || '';
+      const souNovoMeta = paymentIntent.metadata && paymentIntent.metadata.souNovoSantuario === 'sim';
+      const souNovoFromUrl = souNovoQuery === 'sim' || souNovoQuery === '1' || souNovoQuery === 'true';
+      const souNovoSantuarioFinal = souNovoMeta || souNovoFromUrl ? 1 : 0;
+
       const paymentData = {
         paymentIntentId: paymentIntent.id,
         nome: paymentIntent.metadata.customerName || 'Cliente',
@@ -114,8 +122,8 @@ router.get('/api/download', async (req, res) => {
         valor: valorCalculado, // Converter de centavos para unidade
         moeda: (paymentIntent.currency || 'brl').toUpperCase(),
         dataPagamento: new Date().toISOString(),
-        santuario: paymentIntent.metadata.santuario || '',
-        souNovoSantuario: paymentIntent.metadata.souNovoSantuario === 'sim' ? 1 : 0
+        santuario: santuarioFinal,
+        souNovoSantuario: souNovoSantuarioFinal
       };
       
       console.log('💰 Tentando salvar pagamento no dashboard:', paymentData);
@@ -272,13 +280,13 @@ router.get('/api/download', async (req, res) => {
             // Priorizar o campo pdf do jornal (caminho completo)
             if (jornal.pdf) {
               let pdfPath = jornal.pdf;
-              // Se começar com /uploads, usar caminho relativo
-              if (pdfPath.startsWith('/uploads/')) {
-                downloadUrl = pdfPath; // Já está no formato correto
+              if (pdfPath.startsWith('/api/pdfs/')) {
+                downloadUrl = pdfPath; // PDF no banco (BLOB)
+              } else if (pdfPath.startsWith('/uploads/')) {
+                downloadUrl = pdfPath;
               } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
-                downloadUrl = pdfPath; // URL completa
+                downloadUrl = pdfPath;
               } else {
-                // Caminho relativo, assumir que está em /uploads/pdfs/
                 downloadUrl = `/uploads/pdfs/${pdfPath}`;
               }
               console.log('✅ PDF encontrado no campo pdf do jornal:', downloadUrl);

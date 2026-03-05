@@ -6,6 +6,8 @@ const paymentIntentId = urlParams.get('payment_intent');
 const productId = urlParams.get('product');
 const email = urlParams.get('email');
 const nome = urlParams.get('nome');
+const santuarioFromUrl = urlParams.get('santuario') || '';
+const souNovoSantuarioFromUrl = urlParams.get('souNovoSantuario') || '';
 
 // Variável global para armazenar informações do jornal
 let jornalData = null;
@@ -242,9 +244,12 @@ function setupDownloadButton() {
  */
 async function getDownloadLink() {
     try {
-        // Tentar buscar link de download da API
+        // Tentar buscar link de download da API (enviar santuário da URL para o backend salvar no comprovante)
         if (paymentIntentId && productId) {
-            const response = await fetch(`/api/download?payment_intent=${paymentIntentId}&product=${productId}`, {
+            let downloadApiUrl = `/api/download?payment_intent=${paymentIntentId}&product=${encodeURIComponent(productId)}`;
+            if (santuarioFromUrl) downloadApiUrl += `&santuario=${encodeURIComponent(santuarioFromUrl)}`;
+            if (souNovoSantuarioFromUrl) downloadApiUrl += `&souNovoSantuario=${encodeURIComponent(souNovoSantuarioFromUrl)}`;
+            const response = await fetch(downloadApiUrl, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -260,21 +265,21 @@ async function getDownloadLink() {
         // Se já temos os dados do jornal carregados, usar eles
         if (jornalData && jornalData.pdf) {
             let pdfPath = jornalData.pdf;
-            // Se começar com /uploads, usar rota protegida
+            if (pdfPath.startsWith('/api/pdfs/')) {
+                console.log('✅ Usando PDF do jornal (banco):', pdfPath);
+                return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
+            }
             if (pdfPath.startsWith('/uploads/')) {
                 console.log('✅ Usando PDF do jornal:', pdfPath);
-                // Usar rota protegida que verifica pagamento
                 return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
-            } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
-                // URL completa (não recomendado, mas suportado)
+            }
+            if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
                 console.log('✅ Usando PDF do jornal (URL completa):', pdfPath);
                 return pdfPath;
-            } else {
-                // Caminho relativo, assumir que está em /uploads/pdfs/
-                console.log('✅ Usando PDF do jornal (relativo):', pdfPath);
-                const fullPath = `/uploads/pdfs/${pdfPath}`;
-                return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
             }
+            console.log('✅ Usando PDF do jornal (relativo):', pdfPath);
+            const fullPath = `/uploads/pdfs/${pdfPath}`;
+            return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
         }
         
         // Fallback: tentar buscar PDF baseado no productId
@@ -303,18 +308,17 @@ async function getDownloadLink() {
                                 // Se o jornal tem um campo PDF específico, usar ele
                                 if (jornal.pdf) {
                                     let pdfPath = jornal.pdf;
-                                    if (pdfPath.startsWith('/uploads/')) {
-                                        console.log('✅ PDF encontrado do jornal:', pdfPath);
-                                        // Usar rota protegida que verifica pagamento
+                                    if (pdfPath.startsWith('/api/pdfs/')) {
                                         return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
-                                    } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
-                                        // URL completa (não recomendado, mas suportado)
-                                        return pdfPath;
-                                    } else {
-                                        // Caminho relativo, assumir que está em /uploads/pdfs/
-                                        const fullPath = `/uploads/pdfs/${pdfPath}`;
-                                        return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
                                     }
+                                    if (pdfPath.startsWith('/uploads/')) {
+                                        return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
+                                    }
+                                    if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
+                                        return pdfPath;
+                                    }
+                                    const fullPath = `/uploads/pdfs/${pdfPath}`;
+                                    return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
                                 }
                                 
                                 // Se não tem PDF específico, retornar erro (não usar fallback baseado em mês/ano)

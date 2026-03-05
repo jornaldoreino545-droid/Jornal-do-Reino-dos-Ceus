@@ -133,6 +133,18 @@ CREATE TABLE IF NOT EXISTS santuarios (
     INDEX idx_ordem (ordem)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabela de PDFs dos jornais (arquivo em BLOB para persistir após deploy)
+CREATE TABLE IF NOT EXISTS pdfs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    dados_pdf LONGBLOB NOT NULL,
+    jornal_id INT NULL,
+    tamanho BIGINT NULL,
+    dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_jornal_id (jornal_id),
+    CONSTRAINT fk_pdfs_jornal FOREIGN KEY (jornal_id) REFERENCES jornais(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Tabela de capas dos jornais (fotos de capa exibidas)
 CREATE TABLE IF NOT EXISTS capas_jornais (
     id INT AUTO_INCREMENT PRIMARY KEY,

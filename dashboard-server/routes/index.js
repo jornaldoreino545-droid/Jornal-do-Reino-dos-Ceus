@@ -51,6 +51,36 @@ async function saveFotoAsBlob(buffer, mimeType, nomeArquivo, tipo, referenciaId 
   }
 }
 
+/**
+ * Salva PDF no banco (tabela pdfs) como BLOB. Retorna o id.
+ */
+async function savePdfAsBlob(buffer, nomeArquivo, jornalId = null) {
+  const run = async () => {
+    const [result] = await pool.execute(
+      'INSERT INTO pdfs (nome_arquivo, dados_pdf, jornal_id, tamanho) VALUES (?, ?, ?, ?)',
+      [nomeArquivo, buffer, jornalId || null, buffer.length]
+    );
+    return result.insertId;
+  };
+  try {
+    return await run();
+  } catch (err) {
+    const isTableMissing = err.code === 'ER_NO_SUCH_TABLE' || (err.message && err.message.includes("doesn't exist"));
+    if (isTableMissing) {
+      try {
+        const { initDatabase, ensurePdfsTable } = require('../config/init-database');
+        await initDatabase(pool);
+        await ensurePdfsTable(pool);
+        return await run();
+      } catch (retryErr) {
+        console.error('❌ Erro ao salvar PDF no banco:', retryErr.message);
+        throw retryErr;
+      }
+    }
+    throw err;
+  }
+}
+
 // ==================== FUNÇÕES AUXILIARES PARA JORNAIS ====================
 
 // Ler jornais do MySQL (fonte de verdade)
@@ -967,7 +997,7 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       ordem: ordem ? parseInt(ordem) : novoId,
       ativo: ativo === 'true' || ativo === true,
       capa: '', // preenchido depois com /api/fotos/:id se houver upload
-      pdf: pdfFile ? `/uploads/pdfs/${pdfFile.filename}` : '',
+      pdf: '', // preenchido depois com /api/pdfs/:id
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString()
     };
@@ -1047,6 +1077,23 @@ router.post('/jornais', requireAuth, (req, res, next) => {
           console.error('❌ Erro ao salvar capa no banco (BLOB):', blobErr.code || '', blobErr.message);
           jornalSalvo.capa = `/uploads/capas/${capaFile.filename}`;
           await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
+        }
+      }
+      if (pdfFile) {
+        try {
+          const pdfPath = pdfFile.path || path.join(__dirname, '..', 'uploads', 'pdfs', pdfFile.filename);
+          if (!await fs.pathExists(pdfPath)) {
+            throw new Error(`Arquivo PDF não encontrado: ${pdfPath}`);
+          }
+          const buffer = await fs.readFile(pdfPath);
+          const pdfId = await savePdfAsBlob(buffer, pdfFile.filename, jornalSalvo.id);
+          jornalSalvo.pdf = `/api/pdfs/${pdfId}`;
+          await pool.execute('UPDATE jornais SET pdf = ? WHERE id = ?', [jornalSalvo.pdf, jornalSalvo.id]);
+          console.log('✅ PDF salvo como BLOB na tabela pdfs, id:', pdfId);
+        } catch (blobErr) {
+          console.error('❌ Erro ao salvar PDF no banco (BLOB):', blobErr.code || '', blobErr.message);
+          jornalSalvo.pdf = `/uploads/pdfs/${pdfFile.filename}`;
+          await pool.execute('UPDATE jornais SET pdf = ? WHERE id = ?', [jornalSalvo.pdf, jornalSalvo.id]);
         }
       }
     } catch (saveError) {
@@ -1201,22 +1248,27 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
       }
     }
     
-    // Se novo PDF foi enviado
+    // Se novo PDF foi enviado: salvar como BLOB na tabela pdfs
     const pdfFile = req.files && req.files.pdf && req.files.pdf[0] ? req.files.pdf[0] : null;
     if (pdfFile) {
-      // Deletar PDF antigo se existir
-      if (jornalAtual.pdf) {
-        const pdfPath = jornalAtual.pdf.startsWith('/uploads/') 
-          ? jornalAtual.pdf.substring(1) 
-          : jornalAtual.pdf;
-        const oldPdfPath = path.join(__dirname, '..', pdfPath);
-        try {
-          await fs.remove(oldPdfPath);
-        } catch (err) {
-          console.error('Erro ao deletar PDF antigo:', err);
-        }
+      if (jornalAtual.pdf && jornalAtual.pdf.startsWith('/uploads/')) {
+        const oldPdfPath = path.join(__dirname, '..', jornalAtual.pdf.substring(1));
+        try { await fs.remove(oldPdfPath); } catch (err) { console.error('Erro ao deletar PDF antigo:', err); }
       }
-      jornalAtual.pdf = `/uploads/pdfs/${pdfFile.filename}`;
+      try {
+        const pdfPath = pdfFile.path || path.join(__dirname, '..', 'uploads', 'pdfs', pdfFile.filename);
+        if (await fs.pathExists(pdfPath)) {
+          const buffer = await fs.readFile(pdfPath);
+          const pdfId = await savePdfAsBlob(buffer, pdfFile.filename, jornalAtual.id);
+          jornalAtual.pdf = `/api/pdfs/${pdfId}`;
+          console.log('✅ PDF atualizado como BLOB na tabela pdfs, id:', pdfId);
+        } else {
+          jornalAtual.pdf = `/uploads/pdfs/${pdfFile.filename}`;
+        }
+      } catch (blobErr) {
+        console.error('❌ Erro ao salvar PDF no banco (BLOB):', blobErr.message);
+        jornalAtual.pdf = `/uploads/pdfs/${pdfFile.filename}`;
+      }
     }
     
     jornalAtual.dataAtualizacao = new Date().toISOString();
@@ -1247,17 +1299,10 @@ router.delete('/jornais/:id', requireAuth, async (req, res) => {
       try { await fs.remove(fullPath); } catch (err) { console.error('Erro ao deletar capa:', err); }
     }
 
-    // Deletar PDF se existir
-    if (jornal.pdf) {
-      const pdfPath = jornal.pdf.startsWith('/uploads/') 
-        ? jornal.pdf.substring(1) 
-        : jornal.pdf;
-      const fullPdfPath = path.join(__dirname, '..', pdfPath);
-      try {
-        await fs.remove(fullPdfPath);
-      } catch (err) {
-        console.error('Erro ao deletar PDF:', err);
-      }
+    // Deletar PDF do disco só se for caminho /uploads/ (PDF em /api/pdfs/:id fica no banco)
+    if (jornal.pdf && jornal.pdf.startsWith('/uploads/')) {
+      const fullPdfPath = path.join(__dirname, '..', jornal.pdf.substring(1));
+      try { await fs.remove(fullPdfPath); } catch (err) { console.error('Erro ao deletar PDF:', err); }
     }
 
     // Deletar do MySQL e JSON
