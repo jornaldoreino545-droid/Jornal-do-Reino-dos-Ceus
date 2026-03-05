@@ -84,19 +84,14 @@
           // Ordenar por ordem
           const sortedColunistas = [...colunistas].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
           
-          // Função para normalizar caminho da imagem
+          // Função para normalizar caminho da imagem (inclui imagens no banco: /api/fotos/:id)
           const getImageUrl = (imagem) => {
             if (!imagem) return '';
-            if (imagem.startsWith('http://') || imagem.startsWith('https://')) {
-              return imagem;
-            }
-            if (imagem.startsWith('./')) {
-              return imagem.replace('./', './');
-            }
-            if (imagem.startsWith('/')) {
-              return imagem;
-            }
-            return `./${imagem}`;
+            if (imagem.startsWith('http://') || imagem.startsWith('https://')) return imagem;
+            if (imagem.startsWith('/api/fotos/')) return imagem; // BLOB no banco
+            if (imagem.startsWith('/')) return imagem;
+            if (imagem.startsWith('./')) return imagem;
+            return `/${imagem}`;
           };
           
           container.innerHTML = sortedColunistas.map((colunista, index) => {

@@ -684,18 +684,46 @@ async function saveVideo(video) {
   }
 }
 
-// Funções auxiliares para trabalhar com colunistas.json
+// Funções auxiliares para colunistas: MySQL como fonte principal, JSON como backup
 async function readColunistas() {
   try {
-    const exists = await fs.pathExists(COLUNISTAS_FILE);
-    if (!exists) {
-      await fs.writeJson(COLUNISTAS_FILE, { colunistas: [] }, { spaces: 2 });
+    const [rows] = await pool.execute(
+      'SELECT id, nome, coluna, conteudo, instagram, ordem, ativo, imagem, dataCriacao, dataAtualizacao FROM colunistas ORDER BY ordem ASC, id ASC'
+    );
+    const colunistas = (rows || []).map(r => ({
+      id: r.id,
+      nome: r.nome || '',
+      coluna: r.coluna || '',
+      conteudo: r.conteudo || '',
+      instagram: r.instagram || '',
+      ordem: r.ordem != null ? r.ordem : 0,
+      ativo: r.ativo !== 0 && r.ativo !== false,
+      imagem: r.imagem || '',
+      dataCriacao: r.dataCriacao ? (r.dataCriacao instanceof Date ? r.dataCriacao.toISOString() : r.dataCriacao) : null,
+      dataAtualizacao: r.dataAtualizacao ? (r.dataAtualizacao instanceof Date ? r.dataAtualizacao.toISOString() : r.dataAtualizacao) : null
+    }));
+    return { colunistas };
+  } catch (err) {
+    if (err.code === 'ER_NO_SUCH_TABLE' || err.code === 'ER_BAD_FIELD_ERROR') {
+      try {
+        const { initDatabase, ensureColunistasColumns } = require('../config/init-database');
+        await ensureColunistasColumns(pool);
+        await initDatabase(pool);
+        return readColunistas();
+      } catch (e) {
+        console.warn('MySQL colunistas:', e.message);
+      }
+    } else {
+      console.warn('Erro ao ler colunistas do MySQL:', err.message);
+    }
+    try {
+      const exists = await fs.pathExists(COLUNISTAS_FILE);
+      if (!exists) return { colunistas: [] };
+      return await fs.readJson(COLUNISTAS_FILE);
+    } catch (e) {
+      console.error('Erro ao ler colunistas.json:', e);
       return { colunistas: [] };
     }
-    return await fs.readJson(COLUNISTAS_FILE);
-  } catch (error) {
-    console.error('Erro ao ler colunistas.json:', error);
-    return { colunistas: [] };
   }
 }
 
@@ -704,7 +732,6 @@ async function writeColunistas(data) {
     const dir = path.dirname(COLUNISTAS_FILE);
     await fs.ensureDir(dir);
     await fs.writeJson(COLUNISTAS_FILE, data, { spaces: 2 });
-    // Arquivo colunistas.json escrito com sucesso
     return true;
   } catch (error) {
     console.error('Erro ao escrever colunistas.json:', error);
@@ -2537,12 +2564,30 @@ router.post('/noticias', requireAuth, uploadMateria, async (req, res) => {
       content,
       excerpt: excerpt || '',
       tag: tag || '',
-      image: req.file ? `/uploads/materias/${req.file.filename}` : '',
-      created_at: agora // Timestamp de criação
+      image: '', // preenchido com /api/fotos/:id se houver upload
+      created_at: agora
     };
 
-    // Salvar no MySQL e JSON
     const materiaSalva = await saveMateria(novaMateria, false);
+    if (req.file) {
+      try {
+        const imgPath = req.file.path || path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        if (await fs.pathExists(imgPath)) {
+          const buffer = await fs.readFile(imgPath);
+          const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'materia', materiaSalva.id);
+          materiaSalva.image = `/api/fotos/${fotoId}`;
+          await saveMateria({ ...materiaSalva, image: materiaSalva.image }, true);
+          console.log('✅ Imagem da notícia salva como BLOB, id:', fotoId);
+        } else {
+          materiaSalva.image = `/uploads/materias/${req.file.filename}`;
+          await saveMateria({ ...materiaSalva, image: materiaSalva.image }, true);
+        }
+      } catch (e) {
+        console.warn('Notícia BLOB:', e.message);
+        materiaSalva.image = `/uploads/materias/${req.file.filename}`;
+        await saveMateria({ ...materiaSalva, image: materiaSalva.image }, true);
+      }
+    }
     
     console.log(`✅ Notícia criada com sucesso! ID: ${materiaSalva.id}`);
     res.json({ ok: true, materia: materiaSalva });
@@ -2574,7 +2619,22 @@ router.put('/noticias/:id', requireAuth, uploadMateria, async (req, res) => {
     if (content) materiaAtual.content = content;
     if (excerpt !== undefined) materiaAtual.excerpt = excerpt;
     if (tag !== undefined) materiaAtual.tag = tag;
-    if (req.file) materiaAtual.image = `/uploads/materias/${req.file.filename}`;
+    if (req.file) {
+      try {
+        const imgPath = req.file.path || path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        if (await fs.pathExists(imgPath)) {
+          const buffer = await fs.readFile(imgPath);
+          const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'materia', id);
+          materiaAtual.image = `/api/fotos/${fotoId}`;
+          console.log('✅ Imagem da notícia atualizada como BLOB, id:', fotoId);
+        } else {
+          materiaAtual.image = `/uploads/materias/${req.file.filename}`;
+        }
+      } catch (e) {
+        console.warn('Notícia BLOB:', e.message);
+        materiaAtual.image = `/uploads/materias/${req.file.filename}`;
+      }
+    }
     
     // Garantir que created_at seja preservado
     if (existingCreatedAt) {
@@ -3467,64 +3527,56 @@ router.get('/colunistas/:id', async (req, res) => {
   }
 });
 
-// Criar novo colunista
+// Criar novo colunista (MySQL + BLOB para imagem, JSON backup)
 router.post('/colunistas', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { nome, coluna, conteudo, instagram, ordem, ativo } = req.body;
-    
-    // Criando novo colunista
-    console.log('   Nome:', nome);
-    console.log('   Coluna:', coluna);
-    console.log('   Ativo:', ativo);
     
     if (!nome || !coluna || !conteudo) {
       return res.status(400).json({ error: 'Nome, coluna e conteúdo são obrigatórios' });
     }
     
-    const data = await readColunistas();
-    console.log(`   Total de colunistas antes: ${data.colunistas.length}`);
-    
-    // Gerar ID único
-    const newId = data.colunistas.length > 0 
-      ? Math.max(...data.colunistas.map(c => c.id)) + 1 
-      : 1;
-    
-    let imagem = req.file
-      ? `/uploads/materias/${req.file.filename}`
-      : (req.body.imagem || '');
+    let imagem = req.body.imagem || '';
     if (req.file) {
       try {
-        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-        const buffer = await fs.readFile(imgPath);
-        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'colunista', newId);
-        imagem = `/api/fotos/${fotoId}`;
+        const imgPath = req.file.path || path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        if (await fs.pathExists(imgPath)) {
+          const buffer = await fs.readFile(imgPath);
+          const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'colunista', null);
+          imagem = `/api/fotos/${fotoId}`;
+        } else {
+          imagem = `/uploads/materias/${req.file.filename}`;
+        }
       } catch (e) {
         console.warn('Colunista BLOB:', e.message);
+        imagem = `/uploads/materias/${req.file.filename}`;
       }
     }
-    console.log('   Imagem salva:', imagem);
+    
+    const agora = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const [result] = await pool.execute(
+      `INSERT INTO colunistas (nome, coluna, conteudo, instagram, ordem, ativo, imagem, dataCriacao, dataAtualizacao)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nome.trim(), coluna.trim(), conteudo.trim(), (instagram || '').trim(), ordem || 0, ativo !== false ? 1 : 0, imagem, agora, agora]
+    );
+    const newId = result.insertId;
     
     const novoColunista = {
       id: newId,
       nome: nome.trim(),
       coluna: coluna.trim(),
       conteudo: conteudo.trim(),
-      instagram: instagram ? instagram.trim() : '',
+      instagram: (instagram || '').trim(),
       ordem: ordem || 0,
       ativo: ativo !== false,
-      imagem: imagem,
+      imagem,
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString()
     };
     
-    data.colunistas.push(novoColunista);
-    await writeColunistas(data);
+    await writeColunistas(await readColunistas());
     
     console.log(`✅ Colunista criado com sucesso! ID: ${newId}`);
-    console.log(`   Total de colunistas depois: ${data.colunistas.length}`);
-    console.log(`   Imagem: ${imagem}`);
-    // Arquivo salvo
-    
     res.status(201).json(novoColunista);
   } catch (error) {
     console.error('Erro ao criar colunista:', error);
@@ -3532,64 +3584,79 @@ router.post('/colunistas', requireAuth, uploadMateria, async (req, res) => {
   }
 });
 
-// Atualizar colunista
+// Atualizar colunista (MySQL + BLOB para imagem, JSON backup)
 router.put('/colunistas/:id', requireAuth, uploadMateria, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
     const { nome, coluna, conteudo, instagram, ordem, ativo, imagem } = req.body;
     
     const data = await readColunistas();
-    const index = data.colunistas.findIndex(c => c.id === parseInt(id));
-    
+    const index = data.colunistas.findIndex(c => c.id === id);
     if (index === -1) {
       return res.status(404).json({ error: 'Colunista não encontrado' });
     }
     
-    // Atualizar campos
-    if (nome !== undefined) data.colunistas[index].nome = nome.trim();
-    if (coluna !== undefined) data.colunistas[index].coluna = coluna.trim();
-    if (conteudo !== undefined) data.colunistas[index].conteudo = conteudo.trim();
-    if (instagram !== undefined) data.colunistas[index].instagram = instagram.trim();
-    if (ordem !== undefined) data.colunistas[index].ordem = ordem || 0;
-    if (ativo !== undefined) data.colunistas[index].ativo = ativo !== false;
+    const c = data.colunistas[index];
+    const nomeFinal = nome !== undefined ? nome.trim() : c.nome;
+    const colunaFinal = coluna !== undefined ? coluna.trim() : c.coluna;
+    const conteudoFinal = conteudo !== undefined ? conteudo.trim() : c.conteudo;
+    const instagramFinal = instagram !== undefined ? instagram.trim() : c.instagram;
+    const ordemFinal = ordem !== undefined ? (ordem || 0) : c.ordem;
+    const ativoFinal = ativo !== undefined ? (ativo !== false) : c.ativo;
     
+    let imagemFinal = imagem !== undefined ? imagem : c.imagem;
     if (req.file) {
       try {
-        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-        const buffer = await fs.readFile(imgPath);
-        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'colunista', parseInt(id));
-        data.colunistas[index].imagem = `/api/fotos/${fotoId}`;
+        const imgPath = req.file.path || path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        if (await fs.pathExists(imgPath)) {
+          const buffer = await fs.readFile(imgPath);
+          const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'colunista', id);
+          imagemFinal = `/api/fotos/${fotoId}`;
+        } else {
+          imagemFinal = `/uploads/materias/${req.file.filename}`;
+        }
       } catch (e) {
         console.warn('Colunista BLOB:', e.message);
-        data.colunistas[index].imagem = `/uploads/materias/${req.file.filename}`;
+        imagemFinal = `/uploads/materias/${req.file.filename}`;
       }
-      console.log('   Nova imagem salva:', data.colunistas[index].imagem);
-    } else if (imagem !== undefined) {
-      data.colunistas[index].imagem = imagem;
     }
     
-    data.colunistas[index].dataAtualizacao = new Date().toISOString();
+    await pool.execute(
+      `UPDATE colunistas SET nome = ?, coluna = ?, conteudo = ?, instagram = ?, ordem = ?, ativo = ?, imagem = ?, dataAtualizacao = NOW() WHERE id = ?`,
+      [nomeFinal, colunaFinal, conteudoFinal, instagramFinal, ordemFinal, ativoFinal ? 1 : 0, imagemFinal, id]
+    );
     
-    await writeColunistas(data);
+    const atualizado = {
+      ...c,
+      nome: nomeFinal,
+      coluna: colunaFinal,
+      conteudo: conteudoFinal,
+      instagram: instagramFinal,
+      ordem: ordemFinal,
+      ativo: ativoFinal,
+      imagem: imagemFinal,
+      dataAtualizacao: new Date().toISOString()
+    };
     
-    res.json(data.colunistas[index]);
+    await writeColunistas(await readColunistas());
+    res.json(atualizado);
   } catch (error) {
     console.error('Erro ao atualizar colunista:', error);
     res.status(500).json({ error: 'Erro ao atualizar colunista' });
   }
 });
 
-// Deletar colunista
+// Deletar colunista (MySQL + JSON backup)
 router.delete('/colunistas/:id', requireAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
     const data = await readColunistas();
-    const index = data.colunistas.findIndex(c => c.id === parseInt(id));
-    
+    const index = data.colunistas.findIndex(c => c.id === id);
     if (index === -1) {
       return res.status(404).json({ error: 'Colunista não encontrado' });
     }
     
+    await pool.execute('DELETE FROM colunistas WHERE id = ?', [id]);
     data.colunistas.splice(index, 1);
     await writeColunistas(data);
     

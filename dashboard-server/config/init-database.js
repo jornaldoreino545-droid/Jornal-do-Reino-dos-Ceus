@@ -219,4 +219,32 @@ async function ensurePdfsTable(dbPool) {
   }
 }
 
-module.exports = { initDatabase, checkTables, ensureFotosBlobColumn, ensurePdfsTable };
+/**
+ * Garante que a tabela colunistas tem as colunas conteudo, instagram, ordem, ativo (para tabelas antigas).
+ * @param {Object} dbPool - Pool MySQL
+ */
+async function ensureColunistasColumns(dbPool) {
+  const pool = dbPool || require('./database');
+  const columns = [
+    { name: 'conteudo', sql: 'ADD COLUMN conteudo TEXT NULL AFTER coluna' },
+    { name: 'instagram', sql: 'ADD COLUMN instagram VARCHAR(255) NULL AFTER conteudo' },
+    { name: 'ordem', sql: 'ADD COLUMN ordem INT DEFAULT 0 AFTER instagram' },
+    { name: 'ativo', sql: 'ADD COLUMN ativo BOOLEAN DEFAULT TRUE AFTER ordem' }
+  ];
+  for (const col of columns) {
+    try {
+      await pool.execute(`ALTER TABLE colunistas ${col.sql}`);
+      console.log(`  ✅ Coluna colunistas.${col.name} adicionada`);
+    } catch (err) {
+      if (err.code === 'ER_DUP_FIELDNAME' || (err.message && err.message.includes('Duplicate column'))) {
+        // já existe
+      } else if (err.code === 'ER_NO_SUCH_TABLE') {
+        break;
+      } else {
+        console.warn(`  ⚠️  colunistas.${col.name}:`, err.message);
+      }
+    }
+  }
+}
+
+module.exports = { initDatabase, checkTables, ensureFotosBlobColumn, ensurePdfsTable, ensureColunistasColumns };

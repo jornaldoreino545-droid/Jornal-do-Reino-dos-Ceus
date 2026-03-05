@@ -189,15 +189,13 @@
           <div class="article-hero-wrapper">
             <div class="article-hero" style="background-image:url('${(() => {
               let imgUrl = m.image || '../Imagem/placeholder.jpg';
-              if (imgUrl.startsWith('./')) {
-                imgUrl = imgUrl.substring(2);
-              }
-              if (imgUrl.startsWith('/uploads')) {
-                // Manter como está, servido pelo servidor principal
-              } else if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('../')) {
-                if (!imgUrl.startsWith('/')) {
-                  imgUrl = '../' + imgUrl;
-                }
+              if (imgUrl.startsWith('./')) imgUrl = imgUrl.substring(2);
+              if (imgUrl.startsWith('/api/fotos/')) {
+                // Imagem no banco (BLOB)
+              } else if (imgUrl.startsWith('/uploads')) {
+                // Servido pelo servidor principal
+              } else if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('../') && !imgUrl.startsWith('/')) {
+                imgUrl = '../' + imgUrl;
               }
               return imgUrl;
             })()}')">

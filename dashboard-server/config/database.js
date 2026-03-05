@@ -43,7 +43,7 @@ pool.getConnection()
       connection.release();
       
       // Inicializar banco (criar tabelas se não existirem)
-      const { initDatabase, checkTables, ensureFotosBlobColumn, ensurePdfsTable } = require('./init-database');
+      const { initDatabase, checkTables, ensureFotosBlobColumn, ensurePdfsTable, ensureColunistasColumns } = require('./init-database');
       console.log('🔍 Verificando se as tabelas existem...');
       const tablesExist = await checkTables(pool);
       if (!tablesExist) {
@@ -64,6 +64,7 @@ pool.getConnection()
       }
       await ensureFotosBlobColumn(pool);
       await ensurePdfsTable(pool);
+      await ensureColunistasColumns(pool);
     } catch (initError) {
       console.error('⚠️  Erro ao inicializar banco:', initError.message);
     }

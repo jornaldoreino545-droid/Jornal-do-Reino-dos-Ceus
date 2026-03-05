@@ -189,12 +189,12 @@ function renderArticles(list){
       if (imageUrl.startsWith('./')) {
         imageUrl = imageUrl.substring(2); // Remove ./
       }
-      
-      // Se começar com /uploads, manter como está (servido pelo servidor principal)
-      if (imageUrl.startsWith('/uploads')) {
-        // Manter como está - será servido pelo servidor principal na rota /uploads
+      // Imagem no banco (BLOB) - servida por GET /api/fotos/:id
+      if (imageUrl.startsWith('/api/fotos/')) {
+        // Manter como está
+      } else if (imageUrl.startsWith('/uploads')) {
+        // Manter como está - servido pelo servidor principal na rota /uploads
       } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('../') && !imageUrl.startsWith('/')) {
-        // Se não começar com /, ../ ou http, adicionar ../
         imageUrl = '../' + imageUrl;
       }
     } else {

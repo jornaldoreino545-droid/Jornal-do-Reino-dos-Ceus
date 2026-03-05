@@ -98,10 +98,16 @@ CREATE TABLE IF NOT EXISTS colunistas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     coluna VARCHAR(255) NOT NULL,
+    conteudo TEXT,
+    instagram VARCHAR(255),
+    ordem INT DEFAULT 0,
+    ativo BOOLEAN DEFAULT TRUE,
     imagem VARCHAR(500),
     dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     dataAtualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_nome (nome)
+    INDEX idx_nome (nome),
+    INDEX idx_ordem (ordem),
+    INDEX idx_ativo (ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabela de Pagamentos
