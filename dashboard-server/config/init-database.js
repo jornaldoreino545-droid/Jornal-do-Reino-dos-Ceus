@@ -156,7 +156,7 @@ async function checkTables(dbPool) {
 }
 
 /**
- * Garante que a tabela fotos tem a coluna dados_imagem (BLOB). Rode na inicialização.
+ * Garante que a tabela fotos existe e tem a coluna dados_imagem (BLOB). Rode na inicialização.
  * @param {Object} dbPool - Pool MySQL
  */
 async function ensureFotosBlobColumn(dbPool) {
@@ -168,7 +168,27 @@ async function ensureFotosBlobColumn(dbPool) {
     if (err.code === 'ER_DUP_FIELDNAME' || (err.message && err.message.includes('Duplicate column'))) {
       // Coluna já existe
     } else if (err.code === 'ER_NO_SUCH_TABLE') {
-      // Tabela fotos ainda não existe; será criada pelo initDatabase
+      // Criar tabela fotos se não existir
+      try {
+        await pool.execute(`
+          CREATE TABLE fotos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nome_arquivo VARCHAR(255) NOT NULL,
+            caminho VARCHAR(500) NULL,
+            tipo VARCHAR(50) DEFAULT 'materia',
+            referencia_id INT NULL,
+            tamanho BIGINT NULL,
+            mime_type VARCHAR(100) NULL,
+            dados_imagem LONGBLOB NOT NULL,
+            dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_tipo (tipo),
+            INDEX idx_referencia (referencia_id)
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        console.log('  ✅ Tabela fotos criada');
+      } catch (createErr) {
+        console.warn('  ⚠️  Erro ao criar tabela fotos:', createErr.message);
+      }
     } else {
       console.warn('  ⚠️  Migração fotos (dados_imagem):', err.message);
     }

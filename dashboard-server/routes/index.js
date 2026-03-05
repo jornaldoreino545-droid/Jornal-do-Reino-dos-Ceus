@@ -19,20 +19,36 @@ const SANTUARIOS_FILE = path.join(__dirname, '..', '..', 'santuarios.json');
 
 /**
  * Salva imagem no banco (tabela fotos) como BLOB e retorna o id.
- * @param {Buffer} buffer - Conteúdo binário da imagem
- * @param {string} mimeType - Ex: image/png, image/jpeg
- * @param {string} nomeArquivo - Nome original ou gerado
- * @param {string} tipo - capa, carrossel, colunista, materia, etc
- * @param {number} [referenciaId] - ID do jornal/materia/colunista relacionado
- * @returns {Promise<number>} id da linha inserida em fotos
+ * Cria a tabela/coluna se não existir e retenta uma vez.
  */
 async function saveFotoAsBlob(buffer, mimeType, nomeArquivo, tipo, referenciaId = null) {
-  const [result] = await pool.execute(
-    `INSERT INTO fotos (nome_arquivo, caminho, tipo, referencia_id, tamanho, mime_type, dados_imagem)
-     VALUES (?, NULL, ?, ?, ?, ?, ?)`,
-    [nomeArquivo, tipo, referenciaId || null, buffer.length, mimeType || 'image/jpeg', buffer]
-  );
-  return result.insertId;
+  const run = async () => {
+    const [result] = await pool.execute(
+      `INSERT INTO fotos (nome_arquivo, caminho, tipo, referencia_id, tamanho, mime_type, dados_imagem)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [nomeArquivo, '', tipo, referenciaId || null, buffer.length, mimeType || 'image/jpeg', buffer]
+    );
+    return result.insertId;
+  };
+  try {
+    return await run();
+  } catch (err) {
+    const isTableMissing = err.code === 'ER_NO_SUCH_TABLE' || (err.message && err.message.includes("doesn't exist"));
+    const isColumnMissing = err.code === 'ER_BAD_FIELD_ERROR' || (err.message && err.message.includes('dados_imagem'));
+    if (isTableMissing || isColumnMissing) {
+      try {
+        const { initDatabase, ensureFotosBlobColumn } = require('../config/init-database');
+        await initDatabase(pool);
+        await ensureFotosBlobColumn(pool);
+        return await run();
+      } catch (retryErr) {
+        console.error('❌ Erro ao salvar imagem no banco (após criar tabela):', retryErr.message);
+        throw retryErr;
+      }
+    }
+    console.error('❌ Erro ao salvar imagem na tabela fotos:', err.code, err.message);
+    throw err;
+  }
 }
 
 // ==================== FUNÇÕES AUXILIARES PARA JORNAIS ====================
@@ -1018,14 +1034,17 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       console.log('✅ Jornal salvo com sucesso! ID:', jornalSalvo.id);
       if (capaFile) {
         try {
-          const capaPath = path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+          const capaPath = capaFile.path || path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+          if (!await fs.pathExists(capaPath)) {
+            throw new Error(`Arquivo de capa não encontrado: ${capaPath}`);
+          }
           const buffer = await fs.readFile(capaPath);
           const fotoId = await saveFotoAsBlob(buffer, capaFile.mimetype, capaFile.filename, 'capa', jornalSalvo.id);
           jornalSalvo.capa = `/api/fotos/${fotoId}`;
           await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
           console.log('✅ Capa salva como BLOB na tabela fotos, id:', fotoId);
         } catch (blobErr) {
-          console.warn('⚠️ Erro ao salvar capa como BLOB, usando caminho em disco:', blobErr.message);
+          console.error('❌ Erro ao salvar capa no banco (BLOB):', blobErr.code || '', blobErr.message);
           jornalSalvo.capa = `/uploads/capas/${capaFile.filename}`;
           await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
         }
@@ -1170,13 +1189,14 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
         try { await fs.remove(oldPath); } catch (err) { console.error('Erro ao deletar capa antiga:', err); }
       }
       try {
-        const capaPath = path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+        const capaPath = capaFile.path || path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+        if (!await fs.pathExists(capaPath)) throw new Error(`Arquivo não encontrado: ${capaPath}`);
         const buffer = await fs.readFile(capaPath);
         const fotoId = await saveFotoAsBlob(buffer, capaFile.mimetype, capaFile.filename, 'capa', jornalAtual.id);
         jornalAtual.capa = `/api/fotos/${fotoId}`;
         console.log('✅ Capa atualizada como BLOB na tabela fotos, id:', fotoId);
       } catch (blobErr) {
-        console.warn('⚠️ Erro ao salvar capa como BLOB, usando caminho em disco:', blobErr.message);
+        console.error('❌ Erro ao salvar capa no banco (BLOB):', blobErr.code || '', blobErr.message);
         jornalAtual.capa = `/uploads/capas/${capaFile.filename}`;
       }
     }
