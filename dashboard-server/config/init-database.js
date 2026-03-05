@@ -94,6 +94,18 @@ async function initDatabase(dbPool) {
       }
     }
     
+    // Migração: adicionar coluna dados_imagem na tabela fotos se já existir sem ela
+    try {
+      await pool.execute('ALTER TABLE fotos ADD COLUMN dados_imagem LONGBLOB NULL');
+      console.log('  ✅ Coluna dados_imagem adicionada à tabela fotos');
+    } catch (alterErr) {
+      if (alterErr.code === 'ER_DUP_FIELDNAME' || (alterErr.message && alterErr.message.includes('Duplicate column'))) {
+        console.log('  ℹ️  Tabela fotos já possui coluna dados_imagem');
+      } else {
+        console.warn('  ⚠️  Migração fotos (dados_imagem):', alterErr.message);
+      }
+    }
+    
     if (tablesCreated > 0) {
       console.log(`✅ ${tablesCreated} tabela(s) criada(s)/verificada(s) com sucesso`);
     }
@@ -123,11 +135,11 @@ async function checkTables(dbPool) {
       SELECT TABLE_NAME 
       FROM INFORMATION_SCHEMA.TABLES 
       WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME IN ('jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais')
+      AND TABLE_NAME IN ('jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos')
     `);
     
     const existingTables = tables.map(t => t.TABLE_NAME);
-    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais'];
+    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos'];
     const missingTables = requiredTables.filter(t => !existingTables.includes(t));
     
     if (missingTables.length > 0) {
@@ -143,4 +155,24 @@ async function checkTables(dbPool) {
   }
 }
 
-module.exports = { initDatabase, checkTables };
+/**
+ * Garante que a tabela fotos tem a coluna dados_imagem (BLOB). Rode na inicialização.
+ * @param {Object} dbPool - Pool MySQL
+ */
+async function ensureFotosBlobColumn(dbPool) {
+  const pool = dbPool || require('./database');
+  try {
+    await pool.execute('ALTER TABLE fotos ADD COLUMN dados_imagem LONGBLOB NULL');
+    console.log('  ✅ Coluna dados_imagem adicionada à tabela fotos');
+  } catch (err) {
+    if (err.code === 'ER_DUP_FIELDNAME' || (err.message && err.message.includes('Duplicate column'))) {
+      // Coluna já existe
+    } else if (err.code === 'ER_NO_SUCH_TABLE') {
+      // Tabela fotos ainda não existe; será criada pelo initDatabase
+    } else {
+      console.warn('  ⚠️  Migração fotos (dados_imagem):', err.message);
+    }
+  }
+}
+
+module.exports = { initDatabase, checkTables, ensureFotosBlobColumn };

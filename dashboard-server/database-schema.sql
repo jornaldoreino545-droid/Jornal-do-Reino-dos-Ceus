@@ -52,15 +52,16 @@ CREATE TABLE IF NOT EXISTS videos (
     INDEX idx_ativo (ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabela de Fotos/Imagens (para armazenar metadados de imagens enviadas)
+-- Tabela de Fotos/Imagens (metadados + imagem em BLOB)
 CREATE TABLE IF NOT EXISTS fotos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome_arquivo VARCHAR(255) NOT NULL,
-    caminho VARCHAR(500) NOT NULL,
-    tipo VARCHAR(50) DEFAULT 'materia', -- materia, capa, carrossel, responsavel, etc
+    caminho VARCHAR(500) NULL COMMENT 'Opcional: caminho em disco se houver cópia',
+    tipo VARCHAR(50) DEFAULT 'materia', -- materia, capa, carrossel, responsavel, colunista, etc
     referencia_id INT, -- ID do item relacionado (jornal_id, materia_id, etc)
     tamanho BIGINT, -- Tamanho em bytes
     mime_type VARCHAR(100),
+    dados_imagem LONGBLOB NOT NULL COMMENT 'Imagem armazenada no banco',
     dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_tipo (tipo),
     INDEX idx_referencia (referencia_id)

@@ -15,6 +15,26 @@ const PAGAMENTOS_FILE = path.join(__dirname, '..', '..', 'pagamentos.json');
 const COLUNISTAS_FILE = path.join(__dirname, '..', '..', 'colunistas.json');
 const SANTUARIOS_FILE = path.join(__dirname, '..', '..', 'santuarios.json');
 
+// ==================== FOTOS (IMAGENS EM BLOB NO BANCO) ====================
+
+/**
+ * Salva imagem no banco (tabela fotos) como BLOB e retorna o id.
+ * @param {Buffer} buffer - Conteúdo binário da imagem
+ * @param {string} mimeType - Ex: image/png, image/jpeg
+ * @param {string} nomeArquivo - Nome original ou gerado
+ * @param {string} tipo - capa, carrossel, colunista, materia, etc
+ * @param {number} [referenciaId] - ID do jornal/materia/colunista relacionado
+ * @returns {Promise<number>} id da linha inserida em fotos
+ */
+async function saveFotoAsBlob(buffer, mimeType, nomeArquivo, tipo, referenciaId = null) {
+  const [result] = await pool.execute(
+    `INSERT INTO fotos (nome_arquivo, caminho, tipo, referencia_id, tamanho, mime_type, dados_imagem)
+     VALUES (?, NULL, ?, ?, ?, ?, ?)`,
+    [nomeArquivo, tipo, referenciaId || null, buffer.length, mimeType || 'image/jpeg', buffer]
+  );
+  return result.insertId;
+}
+
 // ==================== FUNÇÕES AUXILIARES PARA JORNAIS ====================
 
 // Ler jornais do MySQL (fonte de verdade)
@@ -736,6 +756,28 @@ router.get('/auth/check', (req, res) => {
   res.json({ authenticated: false });
 });
 
+// Servir imagem armazenada como BLOB no banco (tabela fotos)
+router.get('/fotos/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).send('ID inválido');
+    const [rows] = await pool.execute(
+      'SELECT dados_imagem, mime_type FROM fotos WHERE id = ?',
+      [id]
+    );
+    if (!rows.length || !rows[0].dados_imagem) {
+      return res.status(404).send('Imagem não encontrada');
+    }
+    const mime = rows[0].mime_type || 'image/jpeg';
+    res.set('Content-Type', mime);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(rows[0].dados_imagem);
+  } catch (err) {
+    console.error('Erro ao servir foto:', err.message);
+    res.status(500).send('Erro ao carregar imagem');
+  }
+});
+
 // ==================== JORNAIS ====================
 
 // Rota de diagnóstico para verificar conexão e jornais no banco
@@ -908,7 +950,7 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       linkCompra: linkCompra || '',
       ordem: ordem ? parseInt(ordem) : novoId,
       ativo: ativo === 'true' || ativo === true,
-      capa: capaFile ? `/uploads/capas/${capaFile.filename}` : '',
+      capa: '', // preenchido depois com /api/fotos/:id se houver upload
       pdf: pdfFile ? `/uploads/pdfs/${pdfFile.filename}` : '',
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString()
@@ -974,15 +1016,18 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     try {
       jornalSalvo = await saveJornal(novoJornal, false);
       console.log('✅ Jornal salvo com sucesso! ID:', jornalSalvo.id);
-      if (capaFile && novoJornal.capa) {
+      if (capaFile) {
         try {
-          await pool.execute(
-            'INSERT INTO capas_jornais (caminho, nome_arquivo, jornal_id) VALUES (?, ?, ?)',
-            [novoJornal.capa, capaFile.filename, jornalSalvo.id]
-          );
-          console.log('✅ Capa registrada na tabela capas_jornais');
-        } catch (capasErr) {
-          console.warn('⚠️ Tabela capas_jornais não disponível ou erro ao inserir:', capasErr.message);
+          const capaPath = path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+          const buffer = await fs.readFile(capaPath);
+          const fotoId = await saveFotoAsBlob(buffer, capaFile.mimetype, capaFile.filename, 'capa', jornalSalvo.id);
+          jornalSalvo.capa = `/api/fotos/${fotoId}`;
+          await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
+          console.log('✅ Capa salva como BLOB na tabela fotos, id:', fotoId);
+        } catch (blobErr) {
+          console.warn('⚠️ Erro ao salvar capa como BLOB, usando caminho em disco:', blobErr.message);
+          jornalSalvo.capa = `/uploads/capas/${capaFile.filename}`;
+          await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
         }
       }
     } catch (saveError) {
@@ -1117,30 +1162,22 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     if (ordem !== undefined) jornalAtual.ordem = parseInt(ordem);
     if (ativo !== undefined) jornalAtual.ativo = ativo === 'true' || ativo === true;
     
-    // Se nova capa foi enviada
+    // Se nova capa foi enviada: salvar como BLOB na tabela fotos
     const capaFile = req.files && req.files.capa && req.files.capa[0] ? req.files.capa[0] : null;
     if (capaFile) {
-      // Deletar capa antiga se existir
-      if (jornalAtual.capa) {
-        const capaPath = jornalAtual.capa.startsWith('/uploads/') 
-          ? jornalAtual.capa.substring(1) 
-          : jornalAtual.capa;
-        const oldPath = path.join(__dirname, '..', capaPath);
-        try {
-          await fs.remove(oldPath);
-        } catch (err) {
-          console.error('Erro ao deletar capa antiga:', err);
-        }
+      if (jornalAtual.capa && jornalAtual.capa.startsWith('/uploads/')) {
+        const oldPath = path.join(__dirname, '..', jornalAtual.capa.substring(1));
+        try { await fs.remove(oldPath); } catch (err) { console.error('Erro ao deletar capa antiga:', err); }
       }
-      jornalAtual.capa = `/uploads/capas/${capaFile.filename}`;
       try {
-        await pool.execute(
-          'INSERT INTO capas_jornais (caminho, nome_arquivo, jornal_id) VALUES (?, ?, ?)',
-          [jornalAtual.capa, capaFile.filename, jornalAtual.id]
-        );
-        console.log('✅ Capa registrada na tabela capas_jornais (atualização)');
-      } catch (capasErr) {
-        console.warn('⚠️ Tabela capas_jornais não disponível ou erro ao inserir:', capasErr.message);
+        const capaPath = path.join(__dirname, '..', 'uploads', 'capas', capaFile.filename);
+        const buffer = await fs.readFile(capaPath);
+        const fotoId = await saveFotoAsBlob(buffer, capaFile.mimetype, capaFile.filename, 'capa', jornalAtual.id);
+        jornalAtual.capa = `/api/fotos/${fotoId}`;
+        console.log('✅ Capa atualizada como BLOB na tabela fotos, id:', fotoId);
+      } catch (blobErr) {
+        console.warn('⚠️ Erro ao salvar capa como BLOB, usando caminho em disco:', blobErr.message);
+        jornalAtual.capa = `/uploads/capas/${capaFile.filename}`;
       }
     }
     
@@ -1184,17 +1221,10 @@ router.delete('/jornais/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Jornal não encontrado' });
     }
     
-    // Deletar capa se existir
-    if (jornal.capa) {
-      const capaPath = jornal.capa.startsWith('/uploads/') 
-        ? jornal.capa.substring(1) 
-        : jornal.capa;
-      const fullPath = path.join(__dirname, '..', capaPath);
-      try {
-        await fs.remove(fullPath);
-      } catch (err) {
-        console.error('Erro ao deletar capa:', err);
-      }
+    // Deletar capa se existir (só arquivo em disco; capa em /api/fotos/:id fica no banco)
+    if (jornal.capa && jornal.capa.startsWith('/uploads/')) {
+      const fullPath = path.join(__dirname, '..', jornal.capa.substring(1));
+      try { await fs.remove(fullPath); } catch (err) { console.error('Erro ao deletar capa:', err); }
     }
 
     // Deletar PDF se existir
@@ -1573,7 +1603,7 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { ordem, link } = req.body;
 
-    const novaImagem = req.file 
+    const novaImagem = req.file
       ? `/uploads/materias/${req.file.filename}`
       : req.body.imagem;
 
@@ -1581,7 +1611,6 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
       return res.status(400).json({ error: 'Imagem é obrigatória' });
     }
 
-    // Obter próxima ordem se não fornecida
     let proximaOrdem = ordem ? parseInt(ordem) : 1;
     if (!ordem) {
       const carrossel = await readCarrossel();
@@ -1596,6 +1625,17 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
     };
 
     const itemSalvo = await saveCarrosselItem(novoItem, false);
+    if (req.file) {
+      try {
+        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        const buffer = await fs.readFile(imgPath);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'carrossel', itemSalvo.id);
+        itemSalvo.imagem = `/api/fotos/${fotoId}`;
+        await pool.execute('UPDATE carrossel SET imagem = ? WHERE id = ?', [itemSalvo.imagem, itemSalvo.id]);
+      } catch (e) {
+        console.warn('Capa carrossel BLOB:', e.message);
+      }
+    }
     res.json({ ok: true, item: itemSalvo });
   } catch (error) {
     console.error('Erro ao criar item do carrossel:', error);
@@ -1618,13 +1658,14 @@ router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) =
     item.id = id;
 
     if (req.file) {
-      item.imagem = `/uploads/materias/${req.file.filename}`;
-      // Verificar se a imagem foi salva corretamente
-      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-      const imagemExists = await fs.pathExists(imagemPath);
-      console.log('   ✅ Imagem do carrossel atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
-      if (!imagemExists) {
-        console.error('   ❌ ERRO: Imagem do carrossel não foi salva!');
+      try {
+        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        const buffer = await fs.readFile(imgPath);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'carrossel', id);
+        item.imagem = `/api/fotos/${fotoId}`;
+      } catch (e) {
+        console.warn('Carrossel BLOB:', e.message);
+        item.imagem = `/uploads/materias/${req.file.filename}`;
       }
     }
     if (ordem !== undefined) item.ordem = parseInt(ordem);
@@ -1694,6 +1735,17 @@ router.post('/site/carrossel-medio', requireAuth, uploadMateria, async (req, res
     };
 
     const itemSalvo = await saveCarrosselMedioItem(novoItem, false);
+    if (req.file) {
+      try {
+        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        const buffer = await fs.readFile(imgPath);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'carrossel_medio', itemSalvo.id);
+        itemSalvo.imagem = `/api/fotos/${fotoId}`;
+        await pool.execute('UPDATE carrossel_medio SET imagem = ? WHERE id = ?', [itemSalvo.imagem, itemSalvo.id]);
+      } catch (e) {
+        console.warn('Carrossel médio BLOB:', e.message);
+      }
+    }
     res.json({ ok: true, item: itemSalvo });
   } catch (error) {
     console.error('Erro ao criar item do carrossel médio:', error);
@@ -1706,7 +1758,6 @@ router.put('/site/carrossel-medio/:id', requireAuth, uploadMateria, async (req, 
     const id = parseInt(req.params.id);
     const { ordem, ativo } = req.body;
     
-    // Verificar se o item existe
     const [existing] = await pool.execute('SELECT * FROM carrossel_medio WHERE id = ?', [id]);
     if (existing.length === 0) {
       return res.status(404).json({ error: 'Item não encontrado' });
@@ -1716,13 +1767,14 @@ router.put('/site/carrossel-medio/:id', requireAuth, uploadMateria, async (req, 
     item.id = id;
 
     if (req.file) {
-      item.imagem = `/uploads/materias/${req.file.filename}`;
-      // Verificar se a imagem foi salva corretamente
-      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-      const imagemExists = await fs.pathExists(imagemPath);
-      console.log('   ✅ Imagem do carrossel atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
-      if (!imagemExists) {
-        console.error('   ❌ ERRO: Imagem do carrossel não foi salva!');
+      try {
+        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        const buffer = await fs.readFile(imgPath);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'carrossel_medio', id);
+        item.imagem = `/api/fotos/${fotoId}`;
+      } catch (e) {
+        console.warn('Carrossel médio BLOB:', e.message);
+        item.imagem = `/uploads/materias/${req.file.filename}`;
       }
     }
     if (ordem !== undefined) item.ordem = parseInt(ordem);
@@ -3372,11 +3424,19 @@ router.post('/colunistas', requireAuth, uploadMateria, async (req, res) => {
       ? Math.max(...data.colunistas.map(c => c.id)) + 1 
       : 1;
     
-    // Obter imagem do upload ou do body
-    const imagem = req.file 
+    let imagem = req.file
       ? `/uploads/materias/${req.file.filename}`
       : (req.body.imagem || '');
-    
+    if (req.file) {
+      try {
+        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        const buffer = await fs.readFile(imgPath);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'colunista', newId);
+        imagem = `/api/fotos/${fotoId}`;
+      } catch (e) {
+        console.warn('Colunista BLOB:', e.message);
+      }
+    }
     console.log('   Imagem salva:', imagem);
     
     const novoColunista = {
@@ -3428,17 +3488,17 @@ router.put('/colunistas/:id', requireAuth, uploadMateria, async (req, res) => {
     if (ordem !== undefined) data.colunistas[index].ordem = ordem || 0;
     if (ativo !== undefined) data.colunistas[index].ativo = ativo !== false;
     
-    // Se houver upload de nova imagem, usar ela; senão, usar a do body se fornecida
     if (req.file) {
-      data.colunistas[index].imagem = `/uploads/materias/${req.file.filename}`;
-      console.log('   Nova imagem salva:', data.colunistas[index].imagem);
-      // Verificar se a imagem foi salva corretamente
-      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-      const imagemExists = await fs.pathExists(imagemPath);
-      console.log('   ✅ Imagem do colunista atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
-      if (!imagemExists) {
-        console.error('   ❌ ERRO: Imagem do colunista não foi salva!');
+      try {
+        const imgPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
+        const buffer = await fs.readFile(imgPath);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'colunista', parseInt(id));
+        data.colunistas[index].imagem = `/api/fotos/${fotoId}`;
+      } catch (e) {
+        console.warn('Colunista BLOB:', e.message);
+        data.colunistas[index].imagem = `/uploads/materias/${req.file.filename}`;
       }
+      console.log('   Nova imagem salva:', data.colunistas[index].imagem);
     } else if (imagem !== undefined) {
       data.colunistas[index].imagem = imagem;
     }
