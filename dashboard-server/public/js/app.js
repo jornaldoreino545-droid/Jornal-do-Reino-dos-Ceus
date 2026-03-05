@@ -2713,6 +2713,10 @@ function renderCarrossel() {
         if (imagemUrl.startsWith('/uploads/')) {
             // Já está correto - arquivo enviado pelo dashboard
         }
+        // Se é imagem salva no banco (BLOB) - servir via /api/fotos/:id
+        else if (imagemUrl.startsWith('/api/fotos/')) {
+            // Manter como está; a rota GET /api/fotos/:id devolve a imagem
+        }
         // Se começa com http, manter (URL externa)
         else if (imagemUrl.startsWith('http')) {
             // Já está correto - URL externa
@@ -3256,6 +3260,8 @@ function renderCarrosselMedio() {
         
         if (imagemUrl.startsWith('/uploads/')) {
             // Já está no formato correto (URL relativa)
+        } else if (imagemUrl.startsWith('/api/fotos/')) {
+            // Imagem no banco (BLOB) - servir via /api/fotos/:id
         } else if (imagemUrl.startsWith('http')) {
             // URL externa
         } else if (imagemUrl.startsWith('uploads/')) {
