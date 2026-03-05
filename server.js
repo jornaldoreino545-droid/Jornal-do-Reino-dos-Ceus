@@ -1,7 +1,13 @@
+// Primeiros logs para aparecer no Dokploy (se o container rodar este arquivo)
+console.log('=== JORNAL APP INICIANDO ===');
+console.log('Diretório:', process.cwd());
+console.log('Node:', process.version);
+
 const express = require("express");
 const path = require("path");
 const app = express();
 require('dotenv').config();
+console.log('Express e dotenv carregados');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
@@ -320,32 +326,40 @@ app.post('/api/verificar', async (req, res) => {
 
 // ==================== ROTAS DE API - DASHBOARD ====================
 
-let dashboardRoutes;
-let checkoutRoutes;
+let dashboardLoadError = null;
 try {
   console.log('📦 Carregando rotas do dashboard...');
-  dashboardRoutes = require('./dashboard-server/routes');
-  console.log('✅ Rotas do dashboard carregadas');
+  const dashboardRoutes = require('./dashboard-server/routes');
   app.use('/api', dashboardRoutes);
+  console.log('✅ Rotas do dashboard carregadas');
 } catch (err) {
-  console.error('❌ ERRO ao carregar dashboard (veja os logs do Dokploy):');
-  console.error(err.message);
+  dashboardLoadError = err;
+  console.error('❌ ERRO ao carregar dashboard:', err.message);
   console.error(err.stack);
-  throw err;
+  app.use('/api', (req, res) => {
+    res.status(503).json({
+      error: 'API em manutenção',
+      detalhe: process.env.NODE_ENV === 'production' ? 'Serviço temporariamente indisponível.' : err.message
+    });
+  });
 }
 
 // ==================== ROTAS DE API - CHECKOUT ====================
 
+let checkoutLoadError = null;
 try {
   console.log('📦 Carregando rotas do checkout...');
-  checkoutRoutes = require('./checkout/routes');
+  const checkoutRoutes = require('./checkout/routes');
   app.use('/', checkoutRoutes);
   console.log('✅ Rotas do checkout carregadas');
 } catch (err) {
-  console.error('❌ ERRO ao carregar checkout (veja os logs do Dokploy):');
-  console.error(err.message);
+  checkoutLoadError = err;
+  console.error('❌ ERRO ao carregar checkout:', err.message);
   console.error(err.stack);
-  throw err;
+}
+
+if (dashboardLoadError || checkoutLoadError) {
+  console.log('⚠️  App subiu com erros. Site principal deve funcionar; API/checkout podem estar limitados.');
 }
 
 // ==================== ROTAS ADMIN ====================
