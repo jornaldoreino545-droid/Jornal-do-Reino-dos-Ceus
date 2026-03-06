@@ -89,19 +89,18 @@ async function savePaymentToDashboard() {
             console.log('Erro ao buscar informações do jornal:', err.message);
         }
         
-        // O pagamento já deve ter sido salvo quando o download foi solicitado via /api/download
-        // que busca o paymentIntent do Stripe e salva com o valor correto
-        // Aqui vamos apenas garantir que o pagamento existe, mas não vamos sobrescrever
-        // O servidor já verifica se existe e retorna o existente
+        // Incluir santuário e "sou novo" da URL para aparecer no comprovante do dashboard
         const paymentData = {
             paymentIntentId: paymentIntentId,
             nome: nome,
             email: email,
             jornalId: jornalId,
             jornalNome: jornalNome,
-            valor: valorPagamento, // Valor do jornal como fallback (o servidor vai usar o valor do paymentIntent se já existir)
+            valor: valorPagamento,
             moeda: 'BRL',
-            dataPagamento: new Date().toISOString()
+            dataPagamento: new Date().toISOString(),
+            santuario: santuarioFromUrl || '',
+            souNovoSantuario: (souNovoSantuarioFromUrl === 'sim' || souNovoSantuarioFromUrl === '1' || souNovoSantuarioFromUrl === 'true') ? 1 : 0
         };
         
         // Tentar salvar no dashboard (o servidor vai verificar se já existe e atualizar valor se necessário)
