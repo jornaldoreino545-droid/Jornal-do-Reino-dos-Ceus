@@ -131,8 +131,16 @@ async function readJornais() {
   }
 }
 
-// Salvar jornal no MySQL e JSON (backup)
-async function saveJornal(jornal, isUpdate = false) {
+// Retorna true se o erro indica conexão fechada (permite retry)
+function isBrokenPipeError(err) {
+  if (!err) return false;
+  const code = err.code || '';
+  const msg = (err.message || '').toLowerCase();
+  return code === 'EPIPE' || code === 'ECONNRESET' || code === 'PROTOCOL_CONNECTION_LOST' || msg.includes('epipe') || msg.includes('connection lost');
+}
+
+// Salvar jornal no MySQL e JSON (backup). Terceiro parâmetro interno: retry após EPIPE/ECONNRESET.
+async function saveJornal(jornal, isUpdate = false, _retried = false) {
   try {
     // Verificar se o pool está conectado antes de tentar salvar
     try {
@@ -141,11 +149,14 @@ async function saveJornal(jornal, isUpdate = false) {
       testConnection.release();
       console.log('✅ Conexão com banco de dados verificada');
     } catch (connError) {
+      if (!_retried && isBrokenPipeError(connError)) {
+        console.warn('⚠️ Conexão interrompida (EPIPE/ECONNRESET). Nova tentativa em 1s...');
+        await new Promise(r => setTimeout(r, 1000));
+        return saveJornal(jornal, isUpdate, true);
+      }
       console.error('❌ ERRO CRÍTICO: Não foi possível conectar ao banco de dados!');
       console.error('   Mensagem:', connError.message);
       console.error('   Código:', connError.code);
-      console.error('   Stack:', connError.stack);
-      // Não fazer fallback silencioso - lançar erro para que seja reportado
       throw new Error(`Erro de conexão com banco de dados: ${connError.message}`);
     }
     
@@ -276,11 +287,16 @@ async function saveJornal(jornal, isUpdate = false) {
         }
       }
     } catch (dbError) {
+      // Retry uma vez se a conexão caiu (EPIPE / ECONNRESET) — comum com PDF/capa grandes ou conexão ociosa
+      if (!_retried && isBrokenPipeError(dbError)) {
+        console.warn('⚠️ Conexão interrompida ao salvar (EPIPE/ECONNRESET). Nova tentativa em 1s...');
+        await new Promise(r => setTimeout(r, 1000));
+        return saveJornal(jornal, isUpdate, true);
+      }
+
       console.error('❌ ERRO ao salvar jornal no MySQL:');
       console.error('   Mensagem:', dbError.message);
       console.error('   Código:', dbError.code);
-      console.error('   SQL State:', dbError.sqlState);
-      console.error('   Stack:', dbError.stack);
       console.error('   Dados que tentaram ser salvos:', {
         nome: jornal.nome,
         mes: jornal.mes,
@@ -290,7 +306,7 @@ async function saveJornal(jornal, isUpdate = false) {
       });
       
       // Verificar se é um erro de tabela não existente
-      if (dbError.code === 'ER_NO_SUCH_TABLE' || dbError.message.includes("doesn't exist")) {
+      if (dbError.code === 'ER_NO_SUCH_TABLE' || (dbError.message && dbError.message.includes("doesn't exist"))) {
         console.error('   ⚠️ Tabela "jornais" não existe! Tentando criar...');
         try {
           const { initDatabase } = require('../config/init-database');

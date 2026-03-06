@@ -19,11 +19,9 @@ const dbConfig = {
 // Pool de conexões com configurações adicionais
 const pool = mysql.createPool({
   ...dbConfig,
-  // Garantir que autocommit está habilitado (padrão, mas explícito)
-  // Isso garante que cada INSERT/UPDATE seja commitado imediatamente
   multipleStatements: false,
-  // Timeout para queries
-  timeout: 60000
+  queueLimit: 0,
+  enableKeepAlive: true // reduz conexões fechadas (EPIPE) quando o MySQL encerra conexões ociosas
 });
 
 // Testar conexão e inicializar banco
