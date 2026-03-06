@@ -985,16 +985,16 @@ router.post('/jornais', requireAuth, (req, res, next) => {
   });
 }, async (req, res) => {
   try {
-    // Processando criação do jornal
-    // Arquivos recebidos
-    
-    const { nome, mes, ano, descricao, linkCompra, ordem, ativo } = req.body;
+    if (!pool || typeof pool.execute !== 'function') {
+      return res.status(503).json({ error: 'Erro ao criar jornal', message: 'Banco de dados não está disponível. Tente novamente em instantes.' });
+    }
+
+    const { nome, mes, ano, descricao, linkCompra, ordem, ativo } = req.body || {};
     
     if (!nome || !mes || !ano) {
       return res.status(400).json({ error: 'Nome, mês e ano são obrigatórios' });
     }
     
-    // Verificar se PDF foi enviado (obrigatório para novos jornais)
     if (!req.files || !req.files.pdf || req.files.pdf.length === 0) {
       return res.status(400).json({ error: 'PDF é obrigatório para novos jornais' });
     }
@@ -1103,7 +1103,11 @@ router.post('/jornais', requireAuth, (req, res, next) => {
         } catch (blobErr) {
           console.error('❌ Erro ao salvar capa no banco (BLOB):', blobErr.code || '', blobErr.message);
           jornalSalvo.capa = `/uploads/capas/${capaFile.filename}`;
-          await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
+          try {
+            await pool.execute('UPDATE jornais SET capa = ? WHERE id = ?', [jornalSalvo.capa, jornalSalvo.id]);
+          } catch (updErr) {
+            console.warn('Aviso: não foi possível atualizar capa no banco:', updErr.message);
+          }
         }
       }
       if (pdfFile) {
@@ -1120,7 +1124,11 @@ router.post('/jornais', requireAuth, (req, res, next) => {
         } catch (blobErr) {
           console.error('❌ Erro ao salvar PDF no banco (BLOB):', blobErr.code || '', blobErr.message);
           jornalSalvo.pdf = `/uploads/pdfs/${pdfFile.filename}`;
-          await pool.execute('UPDATE jornais SET pdf = ? WHERE id = ?', [jornalSalvo.pdf, jornalSalvo.id]);
+          try {
+            await pool.execute('UPDATE jornais SET pdf = ? WHERE id = ?', [jornalSalvo.pdf, jornalSalvo.id]);
+          } catch (updErr) {
+            console.warn('Aviso: não foi possível atualizar PDF no banco:', updErr.message);
+          }
         }
       }
     } catch (saveError) {
@@ -1172,20 +1180,11 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     console.error('============================');
     
     if (!res.headersSent) {
-      // Retornar erro detalhado para ajudar no diagnóstico
       const errorMessage = error.message || 'Erro desconhecido ao criar jornal';
-      const isDbError = error.message && (
-        error.message.includes('banco de dados') || 
-        error.message.includes('MySQL') ||
-        error.message.includes('ER_') ||
-        error.message.includes('connection')
-      );
-      
       res.status(500).json({ 
         ok: false,
         error: 'Erro ao criar jornal', 
-        message: errorMessage,
-        details: isDbError ? 'Erro de conexão com banco de dados. Verifique os logs do servidor.' : undefined
+        message: errorMessage
       });
     }
   }
@@ -1305,7 +1304,10 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     res.json({ ok: true, jornal: jornalAtualizado });
   } catch (error) {
     console.error('Erro ao atualizar jornal:', error);
-    res.status(500).json({ error: 'Erro ao atualizar jornal' });
+    const msg = error.message || 'Erro ao atualizar jornal';
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Erro ao atualizar jornal', message: msg });
+    }
   }
 });
 

@@ -2588,7 +2588,8 @@ async function handleSaveJornal(e) {
             console.log('✅ ===== JORNAL SALVO COM SUCESSO =====');
         } else {
             console.error('❌ Erro na resposta:', data);
-            const errorMessage = data?.error || data?.message || 'Erro ao salvar jornal';
+            // Mostrar mensagem detalhada do servidor quando existir (ex.: erro de banco)
+            const errorMessage = data?.message || data?.error || 'Erro ao salvar jornal';
             
             if (response.status === 401) {
                 showToast('Sessão expirada. Por favor, faça login novamente.', 'warning');
