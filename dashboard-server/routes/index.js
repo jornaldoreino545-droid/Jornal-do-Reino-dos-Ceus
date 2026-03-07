@@ -932,22 +932,15 @@ router.get('/jornais/verificar-banco', requireAuth, async (req, res) => {
 });
 
 // Listar todos os jornais
-// Se não estiver autenticado, retorna apenas jornais ativos (para o site público)
-// Se estiver autenticado, retorna todos os jornais (para o dashboard)
+// Público: retorna todos (ativo e inativo) para o site mostrar "Em breve" nos desativados
+// Dashboard (autenticado): retorna todos para gestão
 router.get('/jornais', async (req, res) => {
   try {
-    // Listando jornais
     const data = await readJornais();
     let jornaisList = data.jornais || [];
-    
-    // Se não estiver autenticado, filtrar apenas jornais ativos e ordenar
     if (!req.session || !req.session.authenticated) {
-      jornaisList = jornaisList
-        .filter(j => j.ativo !== false)
-        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      jornaisList = jornaisList.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
     }
-    
-    // Retornando jornais
     res.json({ jornais: jornaisList });
   } catch (error) {
     console.error('Erro ao listar jornais:', error);
@@ -2043,26 +2036,84 @@ router.put('/site/video', requireAuth, (req, res, next) => {
   }
 });
 
-// ==================== RESPONSÁVEIS ====================
+// ==================== RESPONSÁVEIS (MySQL = fonte principal; JSON = backup) ====================
+
+async function readResponsaveis() {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT id, nome, cargo, imagem, ordem, ativo, dataCriacao, dataAtualizacao FROM responsaveis ORDER BY ordem ASC, id ASC'
+    );
+    const lista = (rows || []).map(r => ({
+      id: r.id,
+      nome: r.nome || '',
+      cargo: r.cargo || '',
+      imagem: r.imagem || '',
+      ordem: r.ordem != null ? r.ordem : 0,
+      ativo: r.ativo !== 0 && r.ativo !== false
+    }));
+    if (lista.length === 0) {
+      try {
+        const config = await readSiteConfig();
+        const fromConfig = config?.responsaveis || [];
+        for (let i = 0; i < fromConfig.length; i++) {
+          const r = fromConfig[i];
+          await pool.execute(
+            'INSERT INTO responsaveis (nome, cargo, imagem, ordem, ativo) VALUES (?, ?, ?, ?, ?)',
+            [r.nome || '', r.cargo || '', r.imagem || '', r.ordem != null ? r.ordem : i, r.ativo !== false && r.ativo !== 0 ? 1 : 0]
+          );
+        }
+        if (fromConfig.length > 0) return readResponsaveis();
+      } catch (e) {
+        console.warn('Migração responsaveis JSON->MySQL:', e.message);
+      }
+    }
+    return lista;
+  } catch (err) {
+    if (err.code === 'ER_NO_SUCH_TABLE') {
+      try {
+        const { initDatabase } = require('../config/init-database');
+        await initDatabase(pool);
+        return readResponsaveis();
+      } catch (e) {
+        console.warn('MySQL responsaveis:', e.message);
+      }
+    } else {
+      console.warn('Erro ao ler responsaveis do MySQL:', err.message);
+    }
+    try {
+      const config = await readSiteConfig();
+      return config?.responsaveis || [];
+    } catch (e) {
+      return [];
+    }
+  }
+}
+
+async function syncResponsaveisToConfig() {
+  try {
+    const lista = await readResponsaveis();
+    const config = await readSiteConfig();
+    if (config) {
+      config.responsaveis = lista;
+      await writeSiteConfig(config);
+    }
+  } catch (e) {
+    console.warn('syncResponsaveisToConfig:', e.message);
+  }
+}
 
 router.get('/site/responsaveis', async (req, res) => {
   try {
-    const config = await readSiteConfig();
-    let responsaveis = config?.responsaveis || [];
-    
-    // Normalizar URLs das imagens - remover localhost:3000 hardcoded
+    let responsaveis = await readResponsaveis();
     responsaveis = responsaveis.map(resp => {
       if (resp.imagem && typeof resp.imagem === 'string') {
-        // Remover http://localhost:3000 ou https://localhost:3000
         resp.imagem = resp.imagem.replace(/https?:\/\/localhost:3000/g, '');
-        // Garantir que comece com / se não for URL externa
         if (!resp.imagem.startsWith('http') && !resp.imagem.startsWith('/')) {
           resp.imagem = '/' + resp.imagem;
         }
       }
       return resp;
     });
-    
     res.json(responsaveis);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar responsáveis' });
@@ -2072,45 +2123,32 @@ router.get('/site/responsaveis', async (req, res) => {
 router.post('/site/responsaveis', requireAuth, uploadMateria, async (req, res) => {
   try {
     const { nome, cargo, ordem } = req.body;
-    const config = await readSiteConfig();
-    
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
     if (!nome || !cargo) {
       return res.status(400).json({ error: 'Nome e cargo são obrigatórios' });
     }
 
-    const novaImagem = req.file 
-      ? `/uploads/materias/${req.file.filename}`
-      : req.body.imagem;
-    
-    // Verificar se a imagem foi salva corretamente
+    const ordemNum = ordem != null && ordem !== '' ? parseInt(ordem) : 0;
+    let imagemUrl = (req.body.imagem && typeof req.body.imagem === 'string') ? req.body.imagem : '';
+
     if (req.file) {
-      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-      const imagemExists = await fs.pathExists(imagemPath);
-      console.log('   ✅ Imagem do responsável salva?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
-      if (!imagemExists) {
-        console.error('   ❌ ERRO: Imagem do responsável não foi salva!');
+      try {
+        const buffer = await fs.readFile(req.file.path);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'responsavel', null);
+        imagemUrl = `/api/fotos/${fotoId}`;
+      } catch (e) {
+        console.warn('Erro ao salvar imagem do responsável como BLOB:', e.message);
+        imagemUrl = `/uploads/materias/${req.file.filename}`;
       }
     }
 
-    const novoId = config.responsaveis.length > 0
-      ? Math.max(...config.responsaveis.map(r => r.id)) + 1
-      : 1;
-
-    config.responsaveis.push({
-      id: novoId,
-      nome,
-      cargo,
-      imagem: novaImagem || '',
-      ordem: ordem ? parseInt(ordem) : config.responsaveis.length + 1,
-      ativo: true
-    });
-
-    await writeSiteConfig(config);
-    res.json({ ok: true, responsavel: config.responsaveis[config.responsaveis.length - 1] });
+    const [insertResult] = await pool.execute(
+      'INSERT INTO responsaveis (nome, cargo, imagem, ordem, ativo) VALUES (?, ?, ?, ?, 1)',
+      [nome.trim(), (cargo || '').trim(), imagemUrl, ordemNum]
+    );
+    const id = insertResult.insertId;
+    const responsavel = { id, nome: nome.trim(), cargo: (cargo || '').trim(), imagem: imagemUrl, ordem: ordemNum, ativo: true };
+    await syncResponsaveisToConfig();
+    res.json({ ok: true, responsavel });
   } catch (error) {
     console.error('Erro ao criar responsável:', error);
     res.status(500).json({ error: 'Erro ao criar responsável' });
@@ -2121,34 +2159,37 @@ router.put('/site/responsaveis/:id', requireAuth, uploadMateria, async (req, res
   try {
     const id = parseInt(req.params.id);
     const { nome, cargo, ordem, ativo } = req.body;
-    const config = await readSiteConfig();
-    
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
 
-    const index = config.responsaveis.findIndex(r => r.id === id);
-    if (index === -1) {
+    const [rows] = await pool.execute('SELECT id, nome, cargo, imagem, ordem, ativo FROM responsaveis WHERE id = ?', [id]);
+    if (!rows || rows.length === 0) {
       return res.status(404).json({ error: 'Responsável não encontrado' });
     }
+    const atual = rows[0];
+    let imagemFinal = atual.imagem || '';
 
-    if (nome) config.responsaveis[index].nome = nome;
-    if (cargo) config.responsaveis[index].cargo = cargo;
     if (req.file) {
-      config.responsaveis[index].imagem = `/uploads/materias/${req.file.filename}`;
-      // Verificar se a imagem foi salva corretamente
-      const imagemPath = path.join(__dirname, '..', 'uploads', 'materias', req.file.filename);
-      const imagemExists = await fs.pathExists(imagemPath);
-      console.log('   ✅ Imagem do responsável atualizada?', imagemExists, imagemExists ? `em: ${imagemPath}` : '');
-      if (!imagemExists) {
-        console.error('   ❌ ERRO: Imagem do responsável não foi salva!');
+      try {
+        const buffer = await fs.readFile(req.file.path);
+        const fotoId = await saveFotoAsBlob(buffer, req.file.mimetype, req.file.filename, 'responsavel', id);
+        imagemFinal = `/api/fotos/${fotoId}`;
+      } catch (e) {
+        console.warn('Erro ao salvar imagem do responsável como BLOB:', e.message);
+        imagemFinal = `/uploads/materias/${req.file.filename}`;
       }
     }
-    if (ordem !== undefined) config.responsaveis[index].ordem = parseInt(ordem);
-    if (ativo !== undefined) config.responsaveis[index].ativo = ativo === 'true' || ativo === true;
 
-    await writeSiteConfig(config);
-    res.json({ ok: true, responsavel: config.responsaveis[index] });
+    const nomeFinal = nome !== undefined ? String(nome).trim() : atual.nome;
+    const cargoFinal = cargo !== undefined ? String(cargo).trim() : atual.cargo;
+    const ordemFinal = ordem !== undefined ? parseInt(ordem) : (atual.ordem ?? 0);
+    const ativoFinal = ativo !== undefined ? (ativo === 'true' || ativo === true) : (atual.ativo !== 0 && atual.ativo !== false);
+
+    await pool.execute(
+      'UPDATE responsaveis SET nome = ?, cargo = ?, imagem = ?, ordem = ?, ativo = ? WHERE id = ?',
+      [nomeFinal, cargoFinal, imagemFinal, ordemFinal, ativoFinal ? 1 : 0, id]
+    );
+    const responsavel = { id, nome: nomeFinal, cargo: cargoFinal, imagem: imagemFinal, ordem: ordemFinal, ativo: ativoFinal };
+    await syncResponsaveisToConfig();
+    res.json({ ok: true, responsavel });
   } catch (error) {
     console.error('Erro ao atualizar responsável:', error);
     res.status(500).json({ error: 'Erro ao atualizar responsável' });
@@ -2158,19 +2199,11 @@ router.put('/site/responsaveis/:id', requireAuth, uploadMateria, async (req, res
 router.delete('/site/responsaveis/:id', requireAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const config = await readSiteConfig();
-    
-    if (!config) {
-      return res.status(500).json({ error: 'Erro ao ler configuração' });
-    }
-
-    const index = config.responsaveis.findIndex(r => r.id === id);
-    if (index === -1) {
+    const [result] = await pool.execute('DELETE FROM responsaveis WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Responsável não encontrado' });
     }
-
-    config.responsaveis.splice(index, 1);
-    await writeSiteConfig(config);
+    await syncResponsaveisToConfig();
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro ao deletar responsável:', error);

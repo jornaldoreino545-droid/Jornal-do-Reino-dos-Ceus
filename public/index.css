@@ -287,6 +287,54 @@ main .jornal-titulo h2 {
   border-color: rgba(255, 208, 0, 0.4);
 }
 
+/* Cards desativados (Em breve): fundo verde em vez de azul — todos os desativados */
+.todoscard .card.card-em-breve {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25), 0 5px 15px rgba(0, 0, 0, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+.todoscard .card.card-em-breve .card-image-wrapper {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+.todoscard .card.card-em-breve .card-content {
+  background: transparent !important;
+}
+.todoscard .card.card-em-breve:hover {
+  box-shadow: 0 30px 60px rgba(16, 185, 129, 0.35), 0 15px 30px rgba(0, 0, 0, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+.todoscard .card.card-em-breve .card-order-indicator {
+  border-color: #059669 !important;
+}
+
+/* Meta dos jornais: mês, ano, PDF, Disponível/Em breve — fonte mais visível */
+.todoscard .card .card-meta-info.jornal-meta-info {
+  font-family: 'Roboto', sans-serif;
+}
+.todoscard .card .card-meta-info.jornal-meta-info .jornal-meta-item,
+.todoscard .card .card-meta-info.jornal-meta-info .jornal-meta-status {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.todoscard .card .card-meta-info.jornal-meta-info .jornal-meta-status {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.todoscard .card .card-meta-info.jornal-meta-info .jornal-meta-disponivel {
+  color: #34d399;
+}
+.todoscard .card .card-meta-info.jornal-meta-info .jornal-meta-em-breve {
+  color: #c4b5fd;
+}
+
+.todoscard .card.card-em-breve .card-date {
+  background: rgba(5, 150, 105, 0.95) !important;
+}
+.todoscard .card.card-em-breve .card-overlay-info {
+  background: linear-gradient(to top, rgba(5, 150, 105, 0.95), rgba(5, 150, 105, 0.7), transparent) !important;
+}
+
 .todoscard .card .card-image-wrapper {
   position: relative;
   width: 100%;

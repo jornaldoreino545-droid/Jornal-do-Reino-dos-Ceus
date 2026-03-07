@@ -448,14 +448,13 @@
           // Formatar data
           const dataFormatada = dataCriacao ? dataCriacao.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '';
           
-          // Verificar se está ativo
-          const isAtivo = jornal.ativo !== false;
+          // Verificar se está ativo (MySQL pode enviar 0 ou 1)
+          const isAtivo = jornal.ativo === true || jornal.ativo === 1;
           
           return `
-            <div class="card effect loaded" role="link" tabindex="0"
-                 style="opacity: 1 !important; visibility: visible !important; display: flex !important; cursor: ${isAtivo ? 'pointer' : 'default'}; animation: fadeInSlideUp 0.6s ease-out forwards ${index * 0.05}s;"
-                 ${isAtivo ? `onclick="window.location.href='${linkCompra}'" onkeypress="if(event.key==='Enter'||event.key===' '){window.location.href='${linkCompra}'}"` : ''}>
-              <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);">
+            <div class="card effect loaded card-jornal-saibamais ${!isAtivo ? 'card-em-breve' : ''}" role="button" tabindex="0" data-ativo="${isAtivo}" data-link="${linkCompra.replace(/"/g, '&quot;')}"
+                 style="opacity: 1 !important; visibility: visible !important; display: flex !important; cursor: pointer; animation: fadeInSlideUp 0.6s ease-out forwards ${index * 0.05}s;">
+              <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: ${!isAtivo ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #00095b 0%, #001a7a 100%)'};">
                 <img src="${imagemCapa}" 
                      alt="${jornal.nome}"
                      style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease; filter: brightness(0.95) contrast(1.05);"
@@ -463,8 +462,9 @@
                 
                 <!-- Badges no canto superior -->
                 <div class="card-badges" style="position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 3;">
-                  ${isNovo ? '<span class="badge badge-novo" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Novo</span>' : ''}
-                  ${jornal.ordem && jornal.ordem <= 3 ? '<span class="badge badge-destaque" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Destaque</span>' : ''}
+                  ${!isAtivo ? '<span class="badge badge-em-breve" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Em breve</span>' : ''}
+                  ${isNovo && isAtivo ? '<span class="badge badge-novo" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Novo</span>' : ''}
+                  ${jornal.ordem && jornal.ordem <= 3 && isAtivo ? '<span class="badge badge-destaque" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Destaque</span>' : ''}
                 </div>
                 
                 <!-- Data no canto superior direito -->
@@ -487,24 +487,24 @@
                   <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; line-height: 1.6; margin: 0; text-align: center; font-family: 'Roboto', sans-serif; font-weight: 400;">${jornal.descricao.length > 150 ? jornal.descricao.substring(0, 150) + '...' : jornal.descricao}</p>
                 </div>` : ''}
                 
-                <!-- Meta informações -->
-                <div class="card-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                  <span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
+                <!-- Meta informações (mês, ano, PDF, status) -->
+                <div class="card-meta-info jornal-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
+                  <span class="jornal-meta-item" style="display: flex; align-items: center; gap: 6px; color: #ffffff; font-size: 1rem; font-weight: 600; font-family: 'Roboto', sans-serif; letter-spacing: 0.02em;">
                     <span>${jornal.mes || ''} ${jornal.ano || ''}</span>
                   </span>
-                  ${jornal.pdf ? `<span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
+                  ${jornal.pdf ? `<span class="jornal-meta-item" style="display: flex; align-items: center; gap: 6px; color: #ffffff; font-size: 1rem; font-weight: 600; font-family: 'Roboto', sans-serif; letter-spacing: 0.02em;">
                     <span>PDF</span>
                   </span>` : ''}
-                  ${isAtivo ? `<span style="display: flex; align-items: center; gap: 6px; color: #10b981; font-size: 0.85rem; font-weight: 600;">
+                  ${isAtivo ? `<span class="jornal-meta-status jornal-meta-disponivel" style="display: flex; align-items: center; gap: 6px; color: #34d399; font-size: 1rem; font-weight: 700; font-family: 'Roboto', sans-serif; letter-spacing: 0.03em; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">
                     <span>Disponível</span>
-                  </span>` : '<span style="display: flex; align-items: center; gap: 6px; color: #ef4444; font-size: 0.85rem; font-weight: 600;"><span>Indisponível</span></span>'}
+                  </span>` : '<span class="jornal-meta-status jornal-meta-em-breve" style="display: flex; align-items: center; gap: 6px; color: #c4b5fd; font-size: 1rem; font-weight: 700; font-family: \'Roboto\', sans-serif; letter-spacing: 0.03em; text-shadow: 0 1px 2px rgba(0,0,0,0.2);"><span>Em breve</span></span>'}
                 </div>
                 
-                <!-- Botão de compra -->
-                <button style="outline: none; cursor: ${isAtivo ? 'pointer' : 'not-allowed'}; border: none; width: 100%; margin-top: auto; padding: 16px 24px; position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.8px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(255, 192, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); font-weight: 600; opacity: ${isAtivo ? '1' : '0.6'};" ${!isAtivo ? 'disabled' : ''}>
-                  <a href="${linkCompra}" style="color: #000000; font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1rem; text-decoration: none; position: relative; z-index: 10; text-align: center; width: 100%; display: block;" ${!isAtivo ? 'onclick="return false;"' : ''}>
-                    ${isAtivo ? 'ADQUIRA O SEU' : 'Indisponível'}
-                  </a>
+                <!-- Botão de compra / Em breve -->
+                <button type="button" class="btn-card-saibamais" style="outline: none; cursor: pointer; border: none; width: 100%; margin-top: auto; padding: 16px 24px; position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.8px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, ${isAtivo ? '#ffc014 0%, #ffdb3c 100%' : '#6366f1 0%, #4f46e5 100%'}); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(255, 192, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); font-weight: 600;">
+                  <span style="color: #000000; font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1rem; position: relative; z-index: 10; text-align: center;">
+                    ${isAtivo ? 'ADQUIRA O SEU' : 'Em breve — Clique para mais informações'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -536,8 +536,8 @@
               return;
             }
             
-            // Filtrar apenas jornais ativos
-            const jornaisAtivos = todosJornais.filter(j => j.ativo !== false);
+            // Mostrar todos os jornais (ativos e inativos; inativos exibem "Em breve" e modal ao clicar)
+            const jornaisAtivos = todosJornais;
             
             // Agrupar jornais por ano
             const jornaisPorAno = {};
@@ -708,6 +708,47 @@
       .todoscard .card .card-image-wrapper:hover img {
         transform: scale(1.05) !important;
       }
+      
+      /* Modal Em breve (igual à página inicial) */
+      .modal-em-breve-overlay { position: fixed; inset: 0; background: rgba(0, 9, 91, 0.85); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+      .modal-em-breve-box { background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); border-radius: 20px; max-width: 420px; width: 100%; padding: 32px 28px; text-align: center; box-shadow: 0 25px 50px rgba(0, 9, 91, 0.25); position: relative; }
+      .modal-em-breve-fechar { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border: none; background: rgba(0, 9, 91, 0.08); color: #00095b; font-size: 1.5rem; line-height: 1; border-radius: 50%; cursor: pointer; }
+      .modal-em-breve-titulo { font-size: 1.75rem; font-weight: 700; color: #00095b; margin: 0 0 12px 0; }
+      .modal-em-breve-texto { font-size: 1rem; line-height: 1.6; color: #334155; margin: 0 0 8px 0; }
+      .modal-em-breve-sub { font-size: 0.9rem; color: #64748b; margin: 0 0 24px 0; }
+      .modal-em-breve-btn { padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
+      .modal-em-breve-btn:hover { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
     </style>
+    
+    <!-- Modal Em breve -->
+    <div id="modalEmBreve" class="modal-em-breve-overlay" role="dialog" aria-modal="true" style="display: none;">
+      <div class="modal-em-breve-box">
+        <button type="button" class="modal-em-breve-fechar" onclick="window.fecharModalEmBreve && window.fecharModalEmBreve();" aria-label="Fechar">&times;</button>
+        <div style="margin-bottom: 16px;"><i class='bx bx-time-five' style="font-size: 4rem; color: #059669;"></i></div>
+        <h2 class="modal-em-breve-titulo">Em breve</h2>
+        <p class="modal-em-breve-texto">Este jornal estará disponível para compra em <strong>7 dias</strong>. Agradecemos sua expectativa e interesse pelo conteúdo do Jornal do Reino dos Céus.</p>
+        <p class="modal-em-breve-sub">Volte em breve para garantir a sua edição.</p>
+        <button type="button" class="modal-em-breve-btn" onclick="window.fecharModalEmBreve && window.fecharModalEmBreve();">Entendi</button>
+      </div>
+    </div>
+    <script>
+      (function() {
+        window.abrirModalEmBreve = function() { var el = document.getElementById('modalEmBreve'); if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; } };
+        window.fecharModalEmBreve = function() { var el = document.getElementById('modalEmBreve'); if (el) { el.style.display = 'none'; document.body.style.overflow = ''; } };
+        document.body.addEventListener('click', function(e) {
+          var card = e.target.closest('.card-jornal-saibamais');
+          if (!card) return;
+          e.preventDefault();
+          if (card.getAttribute('data-ativo') === 'false') {
+            window.abrirModalEmBreve();
+          } else {
+            var link = card.getAttribute('data-link');
+            if (link) window.location.href = link;
+          }
+        });
+        var modal = document.getElementById('modalEmBreve');
+        if (modal) modal.addEventListener('click', function(e) { if (e.target === this) window.fecharModalEmBreve(); });
+      })();
+    </script>
   </body>
 </html>

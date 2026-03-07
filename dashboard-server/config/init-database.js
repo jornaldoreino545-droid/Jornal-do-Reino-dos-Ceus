@@ -135,11 +135,11 @@ async function checkTables(dbPool) {
       SELECT TABLE_NAME 
       FROM INFORMATION_SCHEMA.TABLES 
       WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME IN ('jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos', 'pdfs')
+      AND TABLE_NAME IN ('jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos', 'pdfs', 'responsaveis')
     `);
     
     const existingTables = tables.map(t => t.TABLE_NAME);
-    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos', 'pdfs'];
+    const requiredTables = ['jornais', 'videos', 'materias', 'pagamentos', 'carrossel', 'carrossel_medio', 'colunistas', 'santuarios', 'capas_jornais', 'fotos', 'pdfs', 'responsaveis'];
     const missingTables = requiredTables.filter(t => !existingTables.includes(t));
     
     if (missingTables.length > 0) {

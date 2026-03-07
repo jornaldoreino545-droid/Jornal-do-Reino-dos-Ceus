@@ -151,6 +151,20 @@ CREATE TABLE IF NOT EXISTS pdfs (
     CONSTRAINT fk_pdfs_jornal FOREIGN KEY (jornal_id) REFERENCES jornais(id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabela de Responsáveis do jornal (nome, cargo, foto — persiste após deploy)
+CREATE TABLE IF NOT EXISTS responsaveis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    cargo VARCHAR(255) NOT NULL,
+    imagem VARCHAR(500),
+    ordem INT DEFAULT 0,
+    ativo BOOLEAN DEFAULT TRUE,
+    dataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    dataAtualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_ordem (ordem),
+    INDEX idx_ativo (ativo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Tabela de capas dos jornais (fotos de capa exibidas)
 CREATE TABLE IF NOT EXISTS capas_jornais (
     id INT AUTO_INCREMENT PRIMARY KEY,
