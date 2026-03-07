@@ -1,20 +1,6 @@
 {
   "jornais": [
     {
-      "id": 15,
-      "nome": "JAILSON",
-      "mes": "Janeiro",
-      "ano": 2026,
-      "descricao": "WQQWQ",
-      "linkCompra": "",
-      "ordem": 1,
-      "ativo": 1,
-      "capa": "/api/fotos/1",
-      "pdf": "/uploads/pdfs/jornal-1772677222264-162553391.pdf",
-      "dataCriacao": "2026-03-05T02:20:22.000Z",
-      "dataAtualizacao": "2026-03-07T06:32:16.000Z"
-    },
-    {
       "id": 14,
       "nome": "RAPHAEL",
       "mes": "janeiro",
@@ -71,6 +57,20 @@
       "dataAtualizacao": "2026-03-03T17:00:13.000Z"
     },
     {
+      "id": 15,
+      "nome": "JAILSON",
+      "mes": "Janeiro",
+      "ano": 2025,
+      "descricao": "WQQWQ",
+      "linkCompra": "",
+      "ordem": 1,
+      "ativo": true,
+      "capa": "/api/fotos/1",
+      "pdf": "/uploads/pdfs/jornal-1772677222264-162553391.pdf",
+      "dataCriacao": "2026-03-05T02:20:22.000Z",
+      "dataAtualizacao": "2026-03-07T06:42:33.553Z"
+    },
+    {
       "id": 18,
       "nome": "JORNAL DE DEZEMBRO",
       "mes": "Janeiro",
@@ -78,11 +78,11 @@
       "descricao": "jubilub j ji jih ji ó o  lko",
       "linkCompra": "",
       "ordem": 10,
-      "ativo": false,
+      "ativo": 0,
       "capa": "/api/fotos/8",
       "pdf": "/api/pdfs/3",
       "dataCriacao": "2026-03-07T06:18:02.000Z",
-      "dataAtualizacao": "2026-03-07T06:32:48.897Z"
+      "dataAtualizacao": "2026-03-07T06:32:49.000Z"
     }
   ]
 }

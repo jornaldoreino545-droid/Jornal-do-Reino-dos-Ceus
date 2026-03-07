@@ -1083,9 +1083,8 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             const data = await response.json();
             console.log('Dados recebidos:', data);
             
-            // Obter o ano atual
+            // Obter o ano atual — na página inicial mostramos apenas jornais do ano corrente
             const anoAtual = new Date().getFullYear();
-            const anoAnterior = anoAtual - 1;
             console.log(`Ano atual: ${anoAtual}`);
             
             // Atualizar o título com o ano atual
@@ -1108,13 +1107,9 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               return;
             }
             
-            // Jornais do ano atual e do ano anterior (comparação numérica para evitar string vs number)
-            // Inativos mostram "Em breve" e modal ao clicar
+            // Apenas jornais do ano atual na página inicial; anos anteriores ficam em "Conheça mais"
             const jornaisAtivos = todosJornais
-              .filter(j => {
-                const ano = Number(j.ano);
-                return ano === anoAtual || ano === anoAnterior;
-              })
+              .filter(j => Number(j.ano) === anoAtual)
               .sort((a, b) => {
                 // 1. Ordenar por ordem (se existir) - menor ordem primeiro
                 if (a.ordem && b.ordem) {
@@ -1151,14 +1146,14 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             const jornais = jornaisAtivos.slice(0, 12);
             
             console.log(`Total de jornais no banco: ${todosJornais.length}`);
-            console.log(`Jornais de ${anoAnterior}/${anoAtual}: ${jornaisAtivos.length}`);
+            console.log(`Jornais de ${anoAtual} (página inicial): ${jornaisAtivos.length}`);
             console.log(`Mostrando ${jornais.length} jornais na página inicial (máximo 12)`);
             if (jornaisAtivos.length > 12) {
-              console.log(`💡 Dica: Para ver todos os ${jornaisAtivos.length} jornais, clique no botão "Conheça mais" abaixo`);
+              console.log(`💡 Para ver todos os ${jornaisAtivos.length} jornais de ${anoAtual}, clique em "Conheça mais"`);
             }
             if (jornaisAtivos.length === 0) {
-              console.log(`⚠️ Nenhum jornal publicado em ${anoAnterior}/${anoAtual} no momento`);
-              container.innerHTML = `<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal publicado no momento.</div>`;
+              console.log(`⚠️ Nenhum jornal de ${anoAtual} no momento. Outros anos em "Conheça mais".`);
+              container.innerHTML = `<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal de ${anoAtual} no momento. Clique em "Conheça mais" para ver edições de outros anos.</div>`;
               return;
             }
             
