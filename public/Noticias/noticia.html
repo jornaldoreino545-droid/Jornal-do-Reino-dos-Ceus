@@ -1,218 +1,137 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Matéria Completa</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-</head>
-<body>
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Matéria — Jornal do Reino</title>
+    <meta name="theme-color" content="#00095b" />
+    <script>/* Abertura em vídeo ao carregar/atualizar ou chegar de fora do site; nas trocas de página, a tela de carregamento (ligar/desligar no dashboard) */try{var n=performance.getEntriesByType("navigation")[0],r=n?n.type==="reload":performance.navigation.type===1,i=document.referrer&&new URL(document.referrer).origin===location.origin;var c={};try{c=JSON.parse(localStorage.getItem("jr-config"))||{}}catch(e){}var ab=!(c.abertura&&c.abertura.ativa===false),ca=!(c.carregamento&&c.carregamento.ativo===false),k=(r||!i)&&ab?"com-abertura":ca?"com-carregando":"";if(k&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add(k)}catch(e){}</script>
+    <link rel="icon" href="/Imagem/logo%20jornal.png" />
+    <link rel="preload" href="/assets/fonts/Sandra.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/tema.css" />
+    <link rel="stylesheet" href="/assets/css/paginas.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
 
-  <header class="article-header">
-    <a href="index.html" class="back">
-      <i class='bx bx-arrow-back'></i>
-      <span>Voltar para Notícias</span>
-    </a>
-  </header>
+    <main id="conteudo">
+      <article class="materia" id="articleContent" aria-live="polite">
+        <div class="container materia__container">
+          <div class="skeleton" style="height: 24px; width: 30%; margin-bottom: 16px"></div>
+          <div class="skeleton" style="height: 64px; margin-bottom: 24px"></div>
+          <div class="skeleton" style="aspect-ratio: 16/9"></div>
+        </div>
+      </article>
 
-  <main class="article-container">
-    <article id="articleContent" class="article-wrapper">
-      <!-- Conteúdo carregado via materias.json -->
-      <div class="article-loading">
-        <div class="loading-spinner"></div>
-        <p>Carregando matéria...</p>
-      </div>
-    </article>
-  </main>
+      <section class="secao secao--papel" id="maisNoticias" hidden>
+        <div class="container">
+          <header class="cabecalho-secao">
+            <span class="sobretitulo">Continue lendo</span>
+            <h2 class="titulo-secao">Mais notícias</h2>
+          </header>
+          <div class="grade-noticias" id="maisGrade"></div>
+        </div>
+      </section>
+    </main>
 
-  <script>
-    async function loadArticle(){
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
+    <div id="site-footer"></div>
 
-      const container = document.getElementById("articleContent");
+    <script src="/assets/js/layout.js"></script>
+    <script>
+      (function () {
+        'use strict';
+        var JR = window.JR;
+        var container = document.getElementById('articleContent');
 
-      try {
-        // Buscar da API do dashboard-server através do proxy do servidor principal
-        const res = await fetch("/api/site/noticias");
-        if (!res.ok) throw new Error('Erro ao carregar dados');
-        
-        const materias = await res.json();
-        const m = Array.isArray(materias) ? materias.find(x => x.id == parseInt(id)) : null;
+        function capitalizar(t) { t = String(t || 'geral'); return t.charAt(0).toUpperCase() + t.slice(1); }
 
-        if(!m){
-          container.innerHTML = `
-            <div class="article-error">
-              <i class='bx bx-error-circle'></i>
-              <h2>Matéria não encontrada</h2>
-              <p>A matéria solicitada não foi encontrada.</p>
-              <a href="index.html" class="btn-back">Voltar para Notícias</a>
-            </div>
-          `;
-          return;
+        function formatarData(data) {
+          var d = new Date(data + (String(data).length === 10 ? 'T12:00:00' : ''));
+          return isNaN(d) ? '' : d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
         }
 
-        // Formatar data
-        const dateObj = new Date(m.date);
-        const formattedDate = dateObj.toLocaleDateString('pt-BR', { 
-          day: '2-digit', 
-          month: 'long', 
-          year: 'numeric' 
-        });
-
-        // Capitalizar categoria
-        const categoryCapitalized = m.category ? m.category.charAt(0).toUpperCase() + m.category.slice(1) : 'Geral';
-        const categoryClass = m.category || 'geral';
-
-        container.innerHTML = `
-          <div class="article-header-content">
-            <div class="article-category-badge ${categoryClass}">
-              <span>${categoryCapitalized}</span>
-            </div>
-            <div class="article-meta-info">
-              <div class="meta-date">
-                <i class='bx bx-calendar'></i>
-                <span>${formattedDate}</span>
-              </div>
-              <div class="meta-separator">•</div>
-              <div class="meta-category">${categoryCapitalized}</div>
-            </div>
-          </div>
-
-          <h1 class="article-title">${m.title}</h1>
-
-          ${m.excerpt ? `<p class="article-excerpt">${m.excerpt}</p>` : ''}
-
-          ${m.image ? `
-          <div class="article-hero-wrapper">
-            <div class="article-hero" style="background-image:url('${(() => {
-              let imgUrl = m.image || '../Imagem/placeholder.jpg';
-              if (imgUrl.startsWith('./')) {
-                imgUrl = imgUrl.substring(2);
-              }
-              if (imgUrl.startsWith('/uploads')) {
-                // Manter como está, servido pelo servidor principal
-              } else if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('../')) {
-                if (!imgUrl.startsWith('/')) {
-                  imgUrl = '../' + imgUrl;
-                }
-              }
-              return imgUrl;
-            })()}')">
-              <div class="article-hero-overlay"></div>
-            </div>
-          </div>
-          ` : ''}
-
-          <div class="article-body">
-            ${(() => {
-              const content = m.content || '<p>Conteúdo não disponível.</p>';
-              // Se o conteúdo já for HTML, usar como está
-              // Se não, converter quebras de linha para parágrafos
-              if (content.includes('<') && content.includes('>')) {
-                return content;
-              } else {
-                // Converter quebras de linha duplas em parágrafos
-                return content
-                  .split(/\n\n+/)
-                  .map(para => para.trim())
-                  .filter(para => para.length > 0)
-                  .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
-                  .join('');
-              }
-            })()}
-          </div>
-
-          <div class="article-footer">
-            <div class="article-share">
-              <span>Compartilhar:</span>
-              <div class="share-buttons">
-                <button class="share-btn" onclick="shareWhatsApp()" title="Compartilhar no WhatsApp">
-                  <i class='bx bxl-whatsapp'></i>
-                </button>
-                <button class="share-btn" onclick="shareFacebook()" title="Compartilhar no Facebook">
-                  <i class='bx bxl-facebook'></i>
-                </button>
-                <button class="share-btn" onclick="shareTwitter()" title="Compartilhar no Twitter">
-                  <i class='bx bxl-twitter'></i>
-                </button>
-                <button class="share-btn" onclick="copyLink(event)" title="Copiar link">
-                  <i class='bx bx-link'></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-
-        // Adicionar tratamento de erro para a imagem
-        const heroDiv = container.querySelector('.article-hero');
-        if (heroDiv && m.image) {
-          const img = new Image();
-          img.onerror = function() {
-            heroDiv.style.backgroundImage = "url('../Imagem/placeholder.jpg')";
-          };
-          img.src = m.image;
+        // O conteúdo vem do painel: se já for HTML usa como está, senão converte parágrafos.
+        function corpo(conteudo) {
+          if (!conteudo) return '<p>Conteúdo não disponível.</p>';
+          return /<[a-z][\s\S]*>/i.test(conteudo) ? conteudo : JR.textoParaHtml(conteudo);
         }
 
-      } catch (error) {
-        console.error('Erro ao carregar matéria:', error);
-        container.innerHTML = `
-          <div class="article-error">
-            <i class='bx bx-error-circle'></i>
-            <h2>Erro ao carregar matéria</h2>
-            <p>Ocorreu um erro ao carregar o conteúdo. Por favor, tente novamente.</p>
-            <a href="index.html" class="btn-back">Voltar para Notícias</a>
-          </div>
-        `;
-      }
-    }
-
-    function shareWhatsApp() {
-      const url = encodeURIComponent(window.location.href);
-      const title = encodeURIComponent(document.querySelector('.article-title')?.textContent || '');
-      window.open(`https://wa.me/?text=${title}%20${url}`, '_blank');
-    }
-
-    function shareFacebook() {
-      const url = encodeURIComponent(window.location.href);
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-    }
-
-    function shareTwitter() {
-      const url = encodeURIComponent(window.location.href);
-      const title = encodeURIComponent(document.querySelector('.article-title')?.textContent || '');
-      window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank');
-    }
-
-    function copyLink(e) {
-      const btn = e ? e.target.closest('.share-btn') : null;
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        if (btn) {
-          const originalHTML = btn.innerHTML;
-          btn.innerHTML = '<i class="bx bx-check"></i>';
-          btn.style.background = '#10b981';
-          btn.style.borderColor = '#10b981';
-          btn.style.color = 'white';
-          setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.style.background = '';
-            btn.style.borderColor = '';
-            btn.style.color = '';
-          }, 2000);
+        function erro(titulo, texto) {
+          container.innerHTML = '<div class="container"><div class="estado" style="padding: 100px 20px">' +
+            '<i class="bx bx-error-circle"></i><h2 class="titulo-secao" style="margin-bottom: 10px">' + titulo + '</h2>' +
+            '<p>' + texto + '</p><a class="btn btn--azul" style="margin-top: 24px" href="/Noticias/index.html">Voltar para Notícias</a></div></div>';
         }
-      }).catch(err => {
-        alert('Erro ao copiar link. Por favor, copie manualmente: ' + window.location.href);
-      });
-    }
 
-    // Carregar matéria quando a página estiver pronta
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadArticle);
-    } else {
-      loadArticle();
-    }
-  </script>
+        function renderizar(m) {
+          document.title = m.title + ' — Jornal do Reino';
+          var url = location.href;
+          var img = JR.urlImagem(m.image);
 
-</body>
+          container.innerHTML =
+            '<div class="container materia__container">' +
+              '<nav class="migalhas migalhas--escura" aria-label="Você está em"><a href="/">Início</a><span>/</span><a href="/Noticias/index.html">Notícias</a></nav>' +
+              '<span class="materia__cat">' + JR.escapar(capitalizar(m.category)) + '</span>' +
+              '<h1 class="materia__titulo">' + JR.escapar(m.title || '') + '</h1>' +
+              (m.excerpt ? '<p class="materia__linha-fina">' + JR.escapar(m.excerpt) + '</p>' : '') +
+              '<div class="materia__meta">' +
+                '<span><i class="bx bx-calendar"></i> ' + formatarData(m.date) + '</span>' +
+                '<span><i class="bx bx-news"></i> Jornal do Reino</span>' +
+              '</div>' +
+              (img ? '<figure class="materia__capa"><img src="' + JR.escapar(img) + '" alt="" onerror="this.closest(\'figure\').remove()"></figure>' : '') +
+              '<div class="materia__corpo">' + corpo(m.content) + '</div>' +
+              '<div class="materia__compartilhar">' +
+                '<span>Compartilhe esta matéria:</span>' +
+                '<a href="https://wa.me/?text=' + encodeURIComponent((m.title || '') + ' ' + url) + '" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="bx bxl-whatsapp"></i></a>' +
+                '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '" target="_blank" rel="noopener" aria-label="Facebook"><i class="bx bxl-facebook"></i></a>' +
+                '<button type="button" id="copiarLink" aria-label="Copiar link"><i class="bx bx-link"></i></button>' +
+              '</div>' +
+              '<a class="btn btn--contorno-azul btn--sm" href="/Noticias/index.html"><i class="bx bx-left-arrow-alt"></i> Voltar para Notícias</a>' +
+            '</div>';
+
+          document.getElementById('copiarLink').addEventListener('click', function () {
+            var b = this;
+            navigator.clipboard.writeText(url).then(function () {
+              b.innerHTML = '<i class="bx bx-check"></i>';
+              setTimeout(function () { b.innerHTML = '<i class="bx bx-link"></i>'; }, 2000);
+            });
+          });
+        }
+
+        function renderizarMais(lista, atual) {
+          var outras = lista.filter(function (n) { return String(n.id) !== String(atual.id); })
+            .sort(function (a, b) { return new Date(b.date) - new Date(a.date); })
+            .slice(0, 3);
+          if (!outras.length) return;
+          document.getElementById('maisGrade').innerHTML = outras.map(function (n) {
+            return '<a class="noticia" href="/Noticias/noticia.html?id=' + encodeURIComponent(n.id) + '">' +
+              '<div class="noticia__img"><img src="' + JR.escapar(JR.urlImagem(n.image) || '/Imagem/logo%20jornal.png') + '" alt="" loading="lazy"></div>' +
+              '<div class="noticia__corpo"><time><i class="bx bx-calendar"></i> ' + formatarData(n.date) + '</time>' +
+              '<h3>' + JR.escapar(n.title || '') + '</h3>' +
+              '<span class="noticia__ler">Ler matéria <i class="bx bx-right-arrow-alt"></i></span></div></a>';
+          }).join('');
+          document.getElementById('maisNoticias').hidden = false;
+        }
+
+        async function carregar() {
+          var id = new URLSearchParams(location.search).get('id');
+          try {
+            var lista = await JR.buscarJSON('/api/site/noticias');
+            var m = (lista || []).find(function (x) { return String(x.id) === String(id); });
+            if (!m) {
+              erro('Matéria não encontrada', 'A matéria que você procura não existe ou foi removida.');
+              return;
+            }
+            renderizar(m);
+            renderizarMais(lista, m);
+          } catch (e) {
+            console.error('Matéria:', e);
+            erro('Erro ao carregar', 'Não foi possível carregar a matéria agora. Tente novamente em instantes.');
+          }
+        }
+
+        carregar();
+      })();
+    </script>
+  </body>
 </html>

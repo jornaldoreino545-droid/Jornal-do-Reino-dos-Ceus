@@ -3,8 +3,3 @@
 /checkout/node_modules
 /dashboard-server/node_modules
 /dashboard-server/uploads/pdfs/
-**/.env
-**/.env.*
-!**/.env.example
-**/node_modules/
-dashboard-server/uploads/pdfs/

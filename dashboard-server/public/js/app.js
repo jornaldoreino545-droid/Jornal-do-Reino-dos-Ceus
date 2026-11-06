@@ -1,3 +1,11 @@
+// O app.js é carregado dinamicamente pelo index.html e pode terminar de baixar
+// DEPOIS do evento DOMContentLoaded. Esta função roda a inicialização nos dois casos
+// (antes, o painel às vezes pedia login de novo ao recarregar a página).
+function quandoPronto(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else setTimeout(fn, 0);
+}
+
 // API Base URL
 const API_BASE = '/api';
 
@@ -689,7 +697,7 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // Inicialização
-document.addEventListener('DOMContentLoaded', async () => {
+quandoPronto(async () => {
     console.log('🚀 DOM carregado, iniciando aplicação...');
     
     // Garantir que o loading overlay está oculto desde o início
@@ -2058,6 +2066,8 @@ window.openJornalModal = function(jornal = null) {
             
             const linkCompraInput = document.getElementById('linkCompra');
             if (linkCompraInput) linkCompraInput.value = jornal.linkCompra || '';
+            const precoInput = document.getElementById('precoJornal');
+            if (precoInput) precoInput.value = jornal.preco ? String(jornal.preco).replace('.', ',') : '';
             
             const ordemInput = document.getElementById('ordem');
             if (ordemInput) ordemInput.value = jornal.ordem || '';
@@ -2245,6 +2255,7 @@ async function handleSaveJornal(e) {
     formData.append('ano', document.getElementById('ano').value);
     formData.append('descricao', document.getElementById('descricao').value || '');
     formData.append('linkCompra', document.getElementById('linkCompra').value || '');
+    formData.append('preco', (document.getElementById('precoJornal') || {}).value || '');
     formData.append('ordem', document.getElementById('ordem').value || '');
     formData.append('ativo', document.getElementById('ativo').value || 'true');
     
@@ -2556,9 +2567,6 @@ window.openCarrosselModal = function(item = null) {
             const ativoInput = document.getElementById('carrosselAtivo');
             if (ativoInput) ativoInput.value = item.ativo ? 'true' : 'false';
             
-            const linkInput = document.getElementById('carrosselLink');
-            if (linkInput) linkInput.value = item.link || '';
-            
             if (item.imagem && imagemPreview) {
                 imagemPreview.innerHTML = `
                     <div style="position: relative; display: inline-block;">
@@ -2660,11 +2668,6 @@ async function handleSaveCarrossel(e) {
     const ativoInput = document.getElementById('carrosselAtivo');
     if (ativoInput) {
         formData.append('ativo', ativoInput.value || 'true');
-    }
-    
-    const linkInput = document.getElementById('carrosselLink');
-    if (linkInput && linkInput.value) {
-        formData.append('link', linkInput.value.trim());
     }
     
     // Adicionar arquivo se existir (apenas se houver arquivo selecionado)
@@ -2787,7 +2790,7 @@ async function handleSaveCarrossel(e) {
 }
 
 // Event listener para novo carrossel
-document.addEventListener('DOMContentLoaded', () => {
+quandoPronto(() => {
     const newCarrosselBtn = document.getElementById('newCarrosselBtn');
     if (newCarrosselBtn) {
         // Já temos o onclick inline, mas adicionar listener também como backup
@@ -3134,7 +3137,7 @@ window.handleSaveCarrosselMedio = async function(e) {
 };
 
 // Preview de imagem do carrossel médio
-document.addEventListener('DOMContentLoaded', () => {
+quandoPronto(() => {
     const carrosselMedioImagemInput = document.getElementById('carrosselMedioImagem');
     if (carrosselMedioImagemInput) {
         carrosselMedioImagemInput.addEventListener('change', function(e) {

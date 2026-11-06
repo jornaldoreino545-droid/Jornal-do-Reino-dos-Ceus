@@ -1,0 +1,22 @@
+{
+  "produtos": [
+    {
+      "id": 1,
+      "criadoEm": "2026-11-06T17:35:25.612Z",
+      "nome": "livro novo",
+      "categoria": "Livros",
+      "descricao": "wetertweryerywrtertuwrtyuetyuetyuety",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1793986475901-274352047.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    }
+  ]
+}

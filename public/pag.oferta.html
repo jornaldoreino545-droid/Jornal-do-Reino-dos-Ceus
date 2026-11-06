@@ -1,278 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./Loanding/Loanding.css" />
-    <link rel="stylesheet" href="./reset.css" />
-    <link rel="stylesheet" href="./pag.oferta.css" />
-    <link rel="icon" href="./Imagem/logo jornal.png">
-    <title>Igreja Reino dos Céus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oferta — Seja um provedor do Monte Maanaim</title>
+    <meta name="description" content="Seja um provedor do Monte Maanaim. Envie sua oferta ou dízimo por PIX." />
+    <meta name="theme-color" content="#00095b" />
+    <script>/* Abertura em vídeo ao carregar/atualizar ou chegar de fora do site; nas trocas de página, a tela de carregamento (ligar/desligar no dashboard) */try{var n=performance.getEntriesByType("navigation")[0],r=n?n.type==="reload":performance.navigation.type===1,i=document.referrer&&new URL(document.referrer).origin===location.origin;var c={};try{c=JSON.parse(localStorage.getItem("jr-config"))||{}}catch(e){}var ab=!(c.abertura&&c.abertura.ativa===false),ca=!(c.carregamento&&c.carregamento.ativo===false),k=(r||!i)&&ab?"com-abertura":ca?"com-carregando":"";if(k&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add(k)}catch(e){}</script>
+    <link rel="icon" href="/Imagem/logo%20jornal.png" />
+    <link rel="preload" href="/assets/fonts/Sandra.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/tema.css" />
+    <link rel="stylesheet" href="/assets/css/paginas.css" />
   </head>
   <body>
-    <!-- Loanding-->
-    <div class="preloader" id="preloader">
-      <div class="loader" id="loader"></div>
-    </div>
+    <div id="site-header"></div>
 
-    <header>
-      <div id="header"></div>
-      <script>
-        async function loadPart(id, file) {
-          const res = await fetch(file);
-          const html = await res.text();
-          document.getElementById(id).innerHTML = html;
-        }
-        loadPart("header", "haader,footer-principal/header.html");
-        loadPart("footer", "haader,footer-principal/footer.html");
-      </script>
-    </header>
-
-    <main>
-      <section class="oferta">
-        <div class="icon-top">
-          <i class='bx bxs-dove' style="font-size: 3rem; color: #00095b;"></i>
+    <main id="conteudo">
+      <section class="page-hero">
+        <div class="container" data-cfg="oferta">
+          <nav class="migalhas" aria-label="Você está em"><a href="/">Início</a><span>/</span><span>Oferta</span></nav>
+          <span class="sobretitulo">Contribua com a obra</span>
+          <h1>Seja um provedor do <span class="destaque">Monte Maanaim</span></h1>
+          <p>Nos ajude a manter esta obra grandiosa de Deus. Seja um provedor da Casa de Deus!</p>
         </div>
+      </section>
 
-        <div class="logodoreino">
-          <img src="./Imagem/LOGO - REINO DOS CEUS.png" alt="Logo Reino dos Céus" />
-        </div>
+      <section class="secao secao--papel">
+        <div class="container oferta">
+          <div class="oferta__qr revelar">
+            <img class="oferta__logo" src="/Imagem/LOGO%20-%20REINO%20DOS%20CEUS.png" alt="Igreja Reino dos Céus" />
+            <div class="oferta__codigo">
+              <img id="qrCode" src="/Imagem/Link_pra_pagina_principal_da_Wikipedia-PT_em_codigo_QR_b.svg" alt="QR Code PIX para oferta" />
+            </div>
+            <p><i class="bx bx-qr-scan"></i> Aponte a câmera do app do seu banco para o QR Code</p>
+          </div>
 
-        <div class="itensbaixos">
-          <div class="container">
-            <h1>Seja um provedor do <span class="highlight">Monte Maanaim</span></h1>
-            
-            <div class="qr-section">
-              <div class="qr-wrapper">
-                <img
-                  src="./Imagem/Link_pra_pagina_principal_da_Wikipedia-PT_em_codigo_QR_b.svg"
-                  alt="QR Code para PIX"
-                  class="qr-code"
-                />
-                <div class="qr-border"></div>
+          <div class="oferta__info revelar">
+            <h2 class="titulo-secao">Como ofertar</h2>
+            <ol class="passos" id="passos">
+              <li><span>1</span><div><strong>Abra o app do seu banco</strong><p>Escolha a opção PIX — pagar com QR Code ou com chave.</p></div></li>
+              <li><span>2</span><div><strong>Escaneie o QR Code ou use o CNPJ</strong><p>A oferta vai direto para a conta do Altar do Monte Maanaim.</p></div></li>
+              <li><span>3</span><div><strong>Confirme a sua oferta</strong><p>Digite o valor que você determinou no seu coração e confirme.</p></div></li>
+            </ol>
+
+            <div class="pix">
+              <div class="pix__rotulo"><i class="bx bx-transfer-alt"></i> Chave PIX (CNPJ)</div>
+              <div class="pix__linha">
+                <strong id="cnpjText">28.135.774/0001-49</strong>
+                <button class="btn btn--gold btn--sm" id="copyCnpjBtn" type="button"><i class="bx bx-copy"></i> <span>Copiar</span></button>
               </div>
             </div>
 
-            <div class="instruction-box">
-              <i class='bx bx-qr-scan' style="font-size: 1.5rem; margin-right: 10px;"></i>
-              <span>Abra o aplicativo do seu banco, aponte a câmera do seu celular para o QR-CODE e dê a sua oferta.</span>
-            </div>
-
-            <div class="info-section">
-              <div class="info-card">
-                <i class='bx bx-heart-circle' style="font-size: 2rem; color: #cf0000; margin-bottom: 15px;"></i>
-                <p>
-                  <strong>Nos ajude a manter esta obra grandiosa de Deus.</strong> Seja um provedor da Casa de Deus!
-                </p>
-                <p>
-                  Envie a sua oferta ou o seu dízimo diretamente na conta do Altar do Monte Maanaim.
-                </p>
-              </div>
-
-              <div class="pix-info">
-                <div class="pix-badge">
-                  <i class='bx bx-transfer' style="font-size: 1.5rem;"></i>
-                  <span>PIX</span>
-                </div>
-                <p class="pix-cnpj">
-                  <strong>CNPJ:</strong> <span id="cnpjText">28.135.774/0001-49</span>
-                </p>
-                <button class="copy-button" id="copyCnpjBtn" type="button" onclick="copyCnpj(event)">
-                  <i class='bx bx-copy'></i>
-                  <span>Copiar CNPJ</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="versiculo-box">
-              <i class='bx bxs-book-open' style="font-size: 1.8rem; color: #00095b; margin-bottom: 15px;"></i>
-              <p class="versiculo-text">
-                <strong>Diz a Palavra de Deus:</strong> "Cada um dê conforme determinou em seu coração, não com pesar ou por obrigação, pois Deus ama quem dá com alegria."
-              </p>
-              <p class="versiculo-reference">(2 Coríntios 9:7)</p>
-            </div>
+            <blockquote class="versiculo">
+              <i class="bx bxs-quote-alt-left"></i>
+              <p id="versiculoTexto">Cada um dê conforme determinou em seu coração, não com pesar ou por obrigação, pois Deus ama quem dá com alegria.</p>
+              <cite id="versiculoRef">2 Coríntios 9:7</cite>
+            </blockquote>
           </div>
         </div>
       </section>
     </main>
 
-    <footer>
-      <div id="footer"></div>
-    </footer>
+    <div id="site-footer"></div>
 
-    <script src="./Loanding/Loanding.js"></script>
-    
+    <script src="/assets/js/layout.js"></script>
     <script>
-      // CNPJ a ser copiado
-      const CNPJ_VALUE = '28.135.774/0001-49';
+      (function () {
+        'use strict';
+        var botao = document.getElementById('copyCnpjBtn');
+        var cnpj = document.getElementById('cnpjText');
+        var texto = cnpj.textContent.trim();
 
-      // Função para copiar CNPJ (disponível globalmente)
-      window.copyCnpj = function(event) {
-        // Prevenir comportamento padrão
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-
-        const button = document.getElementById('copyCnpjBtn');
-        const span = button ? button.querySelector('span') : null;
-        const icon = button ? button.querySelector('i') : null;
-        
-        console.log('🔵 Iniciando cópia do CNPJ:', CNPJ_VALUE);
-        console.log('🔵 Botão encontrado:', button);
-
-        // Função para atualizar feedback visual
-        function showSuccess() {
-          if (button && span) {
-            const originalText = span.textContent;
-            span.textContent = 'Copiado!';
-            button.classList.add('copied');
-            if (icon) {
-              icon.className = 'bx bx-check';
-            }
-            setTimeout(() => {
-              span.textContent = originalText;
-              button.classList.remove('copied');
-              if (icon) {
-                icon.className = 'bx bx-copy';
-              }
-            }, 3000);
+        // CNPJ, QR Code, passos e versículo vindos do dashboard
+        JR.obterConfig().then(function (cfg) {
+          var o = cfg && cfg.oferta;
+          if (!o) return;
+          if (o.cnpj) { cnpj.textContent = o.cnpj; texto = o.cnpj; }
+          if (o.qrCode) document.getElementById('qrCode').src = JR.urlImagem(o.qrCode);
+          if (Array.isArray(o.passos) && o.passos.length) {
+            document.getElementById('passos').innerHTML = o.passos.map(function (p, i) {
+              return '<li><span>' + (i + 1) + '</span><div><strong>' + JR.escapar(p.titulo || '') + '</strong><p>' + JR.escapar(p.texto || '') + '</p></div></li>';
+            }).join('');
           }
-        }
-
-        // Função fallback para copiar
-        function copyUsingFallback() {
-          try {
-            const textArea = document.createElement('textarea');
-            textArea.value = CNPJ_VALUE;
-            textArea.style.position = 'fixed';
-            textArea.style.top = '0';
-            textArea.style.left = '0';
-            textArea.style.width = '2em';
-            textArea.style.height = '2em';
-            textArea.style.padding = '0';
-            textArea.style.border = 'none';
-            textArea.style.outline = 'none';
-            textArea.style.boxShadow = 'none';
-            textArea.style.background = 'transparent';
-            textArea.style.opacity = '0';
-            textArea.style.zIndex = '-9999';
-            textArea.style.pointerEvents = 'none';
-            
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            // Para dispositivos móveis iOS
-            if (navigator.userAgent.match(/ipad|iphone/i)) {
-              const range = document.createRange();
-              range.selectNodeContents(textArea);
-              const selection = window.getSelection();
-              selection.removeAllRanges();
-              selection.addRange(range);
-              textArea.setSelectionRange(0, 999999);
-            } else {
-              textArea.select();
-            }
-            
-            const successful = document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            if (successful) {
-              console.log('✅ CNPJ copiado usando método alternativo!');
-              showSuccess();
-              return true;
-            } else {
-              throw new Error('execCommand retornou false');
-            }
-          } catch (err) {
-            console.error('❌ Erro ao copiar com fallback:', err);
-            // Último recurso: mostrar o CNPJ para copiar manualmente
-            alert('CNPJ: ' + CNPJ_VALUE + '\n\nPor favor, copie manualmente o código acima.');
-            
-            // Tentar selecionar o texto na tela
-            try {
-              const cnpjSpan = document.getElementById('cnpjText');
-              if (cnpjSpan) {
-                const range = document.createRange();
-                range.selectNodeContents(cnpjSpan);
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
-            } catch (e) {
-              console.error('Não foi possível selecionar o texto:', e);
-            }
-            return false;
-          }
-        }
-
-        // Tentar método moderno primeiro
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(CNPJ_VALUE)
-            .then(() => {
-              console.log('✅ CNPJ copiado com sucesso usando Clipboard API!');
-              showSuccess();
-            })
-            .catch(err => {
-              console.error('❌ Erro com Clipboard API:', err);
-              console.log('📋 Tentando método alternativo...');
-              copyUsingFallback();
-            });
-        } else {
-          console.log('📋 Clipboard API não disponível, usando método alternativo');
-          copyUsingFallback();
-        }
-      }
-
-      // Configurar evento quando a página carregar (backup)
-      function initCopyButton() {
-        const copyButton = document.getElementById('copyCnpjBtn');
-        if (copyButton) {
-          // Remover listeners anteriores se houver
-          const newButton = copyButton.cloneNode(true);
-          copyButton.parentNode.replaceChild(newButton, copyButton);
-          
-          // Adicionar novo listener
-          const btn = document.getElementById('copyCnpjBtn');
-          if (btn) {
-            btn.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.copyCnpj) {
-                window.copyCnpj(e);
-              }
-            });
-            console.log('✅ Event listener configurado no botão!');
-          }
-        } else {
-          console.warn('⚠️ Botão não encontrado ainda, tentando novamente...');
-          setTimeout(initCopyButton, 300);
-        }
-      }
-
-      // Inicializar quando o DOM estiver pronto
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          initCopyButton();
-          console.log('✅ DOM carregado, botão configurado');
+          var bloco = document.querySelector('.versiculo');
+          bloco.hidden = !o.versiculo;
+          if (o.versiculo) document.getElementById('versiculoTexto').textContent = o.versiculo;
+          document.getElementById('versiculoRef').textContent = o.referencia || '';
         });
-      } else {
-        initCopyButton();
-        console.log('✅ DOM já carregado, botão configurado imediatamente');
-      }
 
-      // Também tentar após load completo (garantia extra)
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          initCopyButton();
-          console.log('✅ Página totalmente carregada, verificando botão');
-        }, 200);
-      });
+        function copiarFallback() {
+          var area = document.createElement('textarea');
+          area.value = texto;
+          area.setAttribute('readonly', '');
+          area.style.position = 'fixed';
+          area.style.opacity = '0';
+          document.body.appendChild(area);
+          area.select();
+          area.setSelectionRange(0, 99999);
+          var ok = document.execCommand('copy');
+          document.body.removeChild(area);
+          return ok;
+        }
+
+        function sucesso() {
+          botao.querySelector('span').textContent = 'Copiado!';
+          botao.querySelector('i').className = 'bx bx-check';
+          setTimeout(function () {
+            botao.querySelector('span').textContent = 'Copiar';
+            botao.querySelector('i').className = 'bx bx-copy';
+          }, 2500);
+        }
+
+        botao.addEventListener('click', function () {
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(texto).then(sucesso, function () { if (copiarFallback()) sucesso(); });
+          } else if (copiarFallback()) {
+            sucesso();
+          }
+        });
+      })();
     </script>
   </body>
 </html>

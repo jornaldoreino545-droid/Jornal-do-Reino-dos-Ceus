@@ -1,93 +1,103 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Página de Notícias — Demo</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="../reset.css">
-  <link rel="stylesheet" href="../haader,footer-principal/style.css">
-  <link rel="stylesheet" href="../Loanding/Loanding.css" />
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"rel="stylesheet"/>
-</head>
-<body>
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notícias — Jornal do Reino</title>
+    <meta name="description" content="Notícias, eventos e testemunhos da Igreja Reino dos Céus." />
+    <meta name="theme-color" content="#00095b" />
+    <script>/* Abertura em vídeo ao carregar/atualizar ou chegar de fora do site; nas trocas de página, a tela de carregamento (ligar/desligar no dashboard) */try{var n=performance.getEntriesByType("navigation")[0],r=n?n.type==="reload":performance.navigation.type===1,i=document.referrer&&new URL(document.referrer).origin===location.origin;var c={};try{c=JSON.parse(localStorage.getItem("jr-config"))||{}}catch(e){}var ab=!(c.abertura&&c.abertura.ativa===false),ca=!(c.carregamento&&c.carregamento.ativo===false),k=(r||!i)&&ab?"com-abertura":ca?"com-carregando":"";if(k&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add(k)}catch(e){}</script>
+    <link rel="icon" href="/Imagem/logo%20jornal.png" />
+    <link rel="preload" href="/assets/fonts/Sandra.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/tema.css" />
+    <link rel="stylesheet" href="/assets/css/paginas.css" />
+    <link rel="stylesheet" href="/assets/css/noticias.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
 
-  <div class="preloader" id="preloader">
-    <div class="loader" id="loader"></div>
-  </div>
-
-  
-    <header>
-      <div class="header1">
-        <div class="obra-forte">
-            <h1>Uma obra <strong>forte</strong> para abalar o <strong>Brasil</strong> e o <strong>mundo</strong>. A Igreja Reino dos Céus chegou para você!.</h1>
+    <main id="conteudo" class="np">
+      <!-- ================= CABEÇALHO DO PORTAL ================= -->
+      <section class="np-topo">
+        <div class="container">
+          <div class="np-masthead">
+            <div class="np-masthead__data">
+              <i class="bx bx-calendar"></i>
+              <span id="dataHoje"></span>
+            </div>
+            <h1 class="np-masthead__titulo" id="tituloPortal">Notícias <span>do Reino</span></h1>
+            <label class="np-busca">
+              <i class="bx bx-search"></i>
+              <span class="sr-only">Pesquisar notícias</span>
+              <input id="searchInput" type="search" placeholder="Buscar notícias…" autocomplete="off" />
+            </label>
+          </div>
         </div>
-        <div class="imagem-principal">
-            <img src="../Imagem/capa-alta-qualidade.png" alt="Imagem-comp" class="imaegm-com" draggable="false">
-            <img src="../Imagem/celular-alta-qualidade.png" alt="Imagem-tab" class="Imagem-tab" draggable="false">
-        </div>
+        <nav class="np-cats" aria-label="Editorias">
+          <div class="container">
+            <div class="np-cats__lista" id="filtros" role="tablist"></div>
+          </div>
+        </nav>
+      </section>
 
-        <div class="cabeçalhocontenerwuit">
-        <div class="cabeçalhocontener">
-
-                <div class="Redes-Social">
-                    <a href="#"><i class='bx bxl-whatsapp'></i></a>
-                    <a href="https://www.facebook.com/profile.php?id=61584172030496"><i class='bx bxl-facebook-circle'></i></a>
-                    <a href="https://www.instagram.com/jornaldoreinodosceus/"><i class='bx bxl-instagram-alt' ></i></a>
-                </div>
-
-                <div class="cabeçalho">
-                    <nav class="dropdown">
-                        <h1><i class="icon icon-menu"></i> Menu </h1>
-
-                        <ul>
-                            <li> <a href="../index.html">Jornal</a></li>
-                            <li> <a href="../Noticias/index.html">Notícia </a></li>
-                            <li> <a href="../pag.colunista.html">Colunistas</a></li>
-                            <li> <a href="https://www.oracaodamadrugada.com.br/">Oração</a></li>
-                            <li> <a href="../pag.oferta.html">Oferta</a></li>
-                        </ul>
-                    </nav>
-                </div>
-        </div>
-    </div>
-</div>
-
-      <div class="tools">
-        <div class="search">
-          <i class='bx bx-search search-icon'></i>
-          <input id="searchInput" placeholder="Pesquisar título, conteúdo ou tag..." />
-        </div>
-
-        <div class="filters">
-          <div class="chip" data-filter="all">Todos</div>
-          <div class="chip" data-filter="espiritualidade">Espiritualidade</div>
-          <div class="chip" data-filter="maanaim">Maanaim</div>
-          <div class="chip" data-filter="popular">Popular</div>
+      <!-- ================= ÚLTIMAS (letreiro) ================= -->
+      <div class="np-ticker" id="ticker" hidden>
+        <div class="container np-ticker__inner">
+          <span class="np-ticker__rotulo"><i class="bx bx-broadcast"></i> Últimas</span>
+          <div class="np-ticker__trilho">
+            <div class="np-ticker__faixa" id="tickerFaixa"></div>
+          </div>
         </div>
       </div>
-    </header>
 
-    <main>
-      <section id="results" class="grid"></section>
-      <div id="pager" class="pager"></div>
-      <div id="empty" class="empty">Nenhuma matéria encontrada.</div>
+      <section class="np-conteudo">
+        <div class="container">
+          <!-- Manchete + secundárias (só sem busca/filtro) -->
+          <div class="np-abertura" id="abertura-noticias" aria-live="polite">
+            <div class="skeleton np-skel-manchete"></div>
+            <div class="np-secundarias">
+              <div class="skeleton np-skel-sec"></div>
+              <div class="skeleton np-skel-sec"></div>
+              <div class="skeleton np-skel-sec"></div>
+            </div>
+          </div>
+
+          <div class="np-corpo">
+            <div class="np-principal">
+              <div class="np-titulo-bloco">
+                <h2 id="tituloLista">Últimas notícias</h2>
+                <span id="contagem"></span>
+              </div>
+              <div class="np-lista" id="results"></div>
+              <div class="estado" id="empty" hidden><i class="bx bx-search-alt"></i>Nenhuma notícia encontrada.</div>
+              <div class="np-mais">
+                <button class="btn btn--contorno-azul" id="carregarMais" hidden>Carregar mais notícias <i class="bx bx-chevron-down"></i></button>
+              </div>
+            </div>
+
+            <aside class="np-lateral">
+              <div class="np-caixa np-edicao" id="edicaoMes" hidden></div>
+
+              <div class="np-caixa">
+                <h3 class="np-caixa__titulo">Editorias</h3>
+                <ul class="np-editorias" id="editorias"></ul>
+              </div>
+
+              <div class="np-caixa np-siga">
+                <h3 class="np-caixa__titulo">Siga o Jornal do Reino</h3>
+                <p>Acompanhe as novidades da Igreja Reino dos Céus nas redes sociais.</p>
+                <div class="np-siga__redes" id="redes"></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
     </main>
 
+    <div id="site-footer"></div>
 
-    <div id="footer"></div>
-
-    <script>
-      async function loadPart(id, file) {
-        const res = await fetch(file);
-        const html = await res.text();
-        document.getElementById(id).innerHTML = html;
-      }
-      // volta uma pasta com "../"
-      loadPart("footer", "../haader,footer-principal/footer.html");
-    </script>
-
-  <script src="script.js"></script>
-  <script src="../Loanding/Loanding.js"></script>
-</body>
+    <script src="/assets/js/layout.js"></script>
+    <script src="/Noticias/script.js"></script>
+  </body>
 </html>
