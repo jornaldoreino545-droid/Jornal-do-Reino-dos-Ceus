@@ -3,10 +3,8 @@
 /checkout/node_modules
 /dashboard-server/node_modules
 /dashboard-server/uploads/pdfs/
-
-# Variáveis de ambiente (nunca commitar chaves e senhas)
-.env
-.env.*
-!.env.example
-checkout/.env
-dashboard-server/.env
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules/
+dashboard-server/uploads/pdfs/

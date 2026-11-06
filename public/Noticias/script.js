@@ -6,28 +6,10 @@ async function loadArticles(){
   try {
     console.log('Iniciando carregamento de notícias...');
     // Buscar da API do dashboard-server através do proxy do servidor principal
-    const res = await fetch("/api/site/noticias", {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-      credentials: 'same-origin'
-    }).catch(err => {
-      // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-      if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-        console.warn('Erro de rede ao carregar notícias (pode ser extensão do navegador):', err.message);
-        throw new Error('Erro de rede ao carregar notícias');
-      }
-      throw err;
-    });
+    const res = await fetch("/api/site/noticias");
     
-    if (!res || !res.ok) {
-      if (res) {
-        throw new Error(`Erro HTTP: ${res.status}`);
-      } else {
-        throw new Error('Erro de rede ao carregar notícias');
-      }
+    if (!res.ok) {
+      throw new Error(`Erro HTTP: ${res.status}`);
     }
     
     const data = await res.json();
@@ -43,32 +25,8 @@ async function loadArticles(){
       date: noticia.date || new Date().toISOString().split('T')[0],
       category: (noticia.category || 'geral').toLowerCase(),
       tag: noticia.tag || '',
-      image: noticia.image || '',
-      created_at: noticia.created_at || null
+      image: noticia.image || ''
     })) : [];
-    
-    // Garantir ordenação por data decrescente (mais recente primeiro)
-    // Isso é uma garantia caso o backend não tenha ordenado corretamente
-    articles.sort((a, b) => {
-      // Priorizar created_at se existir
-      if (a.created_at && b.created_at) {
-        return new Date(b.created_at) - new Date(a.created_at);
-      }
-      if (a.created_at && !b.created_at) return -1;
-      if (!a.created_at && b.created_at) return 1;
-      
-      // Se não tiver created_at, usar date
-      if (a.date && b.date) {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateB - dateA; // Mais recente primeiro
-      }
-      if (a.date && !b.date) return -1;
-      if (!a.date && b.date) return 1;
-      
-      // Por último, usar ID (maior ID = mais recente)
-      return (b.id || 0) - (a.id || 0);
-    });
     
     console.log(`Total de notícias carregadas: ${articles.length}`);
     renderPage();
@@ -78,36 +36,7 @@ async function loadArticles(){
     try {
       const res = await fetch("data.json");
       if (res.ok) {
-        const data = await res.json();
-        articles = Array.isArray(data) ? data.map(noticia => ({
-          id: noticia.id,
-          title: noticia.title || '',
-          content: noticia.content || '',
-          excerpt: noticia.excerpt || '',
-          date: noticia.date || new Date().toISOString().split('T')[0],
-          category: (noticia.category || 'geral').toLowerCase(),
-          tag: noticia.tag || '',
-          image: noticia.image || '',
-          created_at: noticia.created_at || null
-        })) : [];
-        
-        // Garantir ordenação por data decrescente também no fallback
-        articles.sort((a, b) => {
-          if (a.created_at && b.created_at) {
-            return new Date(b.created_at) - new Date(a.created_at);
-          }
-          if (a.created_at && !b.created_at) return -1;
-          if (!a.created_at && b.created_at) return 1;
-          if (a.date && b.date) {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
-            return dateB - dateA;
-          }
-          if (a.date && !b.date) return -1;
-          if (!a.date && b.date) return 1;
-          return (b.id || 0) - (a.id || 0);
-        });
-        
+        articles = await res.json();
         console.log('Usando dados do arquivo local como fallback');
         renderPage();
       } else {
@@ -189,30 +118,16 @@ function renderArticles(list){
       if (imageUrl.startsWith('./')) {
         imageUrl = imageUrl.substring(2); // Remove ./
       }
-      // Imagem no banco (BLOB) - servida por GET /api/fotos/:id
-      if (imageUrl.startsWith('/api/fotos/')) {
-        // Manter como está
-      } else if (imageUrl.startsWith('/uploads')) {
-        // Manter como está - servido pelo servidor principal na rota /uploads
+      
+      // Se começar com /uploads, manter como está (servido pelo servidor principal)
+      if (imageUrl.startsWith('/uploads')) {
+        // Manter como está - será servido pelo servidor principal na rota /uploads
       } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('../') && !imageUrl.startsWith('/')) {
+        // Se não começar com /, ../ ou http, adicionar ../
         imageUrl = '../' + imageUrl;
       }
     } else {
       imageUrl = '../Imagem/placeholder.jpg';
-    }
-    
-    // Construir URL completa da notícia
-    const basePath = window.location.pathname.replace(/\/[^\/]*$/, '/');
-    const articleUrl = `${window.location.origin}${basePath}noticia.html?id=${a.id}`;
-    const articleTitle = (a.title || 'Sem título').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    // Normalizar URL da imagem para compartilhamento
-    let articleImage = imageUrl;
-    if (!imageUrl.startsWith('http')) {
-      if (imageUrl.startsWith('/')) {
-        articleImage = `${window.location.origin}${imageUrl}`;
-      } else {
-        articleImage = `${window.location.origin}${basePath}${imageUrl}`;
-      }
     }
     
     card.innerHTML = `
@@ -221,9 +136,6 @@ function renderArticles(list){
           ${isNew ? '<span class="new-badge">Novo</span>' : ''}
           <span class="category-badge ${a.category || ''}">${categoryCapitalized.toUpperCase()}</span>
         </div>
-        <button class="share-btn-card" onclick="shareArticle(${a.id}, '${articleTitle}', '${articleUrl}', '${articleImage}')" title="Compartilhar">
-          <i class='bx bx-share-alt'></i>
-        </button>
       </div>
       <div class="body">
         <div class="meta">
@@ -236,12 +148,10 @@ function renderArticles(list){
         </div>
         <h3>${a.title || 'Sem título'}</h3>
         <p>${a.excerpt || a.description || 'Leia a matéria completa para mais informações.'}</p>
-        <div class="card-actions">
-          <button class="btn" onclick="window.location='noticia.html?id=${a.id}'">
-            <i class='bx bx-book-reader' style="font-size: 1.1rem; margin-right: 8px; vertical-align: middle;"></i>
-            Ler matéria
-          </button>
-        </div>
+        <button class="btn" onclick="window.location='noticia.html?id=${a.id}'">
+          <i class='bx bx-book-reader' style="font-size: 1.1rem; margin-right: 8px; vertical-align: middle;"></i>
+          Ler matéria
+        </button>
       </div>
     `;
     
@@ -314,148 +224,5 @@ document.getElementById("searchInput").oninput = ()=> {
   currentPage = 1; // Resetar página ao pesquisar
   doSearch();
 };
-
-// Função global para compartilhar artigo
-async function shareArticle(id, title, url, image) {
-  // Decodificar título (remover escape de aspas)
-  const decodedTitle = title.replace(/\\'/g, "'").replace(/&quot;/g, '"');
-  
-  const shareData = {
-    title: decodedTitle,
-    text: decodedTitle,
-    url: url
-  };
-  
-  // Tentar usar Web Share API (mobile)
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData);
-      return;
-    } catch (err) {
-      // Usuário cancelou ou erro - usar fallback
-      if (err.name !== 'AbortError') {
-        console.log('Erro ao compartilhar:', err);
-      }
-    }
-  }
-  
-  // Fallback: mostrar modal com opções de compartilhamento
-  showShareModal(decodedTitle, url, image);
-}
-
-// Função para mostrar modal de compartilhamento
-function showShareModal(title, url, image) {
-  // Remover modal existente se houver
-  const existingModal = document.getElementById('shareModal');
-  if (existingModal) {
-    existingModal.remove();
-  }
-  
-  // Criar modal
-  const modal = document.createElement('div');
-  modal.id = 'shareModal';
-  modal.className = 'share-modal-overlay';
-  modal.innerHTML = `
-    <div class="share-modal">
-      <div class="share-modal-header">
-        <h3>Compartilhar</h3>
-        <button class="share-modal-close" onclick="closeShareModal()">
-          <i class='bx bx-x'></i>
-        </button>
-      </div>
-      <div class="share-modal-content">
-        <div class="share-options">
-          <button class="share-option-btn" onclick="shareToWhatsApp('${url}', '${title.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" title="WhatsApp">
-            <i class='bx bxl-whatsapp'></i>
-            <span>WhatsApp</span>
-          </button>
-          <button class="share-option-btn" onclick="shareToFacebook('${url}')" title="Facebook">
-            <i class='bx bxl-facebook'></i>
-            <span>Facebook</span>
-          </button>
-          <button class="share-option-btn" onclick="shareToTwitter('${url}', '${title.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" title="Twitter/X">
-            <i class='bx bxl-twitter'></i>
-            <span>Twitter/X</span>
-          </button>
-          <button class="share-option-btn" onclick="copyArticleLink('${url}')" title="Copiar link">
-            <i class='bx bx-link'></i>
-            <span>Copiar link</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  // Fechar ao clicar fora
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) {
-      closeShareModal();
-    }
-  });
-  
-  // Fechar com ESC
-  document.addEventListener('keydown', function escHandler(e) {
-    if (e.key === 'Escape') {
-      closeShareModal();
-      document.removeEventListener('keydown', escHandler);
-    }
-  });
-}
-
-// Função para fechar modal
-function closeShareModal() {
-  const modal = document.getElementById('shareModal');
-  if (modal) {
-    modal.remove();
-  }
-}
-
-// Funções de compartilhamento específicas
-function shareToWhatsApp(url, title) {
-  // Decodificar título
-  const decodedTitle = title.replace(/\\'/g, "'").replace(/&quot;/g, '"');
-  const text = encodeURIComponent(`${decodedTitle} - ${url}`);
-  window.open(`https://wa.me/?text=${text}`, '_blank');
-  closeShareModal();
-}
-
-function shareToFacebook(url) {
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-  closeShareModal();
-}
-
-function shareToTwitter(url, title) {
-  // Decodificar título
-  const decodedTitle = title.replace(/\\'/g, "'").replace(/&quot;/g, '"');
-  const text = encodeURIComponent(decodedTitle);
-  window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${text}`, '_blank');
-  closeShareModal();
-}
-
-function copyArticleLink(url) {
-  navigator.clipboard.writeText(url).then(() => {
-    // Feedback visual
-    const btn = document.querySelector('.share-option-btn:last-child');
-    if (btn) {
-      const originalHTML = btn.innerHTML;
-      btn.innerHTML = '<i class="bx bx-check"></i><span>Copiado!</span>';
-      btn.style.background = '#10b981';
-      btn.style.borderColor = '#10b981';
-      btn.style.color = 'white';
-      setTimeout(() => {
-        btn.innerHTML = originalHTML;
-        btn.style.background = '';
-        btn.style.borderColor = '';
-        btn.style.color = '';
-        closeShareModal();
-      }, 1500);
-    }
-  }).catch(err => {
-    console.error('Erro ao copiar link:', err);
-    alert('Erro ao copiar link. Por favor, copie manualmente: ' + url);
-  });
-}
 
 loadArticles();

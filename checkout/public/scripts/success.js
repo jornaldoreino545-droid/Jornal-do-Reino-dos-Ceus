@@ -6,8 +6,6 @@ const paymentIntentId = urlParams.get('payment_intent');
 const productId = urlParams.get('product');
 const email = urlParams.get('email');
 const nome = urlParams.get('nome');
-const santuarioFromUrl = urlParams.get('santuario') || '';
-const souNovoSantuarioFromUrl = urlParams.get('souNovoSantuario') || '';
 
 // Variável global para armazenar informações do jornal
 let jornalData = null;
@@ -74,7 +72,7 @@ async function savePaymentToDashboard() {
         
         // Tentar buscar informações do jornal para obter o nome e preço
         try {
-            const response = await fetch(`/api/jornais`);
+            const response = await fetch(`http://localhost:3000/api/jornais`);
             if (response.ok) {
                 const data = await response.json();
                 const jornais = data.jornais || data || [];
@@ -89,24 +87,25 @@ async function savePaymentToDashboard() {
             console.log('Erro ao buscar informações do jornal:', err.message);
         }
         
-        // Incluir santuário e "sou novo" da URL para aparecer no comprovante do dashboard
+        // O pagamento já deve ter sido salvo quando o download foi solicitado via /api/download
+        // que busca o paymentIntent do Stripe e salva com o valor correto
+        // Aqui vamos apenas garantir que o pagamento existe, mas não vamos sobrescrever
+        // O servidor já verifica se existe e retorna o existente
         const paymentData = {
             paymentIntentId: paymentIntentId,
             nome: nome,
             email: email,
             jornalId: jornalId,
             jornalNome: jornalNome,
-            valor: valorPagamento,
+            valor: valorPagamento, // Valor do jornal como fallback (o servidor vai usar o valor do paymentIntent se já existir)
             moeda: 'BRL',
-            dataPagamento: new Date().toISOString(),
-            santuario: santuarioFromUrl || '',
-            souNovoSantuario: (souNovoSantuarioFromUrl === 'sim' || souNovoSantuarioFromUrl === '1' || souNovoSantuarioFromUrl === 'true') ? 1 : 0
+            dataPagamento: new Date().toISOString()
         };
         
         // Tentar salvar no dashboard (o servidor vai verificar se já existe e atualizar valor se necessário)
         const dashboardPaths = [
-            '/api/pagamentos', // URL relativa (funciona em produção)
-            `${window.location.origin}/api/pagamentos` // URL baseada no domínio atual
+            'http://localhost:3000/api/pagamentos',
+            '/api/pagamentos'
         ];
         
         for (const path of dashboardPaths) {
@@ -149,8 +148,9 @@ async function loadProductInfo(productId) {
             
             // Buscar jornais da API principal
             const apiPaths = [
-                '/api/jornais', // URL relativa (funciona em produção)
-                `${window.location.origin}/api/jornais` // URL baseada no domínio atual
+                'http://localhost:3000/api/jornais',
+                '/api/jornais',
+                'http://127.0.0.1:3000/api/jornais'
             ];
             
             for (const path of apiPaths) {
@@ -243,12 +243,9 @@ function setupDownloadButton() {
  */
 async function getDownloadLink() {
     try {
-        // Tentar buscar link de download da API (enviar santuário da URL para o backend salvar no comprovante)
+        // Tentar buscar link de download da API
         if (paymentIntentId && productId) {
-            let downloadApiUrl = `/api/download?payment_intent=${paymentIntentId}&product=${encodeURIComponent(productId)}`;
-            if (santuarioFromUrl) downloadApiUrl += `&santuario=${encodeURIComponent(santuarioFromUrl)}`;
-            if (souNovoSantuarioFromUrl) downloadApiUrl += `&souNovoSantuario=${encodeURIComponent(souNovoSantuarioFromUrl)}`;
-            const response = await fetch(downloadApiUrl, {
+            const response = await fetch(`/api/download?payment_intent=${paymentIntentId}&product=${productId}`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -264,21 +261,20 @@ async function getDownloadLink() {
         // Se já temos os dados do jornal carregados, usar eles
         if (jornalData && jornalData.pdf) {
             let pdfPath = jornalData.pdf;
-            if (pdfPath.startsWith('/api/pdfs/')) {
-                console.log('✅ Usando PDF do jornal (banco):', pdfPath);
-                return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
-            }
+            // Se começar com /uploads, já está correto para o servidor principal
             if (pdfPath.startsWith('/uploads/')) {
+                // Usar o caminho do servidor principal (porta 3000)
                 console.log('✅ Usando PDF do jornal:', pdfPath);
-                return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
-            }
-            if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
+                return `http://localhost:3000${pdfPath}`;
+            } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
+                // URL completa
                 console.log('✅ Usando PDF do jornal (URL completa):', pdfPath);
                 return pdfPath;
+            } else {
+                // Caminho relativo, assumir que está em /uploads/pdfs/
+                console.log('✅ Usando PDF do jornal (relativo):', pdfPath);
+                return `http://localhost:3000/uploads/pdfs/${pdfPath}`;
             }
-            console.log('✅ Usando PDF do jornal (relativo):', pdfPath);
-            const fullPath = `/uploads/pdfs/${pdfPath}`;
-            return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
         }
         
         // Fallback: tentar buscar PDF baseado no productId
@@ -288,8 +284,9 @@ async function getDownloadLink() {
             // Buscar informações do jornal para encontrar o PDF correto
             try {
                 const apiPaths = [
-                    '/api/jornais', // URL relativa (funciona em produção)
-                    `${window.location.origin}/api/jornais` // URL baseada no domínio atual
+                    'http://localhost:3000/api/jornais',
+                    '/api/jornais',
+                    'http://127.0.0.1:3000/api/jornais'
                 ];
                 
                 for (const apiPath of apiPaths) {
@@ -307,22 +304,27 @@ async function getDownloadLink() {
                                 // Se o jornal tem um campo PDF específico, usar ele
                                 if (jornal.pdf) {
                                     let pdfPath = jornal.pdf;
-                                    if (pdfPath.startsWith('/api/pdfs/')) {
-                                        return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
-                                    }
                                     if (pdfPath.startsWith('/uploads/')) {
-                                        return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(pdfPath)}`;
-                                    }
-                                    if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
+                                        console.log('✅ PDF encontrado do jornal:', pdfPath);
+                                        return `http://localhost:3000${pdfPath}`;
+                                    } else if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) {
                                         return pdfPath;
+                                    } else {
+                                        return `http://localhost:3000/uploads/pdfs/${pdfPath}`;
                                     }
-                                    const fullPath = `/uploads/pdfs/${pdfPath}`;
-                                    return `/api/download-file?payment_intent=${paymentIntentId}&file=${encodeURIComponent(fullPath)}`;
                                 }
                                 
-                                // Se não tem PDF específico, retornar erro (não usar fallback baseado em mês/ano)
-                                console.warn('⚠️ Jornal não possui campo PDF definido');
-                                return null;
+                                // Se não tem PDF específico, tentar padrão baseado em mês/ano
+                                if (jornal.mes && jornal.ano) {
+                                    const mes = jornal.mes.toUpperCase();
+                                    const ano = jornal.ano.toString().slice(-2);
+                                    const pdfPaths = [
+                                        `http://localhost:3000/download/JORNAL_DE_${mes}_${ano}.pdf`,
+                                        `/checkout/download/JORNAL_DE_${mes}_${ano}.pdf`,
+                                        `/download/JORNAL_DE_${mes}_${ano}.pdf`
+                                    ];
+                                    return pdfPaths[0];
+                                }
                             }
                             break; // Se encontrou a API, não precisa tentar outras
                         }
@@ -335,12 +337,30 @@ async function getDownloadLink() {
                 console.log('Erro ao buscar informações do jornal:', err.message);
             }
             
-            // Não usar fallback hardcoded - retornar null se não encontrar
-            console.warn('⚠️ Jornal não encontrado ou sem PDF definido');
+            // Fallback: tentar diferentes caminhos possíveis baseados no ID
+            const downloadPaths = [
+                `http://localhost:3000/uploads/pdfs/jornal-${jornalId}.pdf`,
+                `/uploads/pdfs/jornal-${jornalId}.pdf`,
+                `/download/jornal-${jornalId}.pdf`,
+                `/checkout/download/jornal-${jornalId}.pdf`
+            ];
+            
+            // Verificar qual caminho funciona
+            for (const path of downloadPaths) {
+                try {
+                    const testResponse = await fetch(path, { method: 'HEAD' });
+                    if (testResponse.ok || testResponse.status === 200) {
+                        console.log('✅ PDF encontrado em:', path);
+                        return path;
+                    }
+                } catch (err) {
+                    continue;
+                }
+            }
         }
         
-        // Retornar null se não encontrou PDF
-        return null;
+        // Último fallback: download genérico
+        return 'http://localhost:3000/download/JORNAL_DE_JANEIRO_24.pdf';
         
     } catch (error) {
         console.error('Erro ao obter link de download:', error);
