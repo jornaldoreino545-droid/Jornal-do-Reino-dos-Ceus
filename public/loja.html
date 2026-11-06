@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loja do Reino — Jornal do Reino</title>
+    <meta name="description" content="Loja do Reino: livros, blusas, calças e moletons da Igreja Reino dos Céus." />
+    <meta name="theme-color" content="#00095b" />
+    <script>/* Abertura em vídeo ao carregar/atualizar ou chegar de fora do site; nas trocas de página, a tela de carregamento (ligar/desligar no dashboard) */try{var n=performance.getEntriesByType("navigation")[0],r=n?n.type==="reload":performance.navigation.type===1,i=document.referrer&&new URL(document.referrer).origin===location.origin;var c={};try{c=JSON.parse(localStorage.getItem("jr-config"))||{}}catch(e){}var ab=!(c.abertura&&c.abertura.ativa===false),ca=!(c.carregamento&&c.carregamento.ativo===false),k=(r||!i)&&ab?"com-abertura":ca?"com-carregando":"";if(k&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add(k)}catch(e){}</script>
+    <link rel="icon" href="/Imagem/logo%20jornal.png" />
+    <link rel="preload" href="/assets/fonts/Sandra.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/tema.css" />
+    <link rel="stylesheet" href="/assets/css/paginas.css" />
+    <link rel="stylesheet" href="/assets/css/loja.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <main id="conteudo">
+      <section class="page-hero page-hero--loja">
+        <div class="container" data-cfg="loja">
+          <nav class="migalhas" aria-label="Você está em"><a href="/">Início</a><span>/</span><span>Loja</span></nav>
+          <span class="sobretitulo">Loja do Reino</span>
+          <h1>Vista a sua <span class="destaque">fé</span></h1>
+          <p>Livros, blusas, calças e moletons da Igreja Reino dos Céus. Escolha o seu e fale com a gente pelo WhatsApp.</p>
+        </div>
+      </section>
+
+      <section class="secao secao--papel loja">
+        <div class="container">
+          <!-- Categorias -->
+          <div class="loja-categorias" id="categorias" role="tablist" aria-label="Categorias"></div>
+
+          <!-- Busca e ordenação -->
+          <div class="loja-barra">
+            <label class="loja-busca">
+              <i class="bx bx-search"></i>
+              <span class="sr-only">Buscar produtos</span>
+              <input type="search" id="busca" placeholder="Buscar produtos…" autocomplete="off" />
+            </label>
+            <span class="loja-contagem" id="contagem"></span>
+            <label class="loja-ordem">
+              <span>Ordenar por</span>
+              <select id="ordem">
+                <option value="padrao">Destaques</option>
+                <option value="novos">Mais novos</option>
+                <option value="menor">Menor preço</option>
+                <option value="maior">Maior preço</option>
+                <option value="nome">Nome (A–Z)</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grade-produtos" id="produtos" aria-live="polite">
+            <div class="skeleton skeleton--produto"></div>
+            <div class="skeleton skeleton--produto"></div>
+            <div class="skeleton skeleton--produto"></div>
+            <div class="skeleton skeleton--produto"></div>
+          </div>
+          <div class="estado" id="vazio" hidden></div>
+
+          <!-- Atendimento pelo WhatsApp -->
+          <aside class="loja-atendimento revelar">
+            <span class="loja-atendimento__icone"><i class="bx bxl-whatsapp"></i></span>
+            <div>
+              <h2>Compre direto com a nossa equipe</h2>
+              <p id="avisoEntrega">Você finaliza o pedido direto com a nossa equipe pelo WhatsApp: tira dúvidas, combina pagamento e entrega ou retirada.</p>
+            </div>
+            <a class="btn btn-whats" id="whatsLoja" href="#" target="_blank" rel="noopener"><i class="bx bxl-whatsapp"></i> <span id="whatsNumero">Falar no WhatsApp</span></a>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/loja.js"></script>
+    <script>
+      (function () {
+        'use strict';
+        var JR = window.JR;
+        var $ = function (id) { return document.getElementById(id); };
+
+        var produtos = [];
+        var categoria = 'todas';
+        var cfgLoja = {};
+
+        function normalizar(t) {
+          return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        }
+
+        function filtrar() {
+          var q = normalizar($('busca').value.trim());
+          var lista = produtos.filter(function (p) {
+            if (categoria !== 'todas' && normalizar(p.categoria) !== normalizar(categoria)) return false;
+            if (!q) return true;
+            return normalizar([p.nome, p.categoria, p.descricao, (p.cores || []).join(' ')].join(' ')).indexOf(q) !== -1;
+          });
+          var ordem = $('ordem').value;
+          lista.sort(function (a, b) {
+            if (ordem === 'novos') return (b.id || 0) - (a.id || 0);
+            if (ordem === 'menor') return (Number(a.preco) || 1e9) - (Number(b.preco) || 1e9);
+            if (ordem === 'maior') return (Number(b.preco) || 0) - (Number(a.preco) || 0);
+            if (ordem === 'nome') return String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+            // "Destaques": destaques primeiro, esgotados por último, depois a ordem do dashboard
+            return (b.destaque === true) - (a.destaque === true) || (a.esgotado === true) - (b.esgotado === true) || (a.ordem || 999) - (b.ordem || 999);
+          });
+          return lista;
+        }
+
+        function renderizar() {
+          var lista = filtrar();
+          $('produtos').innerHTML = lista.map(Loja.cartao).join('');
+          $('contagem').textContent = lista.length + (lista.length === 1 ? ' produto' : ' produtos');
+          var vazio = $('vazio');
+          vazio.hidden = lista.length > 0;
+          if (!lista.length) {
+            vazio.innerHTML = produtos.length
+              ? '<i class="bx bx-search-alt"></i>Nenhum produto encontrado com esse filtro.'
+              : '<i class="bx bx-shopping-bag"></i><strong>Novidades em breve!</strong><br>Estamos preparando os produtos da Loja do Reino.';
+          }
+          JR.revelar($('produtos'));
+        }
+
+        function montarCategorias() {
+          var cats = (cfgLoja.categorias && cfgLoja.categorias.length ? cfgLoja.categorias : []).slice();
+          // Categorias usadas em produtos mas não cadastradas também aparecem
+          produtos.forEach(function (p) {
+            if (p.categoria && !cats.some(function (c) { return normalizar(c.nome) === normalizar(p.categoria); })) {
+              cats.push({ nome: p.categoria, icone: 'bx-purchase-tag' });
+            }
+          });
+          function conta(nome) {
+            return produtos.filter(function (p) { return normalizar(p.categoria) === normalizar(nome); }).length;
+          }
+          $('categorias').innerHTML =
+            '<button role="tab" data-cat="todas" class="is-active" aria-selected="true"><i class="bx bx-grid-alt"></i><span>Todos</span><small>' + produtos.length + '</small></button>' +
+            cats.map(function (c) {
+              return '<button role="tab" data-cat="' + JR.escapar(c.nome) + '" aria-selected="false"><i class="bx ' + JR.escapar(c.icone || 'bx-purchase-tag') + '"></i><span>' + JR.escapar(c.nome) + '</span><small>' + conta(c.nome) + '</small></button>';
+            }).join('');
+        }
+
+        $('categorias').addEventListener('click', function (e) {
+          var b = e.target.closest('[data-cat]');
+          if (!b) return;
+          categoria = b.dataset.cat;
+          this.querySelectorAll('button').forEach(function (x) {
+            x.classList.toggle('is-active', x === b);
+            x.setAttribute('aria-selected', x === b);
+          });
+          history.replaceState(null, '', categoria === 'todas' ? location.pathname : '?categoria=' + encodeURIComponent(categoria));
+          renderizar();
+        });
+
+        var espera;
+        $('busca').addEventListener('input', function () { clearTimeout(espera); espera = setTimeout(renderizar, 200); });
+        $('ordem').addEventListener('change', renderizar);
+
+        async function iniciar() {
+          var cfg = await JR.obterConfig();
+          cfgLoja = (cfg && cfg.loja) || {};
+
+          if (cfgLoja.ativa === false) {
+            document.querySelector('.loja').innerHTML = '<div class="container"><div class="estado" style="padding:80px 20px"><i class="bx bx-store-alt"></i><strong>A loja está fechada no momento.</strong><br>Volte em breve!</div></div>';
+            return;
+          }
+
+          if (cfgLoja.avisoEntrega) $('avisoEntrega').textContent = cfgLoja.avisoEntrega;
+          $('whatsLoja').href = Loja.linkWhatsApp(cfgLoja, null);
+          if (cfgLoja.telefoneExibicao) $('whatsNumero').textContent = cfgLoja.telefoneExibicao;
+
+          try {
+            produtos = await Loja.buscarProdutos();
+          } catch (e) {
+            console.error('Loja:', e);
+            produtos = [];
+          }
+          montarCategorias();
+
+          // Abre já filtrado se veio com ?categoria=
+          var inicial = new URLSearchParams(location.search).get('categoria');
+          if (inicial) {
+            var botao = Array.prototype.find.call($('categorias').querySelectorAll('[data-cat]'), function (b) {
+              return normalizar(b.dataset.cat) === normalizar(inicial);
+            });
+            if (botao) { botao.click(); return; }
+          }
+          renderizar();
+        }
+
+        iniciar();
+      })();
+    </script>
+  </body>
+</html>

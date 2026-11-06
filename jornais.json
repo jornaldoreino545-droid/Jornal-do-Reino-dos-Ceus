@@ -49,12 +49,12 @@
       "ano": 2025,
       "descricao": "Uma Edição que Transborda Fé, Amor e Transformação!\r\nNovas Parábolas de Jesus – Um lançamento cheio de amor e ensinamentos eternos. Turminha da Madrinha – Uma missão que transforma vidas desde cedo. Dança Profética – Adoração em movimento e fé expressa em arte. Testemunhos de Libertação – Histórias reais de fé e recomeço. Uma edição que toca, inspira e renova.\r\nSe você busca inspiração, ensinamentos edificantes e testemunhos reais do poder de Deus, esta edição é para você. Leve para casa o Jornal de Abril e permita que cada página seja uma semente plantada no seu coração — uma semente que vai florescer em fé, amor e transformação.",
       "linkCompra": "",
-      "ordem": 4,
+      "ordem": 3,
       "ativo": true,
       "capa": "/uploads/capas/capa-1767803710558-593165655.png",
       "dataCriacao": "2026-01-07T16:35:10.579Z",
       "pdf": "/uploads/pdfs/jornal-1768356280589-898079737.pdf",
-      "dataAtualizacao": "2026-01-16T16:44:17.371Z"
+      "dataAtualizacao": "2026-01-14T02:04:41.597Z"
     },
     {
       "id": 5,
@@ -153,6 +153,20 @@
       "pdf": "/uploads/pdfs/jornal-1768349673434-101639240.pdf",
       "dataCriacao": "2026-01-14T00:14:33.577Z",
       "dataAtualizacao": "2026-01-14T00:14:33.577Z"
+    },
+    {
+      "id": 13,
+      "nome": "JORNAL TESTE JAILSON",
+      "mes": "dezembro",
+      "ano": 2026,
+      "descricao": "asdasdasdasdasd",
+      "linkCompra": "",
+      "ordem": 12,
+      "ativo": true,
+      "capa": "/uploads/capas/capa-1793929072083-796308499.jpg",
+      "pdf": "/uploads/pdfs/jornal-1793929072132-148825637.pdf",
+      "dataCriacao": "2026-11-06T01:37:54.869Z",
+      "dataAtualizacao": "2026-11-06T01:37:54.869Z"
     }
   ]
 }

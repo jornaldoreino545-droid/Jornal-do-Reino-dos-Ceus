@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Jornal Reino dos Céus</title>
+    <title>Painel — Jornal do Reino</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -303,6 +303,7 @@
             });
         });
     </script>
+    <link rel="stylesheet" href="/dashboard/css/painel.css">
 </head>
 <body>
     <div id="app">
@@ -318,8 +319,8 @@
                                 <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <h1 class="login-title">Bem-vindo</h1>
-                        <p class="login-subtitle">Entre com suas credenciais para acessar o dashboard</p>
+                        <h1 class="login-title">Jornal do Reino</h1>
+                        <p class="login-subtitle">Entre para gerenciar o site do jornal</p>
                     </div>
                     <form id="loginForm" class="login-form" onsubmit="event.preventDefault(); return false;">
                         <div class="form-group">
@@ -377,32 +378,84 @@
 
         <!-- Dashboard Principal -->
         <div id="dashboardScreen" class="screen hidden">
-            <header class="dashboard-header">
-                <h1>Dashboard - Gerenciamento de Jornais</h1>
+            <!-- Menu lateral -->
+            <aside class="painel-lateral" id="painelLateral">
+                <div class="painel-marca">
+                    <img src="/Imagem/logo%20jornal.png" alt="">
+                    <div>
+                        <strong>Jornal do Reino</strong>
+                        <span>Painel de controle</span>
+                    </div>
+                </div>
+
+                <nav class="painel-menu dashboard-tabs" aria-label="Menu do painel">
+                    <button class="tab-btn active" data-tab="inicio"><i class="bx bx-grid-alt"></i> Visão geral</button>
+
+                    <span class="painel-grupo">Jornal</span>
+                    <button class="tab-btn" data-tab="jornais"><i class="bx bx-book-open"></i> Edições do jornal</button>
+                    <button class="tab-btn" data-tab="pagamentos"><i class="bx bx-wallet"></i> Pagamentos</button>
+                    <button class="tab-btn" data-tab="cfg-edicoes"><i class="bx bx-purchase-tag-alt"></i> Página de edições e preço</button>
+
+                    <span class="painel-grupo">Página inicial</span>
+                    <button class="tab-btn" data-tab="cfg-inicio"><i class="bx bx-layout"></i> Seções e títulos</button>
+                    <button class="tab-btn" data-tab="carrossel"><i class="bx bx-carousel"></i> Carrossel principal</button>
+                    <button class="tab-btn" data-tab="carrossel-medio"><i class="bx bx-trophy"></i> Santuários campeões</button>
+                    <button class="tab-btn" data-tab="video"><i class="bx bx-video"></i> Vídeo</button>
+                    <button class="tab-btn" data-tab="textos"><i class="bx bx-text"></i> Sobre o jornal e a igreja</button>
+                    <button class="tab-btn" data-tab="responsaveis"><i class="bx bx-group"></i> Responsáveis</button>
+                    <button class="tab-btn" data-tab="faq"><i class="bx bx-help-circle"></i> Perguntas frequentes</button>
+                    <button class="tab-btn" data-tab="sites"><i class="bx bx-link-external"></i> Sites da igreja</button>
+                    <button class="tab-btn" data-tab="banner"><i class="bx bx-image-alt"></i> Banner promocional</button>
+
+                    <span class="painel-grupo">Loja virtual</span>
+                    <button class="tab-btn" data-tab="loja"><i class="bx bx-store-alt"></i> Produtos</button>
+                    <button class="tab-btn" data-tab="cfg-loja"><i class="bx bx-cog"></i> Configurações da loja</button>
+
+                    <span class="painel-grupo">Conteúdo</span>
+                    <button class="tab-btn" data-tab="noticias"><i class="bx bx-news"></i> Notícias</button>
+                    <button class="tab-btn" data-tab="colunistas"><i class="bx bx-user-voice"></i> Colunistas</button>
+                    <button class="tab-btn" data-tab="cfg-oferta"><i class="bx bx-donate-heart"></i> Oferta (PIX)</button>
+
+                    <span class="painel-grupo">Configurações do site</span>
+                    <button class="tab-btn" data-tab="cfg-contato"><i class="bx bx-phone"></i> Contato e redes sociais</button>
+                    <button class="tab-btn" data-tab="cfg-layout"><i class="bx bx-dock-top"></i> Topo e rodapé</button>
+                    <button class="tab-btn" data-tab="cfg-abertura"><i class="bx bx-play-circle"></i> Abertura e carregamento</button>
+                    <button class="tab-btn" data-tab="cfg-paginas"><i class="bx bx-file"></i> Títulos das páginas</button>
+                    <button class="tab-btn" data-tab="cfg-formulario"><i class="bx bx-envelope"></i> Formulário de contato</button>
+                </nav>
+            </aside>
+
+            <div class="painel-area">
+            <header class="dashboard-header painel-topo">
+                <button class="painel-menu-btn" id="painelMenuBtn" aria-label="Abrir menu"><i class="bx bx-menu"></i></button>
+                <h1 id="painelTitulo">Visão geral</h1>
                 <div class="header-actions">
+                    <a class="btn btn-secondary painel-ver-site" href="/" target="_blank" rel="noopener"><i class="bx bx-show"></i> Ver site</a>
                     <span id="userName"></span>
-                    <button id="logoutBtn" class="btn btn-secondary">Sair</button>
+                    <button id="logoutBtn" class="btn btn-secondary"><i class="bx bx-log-out"></i> Sair</button>
                 </div>
             </header>
 
             <main class="dashboard-main">
-                <div class="dashboard-tabs">
-                    <button class="tab-btn active" data-tab="jornais">Jornais</button>
-                    <button class="tab-btn" data-tab="carrossel">Carrossel</button>
-                    <button class="tab-btn" data-tab="carrossel-medio">Carrossel Médio</button>
-                    <button class="tab-btn" data-tab="video">Vídeo</button>
-                    <button class="tab-btn" data-tab="responsaveis">Responsáveis</button>
-                    <button class="tab-btn" data-tab="faq">FAQ</button>
-                    <button class="tab-btn" data-tab="sites">Sites Igreja</button>
-                    <button class="tab-btn" data-tab="textos">Textos</button>
-                    <button class="tab-btn" data-tab="banner">Banner Modal</button>
-                    <button class="tab-btn" data-tab="noticias">Notícias</button>
-                    <button class="tab-btn" data-tab="colunistas">Colunistas</button>
-                    <button class="tab-btn" data-tab="pagamentos">Pagamentos</button>
+                <!-- Visão geral -->
+                <div class="tab-content active" id="tab-inicio">
+                    <div id="painelResumo" class="painel-resumo"></div>
                 </div>
 
+                <!-- Telas de configuração (montadas por /dashboard/js/painel.js) -->
+                <div class="tab-content" id="tab-cfg-inicio"><div class="painel-form" data-form="inicio"></div></div>
+                <div class="tab-content" id="tab-cfg-edicoes"><div class="painel-form" data-form="edicoes"></div></div>
+                <div class="tab-content" id="tab-cfg-oferta"><div class="painel-form" data-form="oferta"></div></div>
+                <div class="tab-content" id="tab-cfg-contato"><div class="painel-form" data-form="contato"></div></div>
+                <div class="tab-content" id="tab-cfg-layout"><div class="painel-form" data-form="layout"></div></div>
+                <div class="tab-content" id="tab-cfg-abertura"><div class="painel-form" data-form="abertura"></div></div>
+                <div class="tab-content" id="tab-cfg-paginas"><div class="painel-form" data-form="paginas"></div></div>
+                <div class="tab-content" id="tab-cfg-formulario"><div class="painel-form" data-form="formulario"></div></div>
+                <div class="tab-content" id="tab-cfg-loja"><div class="painel-form" data-form="loja"></div></div>
+                <div class="tab-content" id="tab-loja"><div id="lojaAdmin" class="painel-loja"></div></div>
+
                 <!-- Tab Jornais -->
-                <div class="tab-content active" id="tab-jornais">
+                <div class="tab-content" id="tab-jornais">
                     <div class="dashboard-actions">
                         <button id="newJornalBtn" class="btn btn-primary" onclick="if(typeof openJornalModal === 'function') { openJornalModal(); } else { console.error('openJornalModal não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">+ Novo Jornal</button>
                     </div>
@@ -488,6 +541,7 @@
                     <div id="pagamentosList"></div>
                 </div>
             </main>
+            </div>
         </div>
     </div>
 
@@ -529,6 +583,11 @@
                 <div class="form-group">
                     <label for="linkCompra">Link de Compra</label>
                     <input type="url" id="linkCompra" name="linkCompra">
+                </div>
+                <div class="form-group">
+                    <label for="precoJornal">Preço da versão digital (R$)</label>
+                    <input type="text" id="precoJornal" name="preco" inputmode="decimal" placeholder="Ex.: 10,00 — deixe vazio para usar o preço padrão">
+                    <small class="form-help">Se ficar vazio, vale o preço padrão definido em Configurações › Página de edições.</small>
                 </div>
 
                 <div class="form-group">
@@ -589,12 +648,6 @@
                     <input type="file" id="carrosselImagem" name="imagem" accept="image/*">
                     <small class="form-help">A imagem será exibida no carrossel</small>
                     <div id="carrosselImagemPreview" class="image-preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="carrosselLink">Link (Opcional)</label>
-                    <input type="url" id="carrosselLink" name="link" placeholder="https://exemplo.com">
-                    <small class="form-help">URL para onde o usuário será redirecionado ao clicar na imagem do carrossel</small>
                 </div>
 
                 <div class="modal-actions">
@@ -1010,5 +1063,7 @@
             }
         }, 500);
     </script>
+    <script src="/dashboard/js/painel.js"></script>
+    <script src="/dashboard/js/painel-loja.js"></script>
 </body>
 </html>

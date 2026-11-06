@@ -47,13 +47,6 @@
       "imagem": "/uploads/materias/materia-1768244780750-193962902.png",
       "ordem": 8,
       "ativo": true
-    },
-    {
-      "id": 9,
-      "imagem": "/uploads/materias/materia-1768527555520-888658626.png",
-      "link": "https://www.google.com/search?sca_esv=37c453c1e71916bb&sxsrf=ANbL-n4oJhw0VTArUUbK2tn5lZSQk2lT2A:1768513113039&udm=2&fbs=ADc_l-acAb_3MMOAUx0zmbUpgBqRiigBgL2I_pgQa-94zvB056b93wKmVeAAORa3GINFZT7EtWOjOKQzUFIqb90RiX8rNcs5F0v98InAxDSU2b19EEi-XSfPAAEjSTJlUNX1AVawmwufLKdtM7hW_DYxdHD5D7KGbl7E5yxIZzq7CYDOUGWY217eE0839NkCmkhEGdng8LjmSinx4LJNQmCVf09gKk-k5w&q=fundo+de+designer&sa=X&ved=2ahUKEwi2l4jfwI6SAxWVHrkGHSskLYQQtKgLegQIEBAB&biw=1920&bih=911&dpr=1&aic=0#sv=CAMSXhoyKhBlLVFUaHhVT2xveFVvZFNNMg5RVGh4VU9sb3hVb2RTTToOQ2FjZUxjcDNCQWZZLU0gBCokCg5WMS1UZzFJMjdpOTV4TRIQZS1RVGh4VU9sb3hVb2RTTRgAMAEYByDdy6DuBDACSgoIAhACGAIgAigC",
-      "ordem": 9,
-      "ativo": true
     }
   ],
   "videoPrincipal": {
@@ -214,7 +207,7 @@
     }
   },
   "bannerModal": {
-    "imagem": "/uploads/materias/materia-1767993637066-853868420.jpg",
+    "imagem": "/uploads/materias/materia-1793930395775-917368546.jpg",
     "link": "http://localhost:3000/jornal-compra.html?id=8",
     "ativo": true
   },
@@ -314,5 +307,151 @@
       "ordem": 15,
       "ativo": true
     }
-  ]
+  ],
+  "geral": {
+    "contato": {
+      "email": "jornalreinodoseus@gmail.com",
+      "telefone": "(11) 98173-9716",
+      "whatsapp": "5511981739716",
+      "instagram": "https://www.instagram.com/jornaldoreino_/",
+      "facebook": "https://www.facebook.com/profile.php?id=61584172030496",
+      "youtube": "https://www.youtube.com/@tvreino"
+    },
+    "cabecalho": {
+      "frase": "Uma obra *forte* para abalar o *Brasil* e o *mundo*. A Igreja Reino dos Céus chegou para você!",
+      "textoBotao": "Adquira o jornal"
+    },
+    "inicio": {
+      "mostrar": {
+        "carrossel": true,
+        "vantagens": true,
+        "edicoes": true,
+        "video": true,
+        "sobreJornal": true,
+        "santuarios": true,
+        "igreja": true,
+        "equipe": true,
+        "ajuda": true,
+        "sites": true
+      },
+      "vantagens": [
+        {
+          "icone": "bxs-file-pdf",
+          "titulo": "Receba em PDF na hora",
+          "texto": "Pagou, baixou: o jornal chega no seu e-mail e no seu celular."
+        },
+        {
+          "icone": "bx-calendar-star",
+          "titulo": "Uma edição por mês",
+          "texto": "Doze edições por ano com fé, testemunhos e direção espiritual."
+        },
+        {
+          "icone": "bx-church",
+          "titulo": "Também nos santuários",
+          "texto": "A versão impressa está disponível nas igrejas Reino dos Céus."
+        }
+      ],
+      "edicoes": {
+        "sobretitulo": "Edições mais recentes",
+        "titulo": "Jornais Reino dos Céus",
+        "subtitulo": "Doze edições especiais, mês a mês, com mensagens de fé, esperança e direção espiritual.",
+        "quantidade": 8
+      },
+      "santuarios": {
+        "sobretitulo": "Campeões no evangelismo",
+        "titulo": "Santuários que levam o *Jornal do Reino*",
+        "subtitulo": "Conheça os santuários campeões no evangelismo, que levam a Palavra de Deus de porta em porta com o Jornal do Reino."
+      },
+      "equipe": {
+        "sobretitulo": "Nossa equipe",
+        "titulo": "Conheça os responsáveis",
+        "subtitulo": "A equipe que leva a informação e a Palavra até você."
+      },
+      "ajuda": {
+        "sobretitulo": "Precisa de ajuda?",
+        "titulo": "Perguntas frequentes",
+        "subtitulo": "Tire suas dúvidas de forma simples e rápida.",
+        "contatoTitulo": "Fale conosco",
+        "contatoTexto": "Mande sua mensagem, pedido de oração ou dúvida. Respondemos o quanto antes."
+      },
+      "sites": {
+        "sobretitulo": "Conheça mais",
+        "titulo": "Mais sobre a nossa igreja",
+        "subtitulo": "Visite os outros projetos e ministérios da Igreja Reino dos Céus."
+      }
+    },
+    "edicoes": {
+      "sobretitulo": "Acervo completo",
+      "titulo": "Jornais *Reino dos Céus*",
+      "subtitulo": "Edições especiais, mês a mês, com mensagens de fé, esperança e direção espiritual.",
+      "precoPadrao": 10,
+      "beneficios": [
+        {
+          "icone": "bxs-file-pdf",
+          "titulo": "Receba em PDF no seu e-mail",
+          "texto": "Ao adquirir o Jornal Reino dos Céus, você recebe a versão digital em PDF, prática para ler em qualquer dispositivo — um conteúdo preparado com carinho para fortalecer sua fé."
+        },
+        {
+          "icone": "bx-check-double",
+          "titulo": "Entrega rápida e garantida",
+          "texto": "Assim que o pagamento é confirmado, você vai direto para a página de download e baixa o jornal na hora, sem esperar dias para receber."
+        },
+        {
+          "icone": "bx-church",
+          "titulo": "Disponível também nos santuários",
+          "texto": "Se preferir, adquira o exemplar impresso nas igrejas Reino dos Céus e compartilhe esse momento de fé com sua família e comunidade."
+        }
+      ]
+    },
+    "colunistas": {
+      "sobretitulo": "Colunistas do mês",
+      "titulo": "Vozes que falam em nome do *Reino*",
+      "subtitulo": "Palavras de direção, fé e sabedoria de quem conduz a obra de Deus."
+    },
+    "noticias": {
+      "titulo": "Notícias *do Reino*",
+      "porPagina": 6
+    },
+    "oferta": {
+      "sobretitulo": "Contribua com a obra",
+      "titulo": "Seja um provedor do *Monte Maanaim*",
+      "subtitulo": "Nos ajude a manter esta obra grandiosa de Deus. Seja um provedor da Casa de Deus!",
+      "cnpj": "28.135.774/0001-49",
+      "qrCode": "/Imagem/Link_pra_pagina_principal_da_Wikipedia-PT_em_codigo_QR_b.svg",
+      "passos": [
+        {
+          "titulo": "Abra o app do seu banco",
+          "texto": "Escolha a opção PIX — pagar com QR Code ou com chave."
+        },
+        {
+          "titulo": "Escaneie o QR Code ou use o CNPJ",
+          "texto": "A oferta vai direto para a conta do Altar do Monte Maanaim."
+        },
+        {
+          "titulo": "Confirme a sua oferta",
+          "texto": "Digite o valor que você determinou no seu coração e confirme."
+        }
+      ],
+      "versiculo": "Cada um dê conforme determinou em seu coração, não com pesar ou por obrigação, pois Deus ama quem dá com alegria.",
+      "referencia": "2 Coríntios 9:7"
+    },
+    "rodape": {
+      "sobre": "O jornal da Igreja Reino dos Céus é dedicado a fortalecer a fé e manter nossa comunidade conectada através de conteúdos inspiradores e mensagens de esperança.",
+      "versiculo": "Para Deus nada é impossível.",
+      "referencia": "Lucas 1:37"
+    },
+    "abertura": {
+      "ativa": true,
+      "video": "/assets/video/abertura.mp4",
+      "videoCelular": "/assets/video/abertura-720.mp4",
+      "marcaEm": 12.3,
+      "frase": "A Palavra de Deus em cada página",
+      "textoBotao": "Entrar no site"
+    },
+    "carregamento": {
+      "ativo": true,
+      "texto": "Imprimindo sua edição",
+      "duracao": 2.6
+    }
+  }
 }

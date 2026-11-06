@@ -27,6 +27,7 @@ const SITE_CONFIG_FILE = path.join(__dirname, '..', '..', 'site-config.json');
 const MATERIAS_FILE = path.join(__dirname, '..', '..', 'public', 'Noticias', 'materias.json');
 const PAGAMENTOS_FILE = path.join(__dirname, '..', '..', 'pagamentos.json');
 const COLUNISTAS_FILE = path.join(__dirname, '..', '..', 'colunistas.json');
+const PRODUTOS_FILE = path.join(__dirname, '..', '..', 'produtos.json');
 
 // Funções auxiliares para trabalhar com jornais.json
 async function readJornais() {
@@ -407,7 +408,7 @@ router.post('/jornais', requireAuth, (req, res, next) => {
     console.log('Body recebido:', req.body);
     console.log('Arquivos recebidos:', req.files);
     
-    const { nome, mes, ano, descricao, linkCompra, ordem, ativo } = req.body;
+    const { nome, mes, ano, descricao, linkCompra, ordem, ativo, preco } = req.body;
     
     if (!nome || !mes || !ano) {
       return res.status(400).json({ error: 'Nome, mês e ano são obrigatórios' });
@@ -438,6 +439,7 @@ router.post('/jornais', requireAuth, (req, res, next) => {
       linkCompra: linkCompra || '',
       ordem: ordem ? parseInt(ordem) : novoId,
       ativo: ativo === 'true' || ativo === true,
+      preco: preco !== undefined && preco !== '' && !isNaN(parseFloat(String(preco).replace(',', '.'))) ? parseFloat(String(preco).replace(',', '.')) : undefined,
       capa: capaFile ? `/uploads/capas/${capaFile.filename}` : '',
       pdf: pdfFile ? `/uploads/pdfs/${pdfFile.filename}` : '',
       dataCriacao: new Date().toISOString(),
@@ -502,7 +504,7 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     console.log('Processando atualização do jornal...');
     console.log('Body recebido:', req.body);
     console.log('Arquivos recebidos:', req.files);
-    const { nome, mes, ano, descricao, linkCompra, ordem, ativo } = req.body;
+    const { nome, mes, ano, descricao, linkCompra, ordem, ativo, preco } = req.body;
     const id = parseInt(req.params.id);
 
     // Validar campos obrigatórios se fornecidos
@@ -530,6 +532,11 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
     if (mes !== undefined) jornalAtual.mes = mes;
     if (ano !== undefined) jornalAtual.ano = parseInt(ano);
     if (descricao !== undefined) jornalAtual.descricao = descricao;
+    if (preco !== undefined) {
+      const valor = parseFloat(String(preco).replace(',', '.'));
+      if (preco === '' || isNaN(valor)) delete jornalAtual.preco;
+      else jornalAtual.preco = valor;
+    }
     if (linkCompra !== undefined) jornalAtual.linkCompra = linkCompra;
     if (ordem !== undefined) jornalAtual.ordem = parseInt(ordem);
     if (ativo !== undefined) jornalAtual.ativo = ativo === 'true' || ativo === true;
@@ -707,31 +714,210 @@ async function writeMaterias(data) {
   }
 }
 
+// ==================== LOJA VIRTUAL (produtos) ====================
+// Os produtos ficam em produtos.json. Não há checkout: o site leva o cliente
+// para o WhatsApp configurado no dashboard.
+
+async function lerProdutos() {
+  try {
+    if (!(await fs.pathExists(PRODUTOS_FILE))) {
+      await fs.writeJson(PRODUTOS_FILE, { produtos: [] }, { spaces: 2 });
+      return [];
+    }
+    const dados = await fs.readJson(PRODUTOS_FILE);
+    return Array.isArray(dados.produtos) ? dados.produtos : [];
+  } catch (error) {
+    console.error('Erro ao ler produtos.json:', error);
+    return [];
+  }
+}
+
+async function salvarProdutos(produtos) {
+  await fs.writeJson(PRODUTOS_FILE, { produtos }, { spaces: 2 });
+}
+
+function listaDeTexto(v) {
+  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+  return String(v || '').split(',').map((x) => x.trim()).filter(Boolean);
+}
+
+function numeroOuNulo(v) {
+  if (v === undefined || v === null || v === '') return null;
+  const n = parseFloat(String(v).replace(',', '.'));
+  return isNaN(n) ? null : n;
+}
+
+// Monta um produto só com os campos permitidos
+function limparProduto(dados, atual) {
+  const p = Object.assign({}, atual || {});
+  if (dados.nome !== undefined) p.nome = String(dados.nome).trim();
+  if (dados.categoria !== undefined) p.categoria = String(dados.categoria).trim();
+  if (dados.descricao !== undefined) p.descricao = String(dados.descricao);
+  if (dados.preco !== undefined) p.preco = numeroOuNulo(dados.preco);
+  if (dados.precoAntigo !== undefined) p.precoAntigo = numeroOuNulo(dados.precoAntigo);
+  if (dados.imagens !== undefined) p.imagens = listaDeTexto(dados.imagens);
+  if (dados.tamanhos !== undefined) p.tamanhos = listaDeTexto(dados.tamanhos);
+  if (dados.cores !== undefined) p.cores = listaDeTexto(dados.cores);
+  if (dados.destaque !== undefined) p.destaque = dados.destaque === true || dados.destaque === 'true';
+  if (dados.esgotado !== undefined) p.esgotado = dados.esgotado === true || dados.esgotado === 'true';
+  if (dados.ativo !== undefined) p.ativo = !(dados.ativo === false || dados.ativo === 'false');
+  if (dados.ordem !== undefined) p.ordem = parseInt(dados.ordem, 10) || 0;
+  return p;
+}
+
+// Público: só produtos ativos
+router.get('/loja/produtos', async (req, res) => {
+  const produtos = (await lerProdutos()).filter((p) => p.ativo !== false);
+  res.set('Cache-Control', 'no-cache');
+  res.json(produtos);
+});
+
+router.get('/loja/produtos/:id', async (req, res) => {
+  const produto = (await lerProdutos()).find((p) => String(p.id) === String(req.params.id) && p.ativo !== false);
+  if (!produto) return res.status(404).json({ error: 'Produto não encontrado' });
+  res.json(produto);
+});
+
+// Dashboard: todos os produtos (inclusive desativados)
+router.get('/admin/loja/produtos', requireAuth, async (req, res) => {
+  res.json(await lerProdutos());
+});
+
+router.post('/admin/loja/produtos', requireAuth, async (req, res) => {
+  try {
+    const dados = req.body || {};
+    if (!dados.nome || !String(dados.nome).trim()) return res.status(400).json({ error: 'Informe o nome do produto' });
+    const produtos = await lerProdutos();
+    const novoId = produtos.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0) + 1;
+    const produto = limparProduto(Object.assign({ ativo: true, destaque: false, esgotado: false, ordem: novoId }, dados), {
+      id: novoId,
+      criadoEm: new Date().toISOString()
+    });
+    produtos.push(produto);
+    await salvarProdutos(produtos);
+    res.json({ ok: true, produto });
+  } catch (error) {
+    console.error('Erro ao criar produto:', error);
+    res.status(500).json({ error: 'Erro ao criar produto' });
+  }
+});
+
+router.put('/admin/loja/produtos/:id', requireAuth, async (req, res) => {
+  try {
+    const produtos = await lerProdutos();
+    const i = produtos.findIndex((p) => String(p.id) === String(req.params.id));
+    if (i === -1) return res.status(404).json({ error: 'Produto não encontrado' });
+    produtos[i] = limparProduto(req.body || {}, produtos[i]);
+    produtos[i].atualizadoEm = new Date().toISOString();
+    if (!produtos[i].nome) return res.status(400).json({ error: 'Informe o nome do produto' });
+    await salvarProdutos(produtos);
+    res.json({ ok: true, produto: produtos[i] });
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    res.status(500).json({ error: 'Erro ao atualizar produto' });
+  }
+});
+
+router.delete('/admin/loja/produtos/:id', requireAuth, async (req, res) => {
+  try {
+    const produtos = await lerProdutos();
+    const restantes = produtos.filter((p) => String(p.id) !== String(req.params.id));
+    if (restantes.length === produtos.length) return res.status(404).json({ error: 'Produto não encontrado' });
+    await salvarProdutos(restantes);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro ao excluir produto:', error);
+    res.status(500).json({ error: 'Erro ao excluir produto' });
+  }
+});
+
+// ==================== CONFIGURAÇÃO GERAL DO SITE ====================
+// Contatos, frase do topo, textos das seções, oferta, rodapé, abertura em
+// vídeo, tela de carregamento... (ver config/site-geral.js)
+
+const { PADRAO: GERAL_PADRAO, combinar: combinarGeral } = require('../config/site-geral');
+
+router.get('/site/config-geral', async (req, res) => {
+  try {
+    const config = await readSiteConfig();
+    const geral = combinarGeral(GERAL_PADRAO, (config && config.geral) || {});
+    // Formulário de contato (chave já existente no site-config.json)
+    geral.formulario = Object.assign({ apiKey: '', redirectTo: '', ativo: true }, (config && config.formularioContato) || {});
+    res.set('Cache-Control', 'no-cache');
+    res.json(geral);
+  } catch (error) {
+    console.error('Erro ao ler configuração geral:', error);
+    res.status(500).json({ error: 'Erro ao ler configuração geral' });
+  }
+});
+
+router.put('/site/config-geral', requireAuth, async (req, res) => {
+  try {
+    const config = await readSiteConfig();
+    if (!config) return res.status(500).json({ error: 'Erro ao ler configuração' });
+
+    const recebido = req.body || {};
+    const { formulario, ...resto } = recebido;
+
+    // Só aceita as chaves conhecidas, combinadas com o que já estava salvo
+    const atual = combinarGeral(GERAL_PADRAO, config.geral || {});
+    const novo = {};
+    Object.keys(GERAL_PADRAO).forEach((k) => {
+      novo[k] = resto[k] !== undefined ? combinarGeral(GERAL_PADRAO[k], resto[k]) : atual[k];
+    });
+    config.geral = novo;
+
+    if (formulario) {
+      config.formularioContato = {
+        apiKey: String(formulario.apiKey || ''),
+        redirectTo: String(formulario.redirectTo || ''),
+        ativo: formulario.ativo !== false
+      };
+    }
+
+    await writeSiteConfig(config);
+    res.json({ ok: true, geral: Object.assign({}, novo, { formulario: config.formularioContato }) });
+  } catch (error) {
+    console.error('Erro ao salvar configuração geral:', error);
+    res.status(500).json({ error: 'Erro ao salvar configuração geral' });
+  }
+});
+
+// Envio genérico de imagem (QR Code, ícones, fotos...) → devolve a URL
+router.post('/site/upload-imagem', requireAuth, (req, res) => {
+  uploadMateria(req, res, (erro) => {
+    if (erro) return res.status(400).json({ error: erro.message || 'Erro ao enviar a imagem' });
+    if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+    res.json({ ok: true, url: `/uploads/materias/${req.file.filename}` });
+  });
+});
+
+// Envio genérico de vídeo (abertura do site) → devolve a URL
+router.post('/site/upload-video', requireAuth, (req, res) => {
+  uploadVideo(req, res, (erro) => {
+    if (erro) {
+      const msg = erro.code === 'LIMIT_FILE_SIZE' ? 'Arquivo muito grande. Tamanho máximo: 500MB' : (erro.message || 'Erro ao enviar o vídeo');
+      return res.status(400).json({ error: msg });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Nenhum vídeo enviado' });
+    res.json({ ok: true, url: `/uploads/videos/${req.file.filename}` });
+  });
+});
+
 // ==================== CARROSSEL DE MATÉRIAS ====================
 
 router.get('/site/carrossel', async (req, res) => {
   try {
     const config = await readSiteConfig();
-    const carrosselItems = config?.carrosselMaterias || [];
-    console.log('📸 Retornando itens do carrossel:', carrosselItems.length);
-    carrosselItems.forEach((item, index) => {
-      console.log(`  Item ${index + 1}:`, { id: item.id, imagem: item.imagem, link: item.link });
-    });
-    res.json(carrosselItems);
+    res.json(config?.carrosselMaterias || []);
   } catch (error) {
-    console.error('❌ Erro ao listar carrossel:', error);
     res.status(500).json({ error: 'Erro ao listar carrossel' });
   }
 });
 
 router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
   try {
-    const { ordem, link } = req.body;
-    console.log('📝 Criando novo item do carrossel...');
-    console.log('   Ordem:', ordem);
-    console.log('   Link recebido:', link);
-    console.log('   Tem arquivo?', !!req.file);
-    
+    const { ordem } = req.body;
     const config = await readSiteConfig();
     
     if (!config) {
@@ -750,21 +936,17 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
       ? Math.max(...config.carrosselMaterias.map(c => c.id)) + 1
       : 1;
 
-    const novoItem = {
+    config.carrosselMaterias.push({
       id: novoId,
       imagem: novaImagem,
-      link: link ? link.trim() : '',
       ordem: ordem ? parseInt(ordem) : config.carrosselMaterias.length + 1,
       ativo: true
-    };
-
-    console.log('✅ Novo item criado:', novoItem);
-    config.carrosselMaterias.push(novoItem);
+    });
 
     await writeSiteConfig(config);
-    res.json({ ok: true, item: novoItem });
+    res.json({ ok: true, item: config.carrosselMaterias[config.carrosselMaterias.length - 1] });
   } catch (error) {
-    console.error('❌ Erro ao criar item do carrossel:', error);
+    console.error('Erro ao criar item do carrossel:', error);
     res.status(500).json({ error: 'Erro ao criar item' });
   }
 });
@@ -772,13 +954,7 @@ router.post('/site/carrossel', requireAuth, uploadMateria, async (req, res) => {
 router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { ordem, ativo, link } = req.body;
-    console.log('📝 Atualizando item do carrossel ID:', id);
-    console.log('   Ordem:', ordem);
-    console.log('   Ativo:', ativo);
-    console.log('   Link recebido:', link);
-    console.log('   Tem arquivo?', !!req.file);
-    
+    const { ordem, ativo } = req.body;
     const config = await readSiteConfig();
     
     if (!config) {
@@ -795,16 +971,11 @@ router.put('/site/carrossel/:id', requireAuth, uploadMateria, async (req, res) =
     }
     if (ordem !== undefined) config.carrosselMaterias[index].ordem = parseInt(ordem);
     if (ativo !== undefined) config.carrosselMaterias[index].ativo = ativo === 'true' || ativo === true;
-    if (link !== undefined) {
-      config.carrosselMaterias[index].link = link ? link.trim() : '';
-      console.log('   Link salvo:', config.carrosselMaterias[index].link);
-    }
 
-    console.log('✅ Item atualizado:', config.carrosselMaterias[index]);
     await writeSiteConfig(config);
     res.json({ ok: true, item: config.carrosselMaterias[index] });
   } catch (error) {
-    console.error('❌ Erro ao atualizar item do carrossel:', error);
+    console.error('Erro ao atualizar item do carrossel:', error);
     res.status(500).json({ error: 'Erro ao atualizar item' });
   }
 });

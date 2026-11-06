@@ -124,12 +124,19 @@ async function initializeCheckout() {
                 imagemCapa = `http://localhost:3000/JORNAIS CAPAS/JORNAL DE ${jornal.mes.toUpperCase()}.png`;
             }
             
+            // Preço padrão definido no dashboard (usado quando o jornal não tem preço próprio)
+            let precoPadrao = 10.00;
+            try {
+                const cfg = await (await fetch('/api/site/config-geral')).json();
+                if (Number(cfg && cfg.edicoes && cfg.edicoes.precoPadrao) > 0) precoPadrao = Number(cfg.edicoes.precoPadrao);
+            } catch (e) { /* mantém 10,00 */ }
+
             // Converter jornal para formato do produto
             const product = {
                 id: jornal.id,
                 nome: jornal.nome || `Jornal ${jornal.mes} ${jornal.ano}`,
                 descricao: jornal.descricao || `Edição especial de ${jornal.mes} de ${jornal.ano}. Uma edição que traz mensagens poderosas, testemunhos transformadores e direcionamento espiritual para fortalecer sua fé e abrir portas de bênçãos em ${jornal.ano}.`,
-                preco: jornal.preco || 10.00,
+                preco: jornal.preco || precoPadrao,
                 imagem: imagemCapa,
                 mes: jornal.mes,
                 ano: jornal.ano
