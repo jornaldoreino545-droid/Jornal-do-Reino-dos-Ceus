@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Dashboard</title>
+</head>
+<body>
+    <h1>Teste de Redirecionamento</h1>
+    <button onclick="testShowDashboard()">Testar showDashboard()</button>
+    <button onclick="testLogin()">Testar Login</button>
+    <div id="result"></div>
+    
+    <script>
+        function testShowDashboard() {
+            const loginScreen = document.getElementById('loginScreen');
+            const dashboardScreen = document.getElementById('dashboardScreen');
+            
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <p>Login Screen encontrado: ${!!loginScreen}</p>
+                <p>Dashboard Screen encontrado: ${!!dashboardScreen}</p>
+            `;
+            
+            if (loginScreen && dashboardScreen) {
+                loginScreen.style.display = 'none';
+                dashboardScreen.style.display = 'block';
+                result.innerHTML += '<p style="color: green;">✅ Dashboard deve estar visível agora!</p>';
+            }
+        }
+        
+        async function testLogin() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Testando login...</p>';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        email: 'jornaldoreino545@gmail.com', 
+                        password: 'ReinodosCéus@775533' 
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML += `<p>Status: ${response.status}</p>`;
+                result.innerHTML += `<p>Dados: ${JSON.stringify(data)}</p>`;
+                
+                if (data.ok) {
+                    result.innerHTML += '<p style="color: green;">✅ Login OK!</p>';
+                    
+                    // Verificar autenticação
+                    const checkResponse = await fetch('/api/auth/check', {
+                        credentials: 'include'
+                    });
+                    const authData = await checkResponse.json();
+                    result.innerHTML += `<p>Auth Check: ${JSON.stringify(authData)}</p>`;
+                }
+            } catch (error) {
+                result.innerHTML += `<p style="color: red;">Erro: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

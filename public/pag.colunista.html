@@ -44,7 +44,7 @@
     <main>
       <div class="colunista-do-mes">
         <h1>COLUNISTAS DO MÊS</h1>
-        <h2>Colunistas escolhitos para falar em nome do Reino</h2>
+        <h2>Colunistas escolhitos para fala em nome do Reino</h2>
       </div>
 
       <section class="colunistas">
@@ -84,14 +84,19 @@
           // Ordenar por ordem
           const sortedColunistas = [...colunistas].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
           
-          // Função para normalizar caminho da imagem (inclui imagens no banco: /api/fotos/:id)
+          // Função para normalizar caminho da imagem
           const getImageUrl = (imagem) => {
             if (!imagem) return '';
-            if (imagem.startsWith('http://') || imagem.startsWith('https://')) return imagem;
-            if (imagem.startsWith('/api/fotos/')) return imagem; // BLOB no banco
-            if (imagem.startsWith('/')) return imagem;
-            if (imagem.startsWith('./')) return imagem;
-            return `/${imagem}`;
+            if (imagem.startsWith('http://') || imagem.startsWith('https://')) {
+              return imagem;
+            }
+            if (imagem.startsWith('./')) {
+              return imagem.replace('./', './');
+            }
+            if (imagem.startsWith('/')) {
+              return imagem;
+            }
+            return `./${imagem}`;
           };
           
           container.innerHTML = sortedColunistas.map((colunista, index) => {
@@ -119,6 +124,14 @@
               <h1>${colunista.nome || 'Colunista'}</h1>
               <p>${colunista.conteudo || 'Conteúdo não disponível.'}</p>
               <div class="social-actions">
+                ${colunista.instagram ? `
+                <div class="icon-redessocial">
+                  <i class='bx bxl-instagram'></i>
+                  <a href="${colunista.instagram.startsWith('http') ? colunista.instagram : '#'}" target="_blank" rel="noopener noreferrer">
+                    <span class="instagram">${colunista.instagram}</span>
+                  </a>
+                </div>
+                ` : ''}
                 <button class="share-button" onclick="openShareMenu(this)" data-colunista="${colunista.nome || ''}" data-coluna="${colunista.coluna || ''}">
                   <i class='bx bx-share-alt'></i>
                   <span>Compartilhar</span>

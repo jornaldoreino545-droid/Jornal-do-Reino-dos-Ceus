@@ -100,7 +100,6 @@ window.handleLogin = async function(e) {
         if (response.ok && data && data.ok) {
             if (typeof currentUser !== 'undefined') {
                 currentUser = data.user || email;
-                currentUserEmail = data.email || email;
             }
             console.log('✅ Login bem-sucedido pela resposta!', currentUser);
             
@@ -259,7 +258,6 @@ if (typeof window.handleLogin === 'function') {
 
 // Estado da aplicação
 let currentUser = null;
-let currentUserEmail = null;
 let jornais = [];
 let editingJornal = null;
 let editingCarrossel = null;
@@ -810,7 +808,6 @@ async function checkAuth() {
         
         if (data && data.authenticated) {
             currentUser = data.user || data.email || 'Usuário';
-            currentUserEmail = data.email || data.user || 'admin@jornal.com';
             console.log('Usuário autenticado:', currentUser);
             showDashboard();
         } else {
@@ -886,34 +883,7 @@ function setupEventListeners() {
     // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        console.log('✅ Botão de logout encontrado, anexando event listener');
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🖱️ Botão de logout clicado');
-            if (typeof handleLogout === 'function') {
-                handleLogout(e);
-            } else if (typeof window.handleLogout === 'function') {
-                window.handleLogout(e);
-            } else {
-                console.error('❌ Função handleLogout não encontrada');
-                // Fallback: fazer logout diretamente
-                fetch(`${API_BASE}/logout`, {
-                    method: 'POST',
-                    credentials: 'include'
-                }).then(() => {
-                    currentUser = null;
-                    currentUserEmail = null;
-                    showLogin();
-                }).catch(() => {
-                    currentUser = null;
-                    currentUserEmail = null;
-                    showLogin();
-                });
-            }
-        });
-    } else {
-        console.warn('⚠️ Botão de logout não encontrado');
+        logoutBtn.addEventListener('click', handleLogout);
     }
     
     // Novo Jornal
@@ -1597,129 +1567,39 @@ async function verifyAndShowDashboard(email) {
 // Não é necessário redefini-la aqui - usar a definição global do início
 
 // Logout
-async function handleLogout(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    
-    console.log('🚪 Iniciando logout...');
-    
+async function handleLogout() {
     try {
-        const response = await fetch(`${API_BASE}/logout`, {
+        await fetch(`${API_BASE}/logout`, {
             method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).catch((err) => {
-            console.warn('⚠️ Erro de rede no logout (ignorado):', err);
-            return null;
+            credentials: 'include'
+        }).catch(() => {
+            // Ignorar erros de rede no logout
         });
         
-        if (response) {
-            const data = await response.json().catch(() => ({}));
-            console.log('📥 Resposta do logout:', data);
-        }
-        
         currentUser = null;
-        currentUserEmail = null;
-        
-        console.log('✅ Limpando sessão local');
         showLogin();
-        
-        if (typeof showToast === 'function') {
-            showToast('Logout realizado com sucesso', 'success');
-        }
+        showToast('Logout realizado com sucesso', 'success');
     } catch (error) {
-        console.error('❌ Erro ao fazer logout:', error);
+        console.error('Erro ao fazer logout:', error);
         currentUser = null;
-        currentUserEmail = null;
         showLogin();
     }
 }
 
-// Tornar handleLogout global
-window.handleLogout = handleLogout;
-
 // Mostrar telas
 function showLogin() {
-    console.log('=== 🎯 MOSTRANDO TELA DE LOGIN ===');
+    console.log('Mostrando tela de login');
     const loginScreen = document.getElementById('loginScreen');
     const dashboardScreen = document.getElementById('dashboardScreen');
     
-    console.log('Login screen encontrado:', !!loginScreen);
-    console.log('Dashboard screen encontrado:', !!dashboardScreen);
+    if (loginScreen) loginScreen.classList.remove('hidden');
+    if (dashboardScreen) dashboardScreen.classList.add('hidden');
     
-    if (!loginScreen) {
-        console.error('❌ Tela de login não encontrada!');
-        return;
-    }
-    
-    // Forçar ocultação do dashboard - MÚLTIPLAS FORMAS
-    if (dashboardScreen) {
-        dashboardScreen.style.display = 'none';
-        dashboardScreen.style.visibility = 'hidden';
-        dashboardScreen.style.opacity = '0';
-        dashboardScreen.classList.add('hidden');
-        console.log('✅ Dashboard ocultado');
-    }
-    
-    // Forçar exibição da tela de login - MÚLTIPLAS FORMAS
-    loginScreen.style.display = 'block';
-    loginScreen.style.visibility = 'visible';
-    loginScreen.style.opacity = '1';
-    loginScreen.classList.remove('hidden');
-    console.log('✅ Tela de login exibida');
-    console.log('Display:', loginScreen.style.display);
-    console.log('Visibility:', loginScreen.style.visibility);
-    console.log('Classes:', loginScreen.className);
-    
-    // Resetar formulário
     const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.reset();
-        console.log('✅ Formulário resetado');
-    }
-    
-    // Limpar mensagens de erro
-    const errorDiv = document.getElementById('loginError');
-    if (errorDiv) {
-        errorDiv.classList.remove('show');
-        errorDiv.textContent = '';
-    }
+    if (loginForm) loginForm.reset();
     
     // Garantir que o loading está oculto
     hideLoading();
-    
-    // Focar no campo de email
-    const emailInput = document.getElementById('email');
-    if (emailInput) {
-        setTimeout(() => {
-            emailInput.focus();
-        }, 100);
-    }
-    
-    // Verificar visualmente se está visível
-    setTimeout(() => {
-        const loginStyle = window.getComputedStyle(loginScreen);
-        const dashboardStyle = dashboardScreen ? window.getComputedStyle(dashboardScreen) : null;
-        console.log('=== VERIFICAÇÃO FINAL ===');
-        console.log('Login display (computed):', loginStyle.display);
-        console.log('Login visibility (computed):', loginStyle.visibility);
-        if (dashboardStyle) {
-            console.log('Dashboard display (computed):', dashboardStyle.display);
-            console.log('Dashboard visibility (computed):', dashboardStyle.visibility);
-        }
-        
-        // Se ainda não estiver visível, forçar novamente
-        if (loginStyle.display === 'none' || loginStyle.visibility === 'hidden') {
-            console.warn('⚠️ Tela de login ainda não visível, forçando novamente...');
-            loginScreen.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important;');
-        }
-    }, 100);
-    
-    console.log('=== ✅ TELA DE LOGIN CONFIGURADA ===');
 }
 
 function showDashboard() {
@@ -1776,14 +1656,9 @@ function showDashboard() {
     }, 100);
     
     const userNameEl = document.getElementById('userName');
-    const userEmailEl = document.getElementById('userEmail');
     if (userNameEl && currentUser) {
-        userNameEl.textContent = currentUser;
+        userNameEl.textContent = `Olá, ${currentUser}`;
         console.log('✅ Nome de usuário atualizado:', currentUser);
-    }
-    if (userEmailEl && currentUserEmail) {
-        userEmailEl.textContent = currentUserEmail;
-        console.log('✅ Email de usuário atualizado:', currentUserEmail);
     }
     
     // Garantir que o loading está oculto
@@ -1791,44 +1666,6 @@ function showDashboard() {
     
     try {
         setupTabs();
-        setupMenuToggle();
-        
-        // Garantir que o botão de logout está configurado
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            // Remover event listeners antigos
-            const newLogoutBtn = logoutBtn.cloneNode(true);
-            logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-            
-            // Anexar novo event listener
-            newLogoutBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🖱️ Botão de logout clicado');
-                if (typeof handleLogout === 'function') {
-                    handleLogout(e);
-                } else if (typeof window.handleLogout === 'function') {
-                    window.handleLogout(e);
-                } else {
-                    console.error('❌ Função handleLogout não encontrada');
-                    // Fallback: fazer logout diretamente
-                    fetch(`${API_BASE}/logout`, {
-                        method: 'POST',
-                        credentials: 'include'
-                    }).then(() => {
-                        currentUser = null;
-                        currentUserEmail = null;
-                        showLogin();
-                    }).catch(() => {
-                        currentUser = null;
-                        currentUserEmail = null;
-                        showLogin();
-                    });
-                }
-            });
-            console.log('✅ Botão de logout configurado');
-        }
-        
         console.log('✅ Tabs configuradas');
         loadJornais();
         console.log('✅ Jornais sendo carregados...');
@@ -1842,77 +1679,9 @@ function showDashboard() {
     }
 }
 
-// Setup Menu Toggle
-function setupMenuToggle() {
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.querySelector('.dashboard-sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    
-    if (menuToggle && sidebar) {
-        const toggleSidebar = () => {
-            sidebar.classList.toggle('open');
-            if (sidebarOverlay) {
-                sidebarOverlay.classList.toggle('active');
-            }
-        };
-        
-        menuToggle.addEventListener('click', toggleSidebar);
-        
-        // Fechar sidebar ao clicar no overlay (em mobile)
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', () => {
-                if (window.innerWidth <= 1024) {
-                    sidebar.classList.remove('open');
-                    sidebarOverlay.classList.remove('active');
-                }
-            });
-        }
-        
-        // Fechar sidebar ao clicar em um item do menu (em mobile)
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 1024) {
-                    sidebar.classList.remove('open');
-                    if (sidebarOverlay) {
-                        sidebarOverlay.classList.remove('active');
-                    }
-                }
-            });
-        });
-        
-        // Fechar sidebar ao redimensionar a janela (se voltar para desktop)
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 1024) {
-                sidebar.classList.remove('open');
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.remove('active');
-                }
-            }
-        });
-    }
-}
-
 // Setup Tabs
 function setupTabs() {
-    const tabButtons = document.querySelectorAll('.nav-item[data-tab]');
-    const tabTitles = {
-        'jornais': 'Jornais',
-        'carrossel': 'Carrossel',
-        'carrossel-medio': 'Carrossel Médio',
-        'video': 'Vídeo',
-        'responsaveis': 'Responsáveis',
-        'faq': 'FAQ',
-        'sites': 'Sites Igreja',
-        'textos': 'Textos',
-        'banner': 'Banner Modal',
-        'noticias': 'Notícias',
-        'colunistas': 'Colunistas',
-        'pagamentos': 'Pagamentos',
-        'santuarios': 'Santuários',
-        'verificar-banco': 'Verificar Banco de Dados'
-    };
-    
+    const tabButtons = document.querySelectorAll('.tab-btn');
     tabButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabName = btn.dataset.tab;
@@ -1924,12 +1693,6 @@ function setupTabs() {
             // Ativa a tab selecionada
             btn.classList.add('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            // Atualiza o título do dashboard
-            const titleElement = document.getElementById('dashboardTitle');
-            if (titleElement && tabTitles[tabName]) {
-                titleElement.textContent = tabTitles[tabName];
-            }
             
             // Carrega os dados da tab
             loadTabData(tabName);
@@ -1976,12 +1739,6 @@ function loadTabData(tabName) {
         case 'pagamentos':
             loadPagamentos();
             break;
-        case 'santuarios':
-            loadSantuarios();
-            break;
-        case 'verificar-banco':
-            verificarBancoDados();
-            break;
     }
 }
 
@@ -2007,32 +1764,23 @@ async function loadJornais() {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        const data = await response.json().catch(err => {
-            console.error('Erro ao processar resposta JSON:', err);
-            throw new Error('Resposta inválida do servidor');
-        });
-        
+        const data = await response.json();
         console.log('Dados recebidos:', data);
         
         // Aceitar tanto formato de objeto quanto array direto (compatibilidade)
         if (Array.isArray(data)) {
             jornais = data;
         } else if (data && data.jornais) {
-            jornais = Array.isArray(data.jornais) ? data.jornais : [];
+            jornais = data.jornais;
         } else {
             jornais = [];
         }
-        
-        // Garantir que jornais seja sempre um array
-        jornais = Array.isArray(jornais) ? jornais : [];
         
         console.log(`✅ Jornais carregados: ${jornais.length}`);
         console.log('📋 Dados dos jornais:', jornais);
         renderJornais();
     } catch (error) {
         console.error('Erro ao carregar jornais:', error);
-        // Garantir que jornais seja um array mesmo em caso de erro
-        jornais = Array.isArray(jornais) ? jornais : [];
         listDiv.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">⚠</div>
@@ -2588,8 +2336,7 @@ async function handleSaveJornal(e) {
             console.log('✅ ===== JORNAL SALVO COM SUCESSO =====');
         } else {
             console.error('❌ Erro na resposta:', data);
-            // Mostrar mensagem detalhada do servidor quando existir (ex.: erro de banco)
-            const errorMessage = data?.message || data?.error || 'Erro ao salvar jornal';
+            const errorMessage = data?.error || data?.message || 'Erro ao salvar jornal';
             
             if (response.status === 401) {
                 showToast('Sessão expirada. Por favor, faça login novamente.', 'warning');
@@ -2657,44 +2404,20 @@ let carrosselItems = [];
 
 async function loadCarrossel() {
     const listDiv = document.getElementById('carrosselList');
-    if (!listDiv) return;
     listDiv.innerHTML = '<div class="loading">Carregando...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/site/carrossel`).catch(err => {
-            console.error('Erro de rede ao carregar carrossel:', err);
-            throw err;
-        });
-        
-        if (!response || !response.ok) {
-            throw new Error('Erro ao buscar carrossel');
-        }
-        
-        const data = await response.json().catch(err => {
-            console.error('Erro ao processar resposta JSON:', err);
-            throw new Error('Resposta inválida do servidor');
-        });
-        
-        // Garantir que carrosselItems seja sempre um array
-        carrosselItems = Array.isArray(data) ? data : [];
+        const response = await fetch(`${API_BASE}/site/carrossel`);
+        carrosselItems = await response.json();
         renderCarrossel();
     } catch (error) {
         listDiv.innerHTML = '<div class="error-message">Erro ao carregar carrossel</div>';
         console.error('Erro ao carregar carrossel:', error);
-        // Garantir que carrosselItems seja um array mesmo em caso de erro
-        carrosselItems = Array.isArray(carrosselItems) ? carrosselItems : [];
     }
 }
 
 function renderCarrossel() {
     const listDiv = document.getElementById('carrosselList');
-    if (!listDiv) return;
-    
-    // Garantir que carrosselItems seja um array antes de usar .length
-    if (!Array.isArray(carrosselItems)) {
-        console.warn('⚠️ carrosselItems não é um array, convertendo...');
-        carrosselItems = [];
-    }
     
     if (carrosselItems.length === 0) {
         listDiv.innerHTML = '<div class="loading">Nenhum item no carrossel</div>';
@@ -2714,10 +2437,6 @@ function renderCarrossel() {
         if (imagemUrl.startsWith('/uploads/')) {
             // Já está correto - arquivo enviado pelo dashboard
         }
-        // Se é imagem salva no banco (BLOB) - servir via /api/fotos/:id
-        else if (imagemUrl.startsWith('/api/fotos/')) {
-            // Manter como está; a rota GET /api/fotos/:id devolve a imagem
-        }
         // Se começa com http, manter (URL externa)
         else if (imagemUrl.startsWith('http')) {
             // Já está correto - URL externa
@@ -2727,13 +2446,15 @@ function renderCarrossel() {
             imagemUrl = '/' + imagemUrl;
         }
         // Se é um caminho da pasta public do site principal (Carrosselpagina1, Imagem, etc)
+        // Essas imagens precisam ser acessadas via proxy ou URL completa do site principal
         else if (imagemUrl.includes('Carrosselpagina1') || imagemUrl.includes('Imagem') || imagemUrl.includes('CapadeNoticias')) {
-            // Adicionar / no início para tornar absoluto (URL relativa funciona em produção)
+            // Adicionar / no início para tornar absoluto
             if (!imagemUrl.startsWith('/')) {
                 imagemUrl = '/' + imagemUrl;
             }
-            // Usar URL relativa (funciona tanto em desenvolvimento quanto em produção)
-            // imagemUrl já está no formato correto com / no início
+            // Usar URL completa do site principal (porta 3000)
+            // Ou usar proxy se configurado
+            imagemUrl = `http://localhost:3000${imagemUrl}`;
         }
         // Caso contrário, assumir que está em /uploads/materias/
         else {
@@ -2820,11 +2541,6 @@ window.openCarrosselModal = function(item = null) {
         const imagemPreview = document.getElementById('carrosselImagemPreview');
         if (imagemPreview) {
             imagemPreview.innerHTML = '';
-        }
-        
-        const linkInput = document.getElementById('carrosselLink');
-        if (linkInput) {
-            linkInput.value = '';
         }
         
         if (item) {
@@ -2948,7 +2664,7 @@ async function handleSaveCarrossel(e) {
     
     const linkInput = document.getElementById('carrosselLink');
     if (linkInput && linkInput.value) {
-        formData.append('link', linkInput.value);
+        formData.append('link', linkInput.value.trim());
     }
     
     // Adicionar arquivo se existir (apenas se houver arquivo selecionado)
@@ -3212,40 +2928,18 @@ async function loadCarrosselMedio() {
     listDiv.innerHTML = '<div class="loading">Carregando...</div>';
     
     try {
-        const response = await fetch(`${API_BASE}/site/carrossel-medio`).catch(err => {
-            console.error('Erro de rede ao carregar carrossel médio:', err);
-            throw err;
-        });
-        
-        if (!response || !response.ok) {
-            throw new Error('Erro ao buscar carrossel médio');
-        }
-        
-        const data = await response.json().catch(err => {
-            console.error('Erro ao processar resposta JSON:', err);
-            throw new Error('Resposta inválida do servidor');
-        });
-        
-        // Garantir que carrosselMedioItems seja sempre um array
-        carrosselMedioItems = Array.isArray(data) ? data : [];
+        const response = await fetch(`${API_BASE}/site/carrossel-medio`);
+        carrosselMedioItems = await response.json();
         renderCarrosselMedio();
     } catch (error) {
         listDiv.innerHTML = '<div class="error-message">Erro ao carregar carrossel médio</div>';
         console.error('Erro ao carregar carrossel médio:', error);
-        // Garantir que carrosselMedioItems seja um array mesmo em caso de erro
-        carrosselMedioItems = Array.isArray(carrosselMedioItems) ? carrosselMedioItems : [];
     }
 }
 
 function renderCarrosselMedio() {
     const listDiv = document.getElementById('carrosselMedioList');
     if (!listDiv) return;
-    
-    // Garantir que carrosselMedioItems seja um array antes de usar .length
-    if (!Array.isArray(carrosselMedioItems)) {
-        console.warn('⚠️ carrosselMedioItems não é um array, convertendo...');
-        carrosselMedioItems = [];
-    }
     
     if (carrosselMedioItems.length === 0) {
         listDiv.innerHTML = '<div class="loading">Nenhum item no carrossel médio</div>';
@@ -3260,17 +2954,13 @@ function renderCarrosselMedio() {
         }
         
         if (imagemUrl.startsWith('/uploads/')) {
-            // Já está no formato correto (URL relativa)
-        } else if (imagemUrl.startsWith('/api/fotos/')) {
-            // Imagem no banco (BLOB) - servir via /api/fotos/:id
+            imagemUrl = `http://localhost:3000${imagemUrl}`;
         } else if (imagemUrl.startsWith('http')) {
             // URL externa
         } else if (imagemUrl.startsWith('uploads/')) {
-            // Adicionar / no início
-            imagemUrl = '/' + imagemUrl;
+            imagemUrl = `http://localhost:3000/${imagemUrl}`;
         } else {
-            // Assumir que está em /uploads/materias/
-            imagemUrl = '/uploads/materias/' + imagemUrl;
+            imagemUrl = `http://localhost:3000/uploads/materias/${imagemUrl}`;
         }
         
         return `
@@ -3340,12 +3030,9 @@ window.openCarrosselMedioModal = function(item = null) {
         document.getElementById('carrosselMedioAtivo').value = item.ativo ? 'true' : 'false';
         
         if (item.imagem && imagemPreview) {
-            // Usar URL relativa (funciona tanto em desenvolvimento quanto em produção)
-            let imgUrl = item.imagem.startsWith('http') 
-                ? item.imagem 
-                : item.imagem.startsWith('/') 
-                    ? item.imagem 
-                    : '/' + item.imagem;
+            let imgUrl = item.imagem.startsWith('/uploads/') 
+                ? `http://localhost:3000${item.imagem}` 
+                : item.imagem;
             imagemPreview.innerHTML = `<img src="${imgUrl}" alt="Preview" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">`;
         }
     } else {
@@ -3477,68 +3164,21 @@ async function loadPagamentos() {
     listDiv.innerHTML = '<div class="loading">Carregando pagamentos...</div>';
     
     try {
-        console.log('📥 Carregando pagamentos de:', `${API_BASE}/pagamentos`);
-        const response = await fetch(`${API_BASE}/pagamentos`, {
-            method: 'GET',
-            credentials: 'include', // Incluir cookies de sessão
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).catch(err => {
-            console.error('❌ Erro de rede ao carregar pagamentos:', err);
-            throw err;
-        });
-        
-        console.log('📊 Resposta recebida:', response.status, response.statusText);
-        
-        if (!response || !response.ok) {
-            if (response.status === 401) {
-                console.error('❌ Não autenticado. Redirecionando para login...');
-                listDiv.innerHTML = '<div class="error-message">Sessão expirada. Por favor, faça login novamente.</div>';
-                if (typeof showLogin === 'function') {
-                    showLogin();
-                }
-                return;
-            }
-            const errorText = await response.text().catch(() => '');
-            console.error('❌ Erro na resposta:', response.status, errorText);
-            throw new Error(`Erro ao buscar pagamentos: ${response.status} ${errorText}`);
+        const response = await fetch(`${API_BASE}/pagamentos`);
+        if (!response.ok) {
+            throw new Error('Erro ao buscar pagamentos');
         }
-        
-        const data = await response.json().catch(err => {
-            console.error('❌ Erro ao processar resposta JSON:', err);
-            throw new Error('Resposta inválida do servidor');
-        });
-        
-        console.log('✅ Dados recebidos:', Array.isArray(data) ? `${data.length} pagamentos` : 'Formato inesperado', data);
-        
-        // Garantir que pagamentos seja sempre um array
-        pagamentos = Array.isArray(data) ? data : (data.pagamentos || []);
-        
-        if (!Array.isArray(pagamentos)) {
-            console.warn('⚠️ pagamentos não é um array, convertendo...', pagamentos);
-            pagamentos = [];
-        }
-        
-        console.log(`✅ Total de pagamentos carregados: ${pagamentos.length}`);
+        pagamentos = await response.json();
         renderPagamentos();
     } catch (error) {
-        listDiv.innerHTML = '<div class="error-message">Erro ao carregar pagamentos: ' + (error.message || 'Erro desconhecido') + '</div>';
-        console.error('❌ Erro ao carregar pagamentos:', error);
-        // Garantir que pagamentos seja um array mesmo em caso de erro
-        pagamentos = Array.isArray(pagamentos) ? pagamentos : [];
+        listDiv.innerHTML = '<div class="error-message">Erro ao carregar pagamentos</div>';
+        console.error('Erro ao carregar pagamentos:', error);
     }
 }
 
 function renderPagamentos() {
     const listDiv = document.getElementById('pagamentosList');
     if (!listDiv) return;
-    
-    // Garantir que pagamentos seja um array antes de usar .length
-    if (!Array.isArray(pagamentos)) {
-        console.warn('⚠️ pagamentos não é um array, convertendo...');
-        pagamentos = [];
-    }
     
     if (pagamentos.length === 0) {
         listDiv.innerHTML = '<div class="loading">Nenhum pagamento registrado</div>';
@@ -3556,13 +3196,10 @@ function renderPagamentos() {
     const pagamentosComValorZero = pagamentos.filter(p => !p.valor || p.valor === 0).length;
     
     listDiv.innerHTML = `
-        <div style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, rgba(0, 9, 91, 0.05), rgba(37, 99, 235, 0.03)); border-radius: 16px; border: 1px solid rgba(0, 9, 91, 0.1); box-shadow: 0 4px 12px rgba(0, 9, 91, 0.08);">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                <i class='bx bx-credit-card' style="font-size: 24px; color: #00095b;"></i>
-                <h3 style="margin: 0; color: #00095b; font-size: 1.3rem; font-weight: 700;">Total de Pagamentos: ${pagamentos.length}</h3>
-            </div>
-            ${pagamentosComValorZero > 0 ? `<div style="margin: 12px 0; padding: 12px 16px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.08)); border-radius: 12px; border-left: 4px solid #f59e0b;"><p style="margin: 0; color: #d97706; font-weight: 600; display: flex; align-items: center; gap: 8px;"><i class='bx bx-error-circle'></i> ${pagamentosComValorZero} pagamento(s) com valor R$ 0,00 - Use o botão "Atualizar Valores" para corrigir</p></div>` : ''}
-            <p style="margin: 0; color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;"><i class='bx bx-time'></i> Última atualização: ${new Date().toLocaleString('pt-BR')}</p>
+        <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h3 style="margin: 0 0 10px 0; color: #00095b;">Total de Pagamentos: ${pagamentos.length}</h3>
+            ${pagamentosComValorZero > 0 ? `<p style="margin: 5px 0; color: #d97706; font-weight: 600;">⚠️ ${pagamentosComValorZero} pagamento(s) com valor R$ 0,00 - Use o botão "Atualizar Valores" para corrigir</p>` : ''}
+            <p style="margin: 0; color: #666;">Última atualização: ${new Date().toLocaleString('pt-BR')}</p>
         </div>
         <div class="jornais-grid">
             ${pagamentosOrdenados.map(pagamento => {
@@ -3582,69 +3219,41 @@ function renderPagamentos() {
                 }).format(valorNumerico);
                 
                 return `
-                    <div class="jornal-card pagamento-receipt-card" style="animation: fadeInUp 0.4s ease-out; overflow: hidden;">
-                        <div style="background: linear-gradient(135deg, #00095b 0%, #001a7a 100%); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 42px; height: 42px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                    <i class='bx bx-receipt' style="font-size: 22px; color: #fff;"></i>
-                                </div>
+                    <div class="jornal-card">
+                        <div style="padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
                                 <div>
-                                    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.75); margin-bottom: 2px;">Comprovante de pagamento</div>
-                                    <div style="font-size: 1.1rem; font-weight: 700; color: #fff;">${pagamento.nome || 'Cliente'}</div>
+                                    <h3 style="margin: 0 0 8px 0; color: #00095b; font-size: 1.2rem;">${pagamento.nome || 'Nome não informado'}</h3>
+                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">${pagamento.email || 'Email não informado'}</p>
                                 </div>
-                            </div>
-                            <div style="flex-shrink: 0; background: rgba(255,255,255,0.15); padding: 12px 20px; border-radius: 10px; text-align: right;">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #fff; white-space: nowrap;">${valorFormatado}</div>
-                                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.85);">${pagamento.moeda || 'BRL'}</div>
-                            </div>
-                        </div>
-                        <div style="padding: 24px;">
-                            <div style="margin-bottom: 20px;">
-                                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">E-mail</div>
-                                <div style="font-size: 0.95rem; color: #334155;">${pagamento.email || '—'}</div>
-                            </div>
-                            
-                            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-                                <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                    <i class='bx bx-book' style="font-size: 16px; color: #00095b;"></i>
-                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Produto</strong>
-                                </div>
-                                <div style="color: #00095b; font-weight: 600; font-size: 0.95rem; padding-left: 24px;">${pagamento.jornalNome || `ID: ${pagamento.jornalId}`}</div>
-                                
-                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px;">
-                                    <i class='bx bx-calendar' style="font-size: 16px; color: #64748b;"></i>
-                                    <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Data e hora</strong>
-                                </div>
-                                <div style="color: #64748b; font-size: 0.9rem; padding-left: 24px; margin-top: 6px;">${dataFormatada}</div>
-                                
-                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                                        <i class='bx bx-church' style="font-size: 16px; color: #00095b;"></i>
-                                        <strong style="color: #475569; font-size: 0.85rem;">Santuário:</strong>
-                                    </div>
-                                    <div style="color: #00095b; font-size: 0.9rem; padding-left: 24px; margin-bottom: ${(pagamento.souNovoSantuario === 1 || pagamento.souNovoSantuario === '1' || pagamento.souNovoSantuario === true) ? '8px' : '0'};">${pagamento.santuario && String(pagamento.santuario).trim() ? pagamento.santuario : 'Não informado'}</div>
-                                    ${pagamento.souNovoSantuario === 1 || pagamento.souNovoSantuario === '1' || pagamento.souNovoSantuario === true ? `
-                                    <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
-                                        <span style="font-size: 0.8rem; padding: 4px 10px; background: #fef3c7; color: #b45309; border-radius: 6px; font-weight: 600;"><i class='bx bx-star' style="font-size: 12px; vertical-align: middle; margin-right: 4px;"></i> Sou novo no santuário</span>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                                
-                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                        <i class='bx bx-hash' style="font-size: 16px; color: #64748b;"></i>
-                                        <strong style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Código da transação</strong>
-                                    </div>
-                                    <div style="color: #64748b; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.8rem; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; word-break: break-all; margin-left: 24px;">${pagamento.paymentIntentId}</div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: #10b981; margin-bottom: 5px;">${valorFormatado}</div>
+                                    <div style="font-size: 0.85rem; color: #999;">${pagamento.moeda || 'BRL'}</div>
                                 </div>
                             </div>
                             
-                            <div style="border-top: 2px solid #f1f5f9; padding-top: 16px; margin-top: 16px; display: flex; justify-content: flex-end;">
-                                <button onclick="if(typeof window.deletePagamento === 'function') { window.deletePagamento(${parseInt(pagamento.id)}, '${(pagamento.nome || 'Cliente').replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); } else { console.error('deletePagamento não está disponível'); alert('Erro: Função de exclusão não disponível'); }" 
-                                        class="btn-delete-pagamento"
-                                        type="button">
+                            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #555; font-size: 0.9rem;">Jornal:</strong>
+                                    <div style="color: #00095b; font-weight: 600; margin-top: 3px;">${pagamento.jornalNome || `ID: ${pagamento.jornalId}`}</div>
+                                </div>
+                                
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #555; font-size: 0.9rem;">Data do Pagamento:</strong>
+                                    <div style="color: #666; margin-top: 3px;">${dataFormatada}</div>
+                                </div>
+                                
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #555; font-size: 0.9rem;">Payment Intent ID:</strong>
+                                    <div style="color: #666; font-family: monospace; font-size: 0.85rem; margin-top: 3px; word-break: break-all;">${pagamento.paymentIntentId}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px; display: flex; justify-content: flex-end;">
+                                <button onclick="deletePagamento(${pagamento.id}, '${(pagamento.nome || 'Cliente').replace(/'/g, "\\'")}')" 
+                                        class="btn-delete-pagamento">
                                     <i class='bx bx-trash'></i>
-                                    Excluir comprovante
+                                    Excluir Comprovante
                                 </button>
                             </div>
                         </div>
@@ -3657,75 +3266,27 @@ function renderPagamentos() {
 
 // Função para deletar pagamento
 window.deletePagamento = async function(id, nome) {
-    console.log('🗑️ Tentando excluir pagamento:', { id, nome, idType: typeof id });
-    
-    // Garantir que o ID seja um número
-    const paymentId = parseInt(id);
-    
-    if (!paymentId || isNaN(paymentId)) {
-        console.error('❌ ID do pagamento inválido:', id);
-        showToast('Erro: ID do pagamento inválido', 'error');
-        return;
-    }
-    
     if (!confirm(`Tem certeza que deseja excluir o comprovante de pagamento de ${nome}?\n\nEsta ação não pode ser desfeita.`)) {
-        console.log('🚫 Exclusão cancelada pelo usuário');
         return;
     }
     
     try {
-        console.log('📡 Enviando requisição DELETE para:', `${API_BASE}/pagamentos/${paymentId}`);
-        
-        const response = await fetch(`${API_BASE}/pagamentos/${paymentId}`, {
+        const response = await fetch(`${API_BASE}/pagamentos/${id}`, {
             method: 'DELETE',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            credentials: 'include'
         });
         
-        console.log('📥 Resposta recebida:', { 
-            status: response.status, 
-            statusText: response.statusText, 
-            ok: response.ok,
-            headers: Object.fromEntries(response.headers.entries())
-        });
-        
-        let data;
-        try {
-            const text = await response.text();
-            console.log('📦 Resposta em texto:', text);
-            data = text ? JSON.parse(text) : null;
-        } catch (parseError) {
-            console.error('❌ Erro ao parsear resposta JSON:', parseError);
-            data = null;
-        }
-        
-        console.log('📦 Dados da resposta:', data);
-        
-        if (response.ok && (data?.ok || data?.message)) {
-            console.log('✅ Pagamento excluído com sucesso!');
+        if (response.ok) {
             showToast('Comprovante excluído com sucesso!', 'success');
-            
-            // Aguardar um pouco antes de recarregar para garantir que o servidor processou
-            setTimeout(() => {
-                console.log('🔄 Recarregando lista de pagamentos...');
-                if (typeof loadPagamentos === 'function') {
-                    loadPagamentos();
-                } else {
-                    console.error('❌ Função loadPagamentos não encontrada, recarregando página...');
-                    location.reload();
-                }
-            }, 500);
+            // Recarregar lista de pagamentos
+            loadPagamentos();
         } else {
-            const errorMessage = data?.error || data?.message || `Erro HTTP ${response.status}`;
-            console.error('❌ Erro ao excluir:', errorMessage);
-            showToast(errorMessage || 'Erro ao excluir comprovante', 'error');
+            const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+            showToast(error.error || 'Erro ao excluir comprovante', 'error');
         }
     } catch (error) {
-        console.error('❌ Erro ao deletar pagamento:', error);
-        console.error('Stack:', error.stack);
-        showToast('Erro ao excluir comprovante: ' + (error.message || 'Erro desconhecido'), 'error');
+        console.error('Erro ao deletar pagamento:', error);
+        showToast('Erro ao excluir comprovante: ' + error.message, 'error');
     }
 };
 
@@ -3764,122 +3325,6 @@ window.updatePaymentValues = async function() {
             btn.disabled = false;
             btn.textContent = '🔄 Atualizar Valores dos Pagamentos';
         }
-    }
-};
-
-// ==================== SANTUÁRIOS ====================
-let santuariosList = [];
-
-async function loadSantuarios() {
-    const listDiv = document.getElementById('santuariosList');
-    if (!listDiv) return;
-    listDiv.innerHTML = '<div class="loading">Carregando santuários...</div>';
-    try {
-        const response = await fetch(`${API_BASE}/santuarios/admin`, { credentials: 'include' });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            if (response.status === 401) {
-                listDiv.innerHTML = '<div class="error-message">Sessão expirada. Faça login novamente para ver e gerenciar os santuários.</div>';
-            } else {
-                listDiv.innerHTML = '<div class="error-message">Erro ao carregar santuários. Tente novamente.</div>';
-            }
-            santuariosList = [];
-            setupSantuariosAddButton();
-            return;
-        }
-        santuariosList = Array.isArray(data.santuarios) ? data.santuarios : (Array.isArray(data) ? data : []);
-        renderSantuarios();
-        setupSantuariosAddButton();
-    } catch (err) {
-        console.error('Erro ao carregar santuários:', err);
-        santuariosList = [];
-        listDiv.innerHTML = '<div class="error-message">Erro ao carregar santuários. Tente novamente.</div>';
-        setupSantuariosAddButton();
-    }
-}
-
-function renderSantuarios() {
-    const listDiv = document.getElementById('santuariosList');
-    if (!listDiv) return;
-    if (santuariosList.length === 0) {
-        listDiv.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1;">
-                <div class="empty-state-icon">⛪</div>
-                <div class="empty-state-title">Nenhum santuário cadastrado</div>
-                <div class="empty-state-message">Adicione santuários acima para que apareçam como opções no checkout.</div>
-            </div>
-        `;
-        return;
-    }
-    listDiv.innerHTML = santuariosList.map(s => {
-        const nome = typeof s === 'string' ? s : (s.nome || '');
-        const id = typeof s === 'object' && s.id != null ? s.id : 0;
-        return `
-            <div class="jornal-card" style="max-width: 400px;">
-                <div style="padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <i class='bx bx-church' style="font-size: 28px; color: #00095b;"></i>
-                        <span style="font-size: 1.1rem; font-weight: 600; color: #1e293b;">${nome}</span>
-                    </div>
-                    <button type="button" class="btn btn-danger btn-small" onclick="if(typeof window.deleteSantuario === 'function') { window.deleteSantuario(${id}, '${(nome || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); }">
-                        <i class='bx bx-trash'></i> Excluir
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function setupSantuariosAddButton() {
-    const btn = document.getElementById('addSantuarioBtn');
-    const input = document.getElementById('santuarioNomeInput');
-    if (!btn || !input) return;
-    btn.onclick = async () => {
-        const nome = (input.value || '').trim();
-        if (!nome) {
-            showToast('Digite o nome do santuário.', 'error');
-            return;
-        }
-        btn.disabled = true;
-        try {
-            const response = await fetch(`${API_BASE}/santuarios`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ nome })
-            });
-            const data = await response.json().catch(() => ({}));
-            if (response.ok) {
-                showToast(data.message || 'Santuário adicionado!', 'success');
-                input.value = '';
-                loadSantuarios();
-            } else {
-                showToast(data.error || 'Erro ao adicionar santuário', 'error');
-            }
-        } catch (err) {
-            showToast('Erro ao adicionar santuário: ' + (err.message || ''), 'error');
-        } finally {
-            btn.disabled = false;
-        }
-    };
-}
-
-window.deleteSantuario = async function(id, nome) {
-    if (!confirm(`Excluir o santuário "${nome || id}"?`)) return;
-    try {
-        const response = await fetch(`${API_BASE}/santuarios/${id}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-        const data = await response.json().catch(() => ({}));
-        if (response.ok && (data.ok === true || response.status === 200)) {
-            showToast('Santuário excluído.', 'success');
-            loadSantuarios();
-        } else {
-            showToast(data.error || 'Erro ao excluir santuário', 'error');
-        }
-    } catch (err) {
-        showToast('Erro ao excluir santuário: ' + (err.message || ''), 'error');
     }
 };
 
@@ -4029,20 +3474,6 @@ async function loadResponsaveis() {
     try {
         const response = await fetch(`${API_BASE}/site/responsaveis`);
         responsaveis = await response.json();
-        
-        // Normalizar URLs das imagens - remover localhost:3000 hardcoded
-        responsaveis = responsaveis.map(resp => {
-            if (resp.imagem && resp.imagem.includes('localhost:3000')) {
-                // Remover http://localhost:3000 ou https://localhost:3000
-                resp.imagem = resp.imagem.replace(/https?:\/\/localhost:3000/g, '');
-                // Garantir que comece com /
-                if (!resp.imagem.startsWith('/')) {
-                    resp.imagem = '/' + resp.imagem;
-                }
-            }
-            return resp;
-        });
-        
         renderResponsaveis();
     } catch (error) {
         listDiv.innerHTML = '<div class="error-message">Erro ao carregar responsáveis</div>';
@@ -4062,11 +3493,6 @@ function renderResponsaveis() {
         // Normalizar caminho da imagem
         let imagemUrl = resp.imagem || '';
         
-        // PRIMEIRO: Remover localhost:3000 hardcoded (caso venha do banco/JSON)
-        if (imagemUrl.includes('localhost:3000')) {
-            imagemUrl = imagemUrl.replace(/https?:\/\/localhost:3000/g, '');
-        }
-        
         // Normalizar caminhos relativos que começam com ./
         if (imagemUrl.startsWith('./')) {
             imagemUrl = imagemUrl.substring(2); // Remove ./
@@ -4076,8 +3502,8 @@ function renderResponsaveis() {
         if (imagemUrl.startsWith('/uploads/')) {
             // Já está correto - arquivo enviado pelo dashboard
         }
-        // Se começa com http/https (URL externa), manter
-        else if (imagemUrl.startsWith('http://') || imagemUrl.startsWith('https://')) {
+        // Se começa com http, manter (URL externa)
+        else if (imagemUrl.startsWith('http')) {
             // Já está correto - URL externa
         }
         // Se começa com uploads/ (sem barra inicial), adicionar /
@@ -4086,15 +3512,15 @@ function renderResponsaveis() {
         }
         // Se é um caminho da pasta public do site principal (Imagem, Carrosselpagina1, etc)
         else if (imagemUrl.includes('Imagem') || imagemUrl.includes('Carrosselpagina1') || imagemUrl.includes('CapadeNoticias')) {
-            // Adicionar / no início para tornar absoluto (URL relativa funciona em produção)
+            // Adicionar / no início para tornar absoluto
             if (!imagemUrl.startsWith('/')) {
                 imagemUrl = '/' + imagemUrl;
             }
-            // Usar URL relativa (funciona tanto em desenvolvimento quanto em produção)
-            // imagemUrl já está no formato correto com / no início
+            // Usar URL completa do site principal (porta 3000)
+            imagemUrl = `http://localhost:3000${imagemUrl}`;
         }
         // Caso contrário, assumir que está em /uploads/materias/
-        else if (imagemUrl) {
+        else {
             imagemUrl = '/uploads/materias/' + imagemUrl;
         }
         
@@ -5040,20 +4466,14 @@ async function loadTextos() {
         let jornalImagemUrl = textos.sobreJornal?.imagem || '';
         if (jornalImagemUrl) {
             if (jornalImagemUrl.startsWith('./')) {
-                // Remover ./ e garantir que comece com /
-                jornalImagemUrl = jornalImagemUrl.substring(1);
-                if (!jornalImagemUrl.startsWith('/')) {
-                    jornalImagemUrl = '/' + jornalImagemUrl;
-                }
+                jornalImagemUrl = `http://localhost:3000${jornalImagemUrl.substring(1)}`;
             } else if (jornalImagemUrl.startsWith('/uploads')) {
-                // Já está no formato correto
+                jornalImagemUrl = `${API_BASE.replace('/api', '')}${jornalImagemUrl}`;
             } else if (jornalImagemUrl.startsWith('/') && !jornalImagemUrl.startsWith('//')) {
-                // Já está no formato correto (URL relativa)
+                jornalImagemUrl = `http://localhost:3000${jornalImagemUrl}`;
             } else if (!jornalImagemUrl.startsWith('http')) {
-                // Se não tem prefixo, adicionar / no início (URL relativa)
-                if (!jornalImagemUrl.startsWith('/')) {
-                    jornalImagemUrl = '/' + jornalImagemUrl;
-                }
+                // Se não tem prefixo, assumir que é relativo ao site principal (ex: "Imagem/testesimagem.gif")
+                jornalImagemUrl = `http://localhost:3000/${jornalImagemUrl}`;
             }
         }
         
@@ -5062,25 +4482,18 @@ async function loadTextos() {
         let mostrarImagemPadraoIgreja = false;
         if (igrejaImagemUrl) {
             if (igrejaImagemUrl.startsWith('./')) {
-                // Remover ./ e garantir que comece com /
-                igrejaImagemUrl = igrejaImagemUrl.substring(1);
-                if (!igrejaImagemUrl.startsWith('/')) {
-                    igrejaImagemUrl = '/' + igrejaImagemUrl;
-                }
+                igrejaImagemUrl = `http://localhost:3000${igrejaImagemUrl.substring(1)}`;
             } else if (igrejaImagemUrl.startsWith('/uploads')) {
-                // Já está no formato correto
+                igrejaImagemUrl = `${API_BASE.replace('/api', '')}${igrejaImagemUrl}`;
             } else if (igrejaImagemUrl.startsWith('/') && !igrejaImagemUrl.startsWith('//')) {
-                // Já está no formato correto (URL relativa)
+                igrejaImagemUrl = `http://localhost:3000${igrejaImagemUrl}`;
             } else if (!igrejaImagemUrl.startsWith('http')) {
-                // Se não tem prefixo, adicionar / no início (URL relativa)
-                if (!igrejaImagemUrl.startsWith('/')) {
-                    igrejaImagemUrl = '/' + igrejaImagemUrl;
-                }
+                igrejaImagemUrl = `http://localhost:3000/${igrejaImagemUrl}`;
             }
         } else {
             // Se não há imagem no config, usar imagem padrão do site
             mostrarImagemPadraoIgreja = true;
-            igrejaImagemUrl = '/Imagem/igreja-.png';
+            igrejaImagemUrl = 'http://localhost:3000/Imagem/igreja-.png';
         }
         
         configDiv.innerHTML = `
@@ -5287,20 +4700,17 @@ async function loadBanner() {
         let imagemUrl = banner.imagem || '';
         if (imagemUrl) {
             if (imagemUrl.startsWith('./')) {
-                // Remover ./ e garantir que comece com /
-                imagemUrl = imagemUrl.substring(1);
-                if (!imagemUrl.startsWith('/')) {
-                    imagemUrl = '/' + imagemUrl;
-                }
+                // Converter caminho relativo para URL completa do site principal
+                imagemUrl = `http://localhost:3000${imagemUrl.substring(1)}`;
             } else if (imagemUrl.startsWith('/uploads')) {
-                // Já está no formato correto (URL relativa)
+                // Se começar com /uploads, usar a URL do dashboard-server
+                imagemUrl = `${API_BASE.replace('/api', '')}${imagemUrl}`;
             } else if (imagemUrl.startsWith('/') && !imagemUrl.startsWith('//')) {
-                // Já está no formato correto (URL relativa)
+                // Caminho absoluto começando com / (ex: /Imagem/...)
+                imagemUrl = `http://localhost:3000${imagemUrl}`;
             } else if (!imagemUrl.startsWith('http')) {
-                // Caminho sem prefixo, adicionar / no início (URL relativa)
-                if (!imagemUrl.startsWith('/')) {
-                    imagemUrl = '/' + imagemUrl;
-                }
+                // Caminho sem prefixo, assumir que é relativo ao site principal
+                imagemUrl = `http://localhost:3000/${imagemUrl}`;
             }
         }
         
@@ -5500,15 +4910,7 @@ window.openNoticiaModal = function(noticia = null) {
             if (excerptInput) excerptInput.value = noticia.excerpt || '';
             
             const contentInput = document.getElementById('noticiaContent');
-            if (contentInput) {
-                contentInput.value = noticia.content || '';
-                // Se o editor CodeMirror estiver inicializado, atualizar também
-                setTimeout(() => {
-                    if (window.contentEditor && typeof window.contentEditor.setValue === 'function') {
-                        window.contentEditor.setValue(noticia.content || '');
-                    }
-                }, 200);
-            }
+            if (contentInput) contentInput.value = noticia.content || '';
             
             const tagInput = document.getElementById('noticiaTag');
             if (tagInput) tagInput.value = noticia.tag || '';
@@ -5603,16 +5005,7 @@ async function handleSaveNoticia(e) {
     
     const id = document.getElementById('noticiaId').value;
     const title = document.getElementById('noticiaTitle').value.trim();
-    // Pegar conteúdo do editor CodeMirror ou do textarea
-    let content = '';
-    if (window.contentEditor && typeof window.contentEditor.getValue === 'function') {
-        content = window.contentEditor.getValue().trim();
-    } else {
-        const contentInput = document.getElementById('noticiaContent');
-        if (contentInput) {
-            content = contentInput.value.trim();
-        }
-    }
+    const content = document.getElementById('noticiaContent').value.trim();
     
     // Validar campos obrigatórios
     if (!title || !content) {
@@ -5790,20 +5183,6 @@ async function loadColunistas() {
         const data = await response.json();
         console.log('Dados recebidos:', data);
         colunistas = data.colunistas || [];
-        
-        // Normalizar URLs das imagens - remover localhost:3000 hardcoded
-        colunistas = colunistas.map(colunista => {
-            if (colunista.imagem && colunista.imagem.includes('localhost:3000')) {
-                // Remover http://localhost:3000 ou https://localhost:3000
-                colunista.imagem = colunista.imagem.replace(/https?:\/\/localhost:3000/g, '');
-                // Garantir que comece com / se não for URL externa
-                if (!colunista.imagem.startsWith('http') && !colunista.imagem.startsWith('/')) {
-                    colunista.imagem = '/' + colunista.imagem;
-                }
-            }
-            return colunista;
-        });
-        
         console.log('Colunistas carregados:', colunistas.length);
         renderColunistas();
     } catch (error) {
@@ -5828,30 +5207,25 @@ function renderColunistas() {
     const getImageUrl = (imagem) => {
         if (!imagem) return '';
         
-        // PRIMEIRO: Remover localhost:3000 hardcoded (caso venha do banco/JSON)
-        if (imagem.includes('localhost:3000')) {
-            imagem = imagem.replace(/https?:\/\/localhost:3000/g, '');
-        }
-        
-        // Se já é uma URL completa (http/https), retornar como está
+        // Se já é uma URL completa, retornar como está
         if (imagem.startsWith('http://') || imagem.startsWith('https://')) {
             return imagem;
         }
         
-        // Se começa com ./ ou /, usar URL relativa
+        // Se começa com ./ ou /, converter para caminho do servidor principal
         if (imagem.startsWith('./')) {
-            // Remover o ./ e garantir que comece com /
+            // Remover o ./ e adicionar o caminho do servidor principal
             const cleanPath = imagem.replace('./', '');
-            return cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+            return `http://localhost:3000/${cleanPath}`;
         }
         
-        // Se começa com /, já está no formato correto (URL relativa)
+        // Se começa com /, adicionar o servidor principal
         if (imagem.startsWith('/')) {
-            return imagem;
+            return `http://localhost:3000${imagem}`;
         }
         
-        // Caso contrário, adicionar / no início (URL relativa)
-        return '/' + imagem;
+        // Caso contrário, assumir que é relativo ao servidor principal
+        return `http://localhost:3000/${imagem}`;
     };
     
     listDiv.innerHTML = sortedColunistas.map(colunista => {
@@ -5964,17 +5338,9 @@ window.openColunistaModal = function(colunista = null) {
             if (ativoInput) ativoInput.value = colunista.ativo !== false ? 'true' : 'false';
             
             if (colunista.imagem && imagemPreview) {
-                // Normalizar URL da imagem - remover localhost:3000
-                let imagemUrl = colunista.imagem;
-                if (imagemUrl.includes('localhost:3000')) {
-                    imagemUrl = imagemUrl.replace(/https?:\/\/localhost:3000/g, '');
-                    if (!imagemUrl.startsWith('http') && !imagemUrl.startsWith('/')) {
-                        imagemUrl = '/' + imagemUrl;
-                    }
-                }
                 imagemPreview.innerHTML = `
                     <div style="position: relative; display: inline-block;">
-                        <img src="${imagemUrl}" alt="Imagem atual" style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <img src="${colunista.imagem}" alt="Imagem atual" style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                         <div style="margin-top: 8px; font-size: 12px; color: #64748b; font-weight: 500;">
                             📷 Imagem atual (envie uma nova para substituir)
                         </div>
@@ -6191,188 +5557,8 @@ async function deleteColunista(id) {
         } else {
             showToast('Erro ao excluir colunista', 'error');
         }
-        } catch (error) {
+    } catch (error) {
         console.error('Erro ao excluir colunista:', error);
         showToast('Erro ao excluir colunista', 'error');
     }
 }
-
-// ==================== HANDLER GLOBAL PARA ERROS DE PROMISE NÃO TRATADOS ====================
-// Capturar erros de Promise não tratados (Uncaught (in promise))
-window.addEventListener('unhandledrejection', function(event) {
-    // Ignorar erros de extensões do Chrome (background.js, template_list, etc.)
-    const errorMessage = event.reason?.message || event.reason?.toString() || '';
-    const errorStack = event.reason?.stack || '';
-    
-    if (errorMessage.includes('background.js') || 
-        errorMessage.includes('template_list') || 
-        errorMessage.includes('writing') ||
-        errorMessage.includes('site_integration') ||
-        errorMessage.includes('permission error') ||
-        errorMessage.includes('UserAuthError') ||
-        errorStack.includes('background.js') ||
-        errorStack.includes('chrome-extension')) {
-        // Silenciar erros de extensões do Chrome
-        event.preventDefault();
-        return;
-    }
-    
-    // Logar outros erros para debug
-    console.error('⚠️ Promise rejeitada não tratada:', event.reason);
-    console.error('Stack:', errorStack);
-    
-    // Não prevenir o comportamento padrão para outros erros (para debug)
-});
-
-// Capturar erros JavaScript gerais
-window.addEventListener('error', function(event) {
-    // Ignorar erros de extensões do Chrome
-    const errorMessage = event.message || '';
-    const errorSource = event.filename || '';
-    
-    if (errorMessage.includes('background.js') || 
-        errorMessage.includes('template_list') || 
-        errorMessage.includes('chrome-extension') ||
-        errorSource.includes('chrome-extension')) {
-        // Silenciar erros de extensões do Chrome
-        event.preventDefault();
-        return;
-    }
-    
-    // Logar outros erros para debug
-    console.error('⚠️ Erro JavaScript:', event.message, 'em', event.filename, 'linha', event.lineno);
-});
-
-// ==================== VERIFICAR BANCO DE DADOS ====================
-
-async function verificarBancoDados() {
-    const loading = document.getElementById('verificarBancoLoading');
-    const results = document.getElementById('verificarBancoResults');
-    const errorDiv = document.getElementById('verificarBancoError');
-    const successDiv = document.getElementById('verificarBancoSuccess');
-    
-    if (!loading || !results || !errorDiv || !successDiv) {
-        console.error('Elementos de verificação não encontrados');
-        return;
-    }
-    
-    loading.style.display = 'block';
-    results.style.display = 'none';
-    errorDiv.style.display = 'none';
-    successDiv.style.display = 'none';
-    
-    try {
-        const response = await fetch(`${API_BASE}/jornais/verificar-banco`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('Você precisa estar logado para acessar esta ferramenta.');
-            }
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!data.ok) {
-            throw new Error(data.error || 'Erro desconhecido');
-        }
-        
-        // Preencher informações de conexão
-        const conexaoTbody = document.querySelector('#conexaoTable tbody');
-        if (conexaoTbody) {
-            conexaoTbody.innerHTML = '';
-            
-            const conexaoData = [
-                ['Database', data.conexao.database],
-                ['User', data.conexao.user],
-                ['Hostname', data.conexao.hostname],
-                ['Port', data.conexao.port],
-                ['Connection ID', data.conexao.connectionId],
-                ['Config - Host', data.conexao.configuracao.host],
-                ['Config - Port', data.conexao.configuracao.port],
-                ['Config - User', data.conexao.configuracao.user],
-                ['Config - Database', data.conexao.configuracao.database]
-            ];
-            
-            conexaoData.forEach(([prop, value]) => {
-                const row = conexaoTbody.insertRow();
-                row.insertCell(0).textContent = prop;
-                const cell2 = row.insertCell(1);
-                cell2.innerHTML = `<code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">${value || 'N/A'}</code>`;
-            });
-        }
-        
-        // Preencher informações de transação
-        const transacaoTbody = document.querySelector('#transacaoTable tbody');
-        if (transacaoTbody) {
-            transacaoTbody.innerHTML = '';
-            
-            const transacaoData = [
-                ['Autocommit', data.transacao.autocommit],
-                ['Isolation Level', data.transacao.isolation]
-            ];
-            
-            transacaoData.forEach(([prop, value]) => {
-                const row = transacaoTbody.insertRow();
-                row.insertCell(0).textContent = prop;
-                const cell2 = row.insertCell(1);
-                cell2.innerHTML = `<code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">${value || 'N/A'}</code>`;
-            });
-        }
-        
-        // Preencher lista de jornais
-        const totalJornais = document.getElementById('totalJornaisVerificar');
-        if (totalJornais) {
-            totalJornais.textContent = data.jornais.total;
-        }
-        
-        const jornaisList = document.getElementById('jornaisVerificarList');
-        if (jornaisList) {
-            jornaisList.innerHTML = '';
-            
-            if (data.jornais.lista.length === 0) {
-                jornaisList.innerHTML = '<p style="color: #666; padding: 1rem;">Nenhum jornal encontrado no banco de dados.</p>';
-            } else {
-                data.jornais.lista.forEach(jornal => {
-                    const card = document.createElement('div');
-                    card.className = 'jornal-card';
-                    card.style.cssText = 'background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #28a745;';
-                    card.innerHTML = `
-                        <h3 style="color: #333; margin-bottom: 0.5rem;">${jornal.nome}</h3>
-                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>ID:</strong> ${jornal.id}</p>
-                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Mês/Ano:</strong> ${jornal.mes} ${jornal.ano}</p>
-                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Status:</strong> ${jornal.ativo ? '✅ ATIVO' : '❌ INATIVO'}</p>
-                        <p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Criado em:</strong> ${new Date(jornal.dataCriacao).toLocaleString('pt-BR')}</p>
-                        ${jornal.capa ? `<p style="color: #666; font-size: 0.9rem; margin: 0.25rem 0;"><strong>Capa:</strong> ${jornal.capa}</p>` : ''}
-                    `;
-                    jornaisList.appendChild(card);
-                });
-            }
-        }
-        
-        // Mostrar mensagem de sucesso
-        successDiv.style.display = 'block';
-        successDiv.innerHTML = `
-            <strong>✅ Verificação concluída com sucesso!</strong><br>
-            ${data.mensagem || 'Use estas informações para verificar se o phpMyAdmin está conectado ao mesmo banco.'}
-        `;
-        
-        results.style.display = 'block';
-        
-    } catch (error) {
-        errorDiv.style.display = 'block';
-        errorDiv.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
-        console.error('Erro ao verificar banco:', error);
-    } finally {
-        loading.style.display = 'none';
-    }
-}
-
-// Tornar função global
-window.verificarBancoDados = verificarBancoDados;

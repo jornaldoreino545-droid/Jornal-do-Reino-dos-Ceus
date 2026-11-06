@@ -3,21 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="icon" href="./img/logo jornal.png" type="x-icon">
-
     <title>Dashboard - Jornal Reino dos Céus</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-
-    
-
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <style>
         /* Estilos críticos para garantir que os cards apareçam */
         .jornal-card {
@@ -33,13 +23,13 @@
             gap: 28px !important;
         }
         
-        /* Layout Profissional de Login - Cores do Site */
+        /* Layout Profissional de Login */
         .login-wrapper {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #00095b 0%, #001a7a 50%, #00095b 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
             position: relative;
             overflow: hidden;
@@ -52,164 +42,109 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-            background-size: 60px 60px;
-            animation: moveBackground 25s linear infinite;
-        }
-        
-        .login-wrapper::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 192, 20, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
-            pointer-events: none;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
         }
         
         @keyframes moveBackground {
             0% { transform: translate(0, 0); }
-            100% { transform: translate(60px, 60px); }
+            100% { transform: translate(50px, 50px); }
         }
         
         .login-container {
             position: relative;
             z-index: 1;
-            max-width: 460px;
+            max-width: 440px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.99);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 56px 48px;
-            border-radius: 28px;
-            box-shadow: 
-                0 25px 80px rgba(0, 9, 91, 0.4),
-                0 10px 30px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.6);
-            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 48px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out;
         }
         
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(40px) scale(0.95);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
         
         .login-header {
             text-align: center;
-            margin-bottom: 44px;
+            margin-bottom: 40px;
         }
         
         .login-logo {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 140px;
-            height: 140px;
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border-radius: 20px;
-            margin-bottom: 28px;
-            box-shadow: 
-                0 12px 24px rgba(0, 9, 91, 0.3),
-                0 4px 8px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(0, 9, 91, 0.1);
-            padding: 16px;
-        }
-        
-        .login-logo::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(0, 9, 91, 0.05), transparent);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-        
-        .login-logo img {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            color: white;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
         }
         
         .login-title {
-            font-size: 34px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            letter-spacing: -0.8px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
         
         .login-subtitle {
             font-size: 15px;
             color: #64748b;
-            line-height: 1.6;
-            font-weight: 400;
+            line-height: 1.5;
         }
         
         .login-form {
             display: flex;
             flex-direction: column;
-            gap: 26px;
+            gap: 24px;
         }
         
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         
         .form-label {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-size: 14px;
             font-weight: 600;
             color: #334155;
         }
         
         .form-label svg {
-            color: #00095b;
-            width: 18px;
-            height: 18px;
+            color: #64748b;
         }
         
         .form-input {
             width: 100%;
-            padding: 16px 18px;
+            padding: 14px 16px;
             font-size: 15px;
             color: #1e293b;
             background: #ffffff;
             border: 2px solid #e2e8f0;
-            border-radius: 14px;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            transition: all 0.2s ease;
             outline: none;
             pointer-events: auto !important;
             user-select: text !important;
-            font-family: 'Inter', sans-serif;
         }
         
         .form-input::placeholder {
@@ -217,85 +152,60 @@
         }
         
         .form-input:focus {
-            border-color: #00095b;
-            box-shadow: 0 0 0 4px rgba(0, 9, 91, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             background: #ffffff;
-            transform: translateY(-1px);
         }
         
-        .form-input:hover:not(:focus) {
+        .form-input:hover {
             border-color: #cbd5e1;
         }
         
         .btn-login {
             width: 100%;
-            padding: 18px 24px;
+            padding: 16px;
             font-size: 16px;
-            font-weight: 700;
-            color: #000000;
-            background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%);
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 8px 20px rgba(255, 192, 20, 0.4),
-                0 4px 8px rgba(255, 192, 20, 0.2);
-            margin-top: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            margin-top: 8px;
         }
         
         .btn-login:hover {
-            transform: translateY(-3px);
-            box-shadow: 
-                0 12px 28px rgba(255, 192, 20, 0.5),
-                0 6px 12px rgba(255, 192, 20, 0.3);
-        }
-        
-        .btn-login:hover::before {
-            left: 100%;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
         }
         
         .btn-login:active {
-            transform: translateY(-1px);
+            transform: translateY(0);
         }
         
         .btn-login svg {
             transition: transform 0.3s ease;
-            width: 20px;
-            height: 20px;
         }
         
         .btn-login:hover svg {
-            transform: translateX(5px);
+            transform: translateX(4px);
         }
         
         .error-message {
-            padding: 14px 18px;
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            padding: 12px 16px;
+            background: #fee2e2;
             color: #dc2626;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 14px;
-            margin-top: -4px;
+            margin-top: -8px;
             display: none;
-            border: 1px solid #fca5a5;
-            font-weight: 500;
+            border: 1px solid #fecaca;
         }
         
         .error-message.show {
@@ -305,29 +215,24 @@
         
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
         
         /* Responsivo */
         @media (max-width: 480px) {
             .login-container {
-                padding: 40px 28px;
-                border-radius: 24px;
+                padding: 32px 24px;
+                border-radius: 20px;
             }
             
             .login-title {
-                font-size: 30px;
+                font-size: 28px;
             }
             
             .login-logo {
-                width: 110px;
-                height: 110px;
-                padding: 12px;
-            }
-            
-            .login-subtitle {
-                font-size: 14px;
+                width: 56px;
+                height: 56px;
             }
         }
         
@@ -407,7 +312,11 @@
                 <div class="login-container">
                     <div class="login-header">
                         <div class="login-logo">
-                            <img src="/Imagem/LOGO - REINO DOS CEUS.png" alt="Logo Reino dos Céus" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </div>
                         <h1 class="login-title">Bem-vindo</h1>
                         <p class="login-subtitle">Entre com suas credenciais para acessar o dashboard</p>
@@ -468,108 +377,29 @@
 
         <!-- Dashboard Principal -->
         <div id="dashboardScreen" class="screen hidden">
-            <div class="dashboard-layout">
-                <!-- Sidebar Overlay (Mobile) -->
-                <div class="sidebar-overlay" id="sidebarOverlay"></div>
-                
-                <!-- Sidebar -->
-                <aside class="dashboard-sidebar">
-                    <div class="sidebar-header">
-                        <div class="sidebar-logo">
-                            <i class='bx bx-book-reader'></i>
-                            <h2>Dashboard</h2>
-                        </div>
-                    </div>
-                    
-                    <div class="sidebar-user">
-                        <div class="user-avatar">
-                            <i class='bx bx-user'></i>
-                        </div>
-                        <div class="user-details">
-                            <div class="user-name" id="userName">Usuário</div>
-                            <div class="user-email" id="userEmail">admin@jornal.com</div>
-                        </div>
-                    </div>
-                    
-                    <nav class="sidebar-nav">
-                        <button class="nav-item active" data-tab="jornais">
-                            <i class='bx bx-book'></i>
-                            <span>Jornais</span>
-                        </button>
-                        <button class="nav-item" data-tab="carrossel">
-                            <i class='bx bx-slider-alt'></i>
-                            <span>Carrossel</span>
-                        </button>
-                        <button class="nav-item" data-tab="carrossel-medio">
-                            <i class='bx bx-slider'></i>
-                            <span>Carrossel Médio</span>
-                        </button>
-                        <button class="nav-item" data-tab="video">
-                            <i class='bx bx-video'></i>
-                            <span>Vídeo</span>
-                        </button>
-                        <button class="nav-item" data-tab="responsaveis">
-                            <i class='bx bx-user'></i>
-                            <span>Responsáveis</span>
-                        </button>
-                        <button class="nav-item" data-tab="faq">
-                            <i class='bx bx-help-circle'></i>
-                            <span>FAQ</span>
-                        </button>
-                        <button class="nav-item" data-tab="sites">
-                            <i class='bx bx-globe'></i>
-                            <span>Sites Igreja</span>
-                        </button>
-                        <button class="nav-item" data-tab="textos">
-                            <i class='bx bx-text'></i>
-                            <span>Textos</span>
-                        </button>
-                        <button class="nav-item" data-tab="banner">
-                            <i class='bx bx-image'></i>
-                            <span>Banner Modal</span>
-                        </button>
-                        <button class="nav-item" data-tab="noticias">
-                            <i class='bx bx-news'></i>
-                            <span>Notícias</span>
-                        </button>
-                        <button class="nav-item" data-tab="colunistas">
-                            <i class='bx bx-user-voice'></i>
-                            <span>Colunistas</span>
-                        </button>
-                        <button class="nav-item" data-tab="pagamentos">
-                            <i class='bx bx-credit-card'></i>
-                            <span>Pagamentos</span>
-                        </button>
-                        <button class="nav-item" data-tab="santuarios">
-                            <i class='bx bx-church'></i>
-                            <span>Santuários</span>
-                        </button>
-                        <button class="nav-item" data-tab="verificar-banco">
-                            <i class='bx bx-search-alt'></i>
-                            <span>Verificar Banco</span>
-                        </button>
-                    </nav>
-                    
-                    <div class="sidebar-footer">
-                        <button id="logoutBtn" class="nav-item logout-btn" type="button">
-                            <i class='bx bx-log-out'></i>
-                            <span>Sair</span>
-                        </button>
-                    </div>
-                </aside>
+            <header class="dashboard-header">
+                <h1>Dashboard - Gerenciamento de Jornais</h1>
+                <div class="header-actions">
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn btn-secondary">Sair</button>
+                </div>
+            </header>
 
-                <!-- Main Content -->
-                <div class="dashboard-content-wrapper">
-                    <header class="dashboard-header">
-                        <h1 id="dashboardTitle">Dashboard - Gerenciamento de Jornais</h1>
-                        <div class="header-actions">
-                            <button class="menu-toggle" id="menuToggle" style="display: none;">
-                                <i class='bx bx-menu'></i>
-                            </button>
-                        </div>
-                    </header>
-
-                    <main class="dashboard-main">
+            <main class="dashboard-main">
+                <div class="dashboard-tabs">
+                    <button class="tab-btn active" data-tab="jornais">Jornais</button>
+                    <button class="tab-btn" data-tab="carrossel">Carrossel</button>
+                    <button class="tab-btn" data-tab="carrossel-medio">Carrossel Médio</button>
+                    <button class="tab-btn" data-tab="video">Vídeo</button>
+                    <button class="tab-btn" data-tab="responsaveis">Responsáveis</button>
+                    <button class="tab-btn" data-tab="faq">FAQ</button>
+                    <button class="tab-btn" data-tab="sites">Sites Igreja</button>
+                    <button class="tab-btn" data-tab="textos">Textos</button>
+                    <button class="tab-btn" data-tab="banner">Banner Modal</button>
+                    <button class="tab-btn" data-tab="noticias">Notícias</button>
+                    <button class="tab-btn" data-tab="colunistas">Colunistas</button>
+                    <button class="tab-btn" data-tab="pagamentos">Pagamentos</button>
+                </div>
 
                 <!-- Tab Jornais -->
                 <div class="tab-content active" id="tab-jornais">
@@ -657,83 +487,7 @@
                     </div>
                     <div id="pagamentosList"></div>
                 </div>
-
-                <!-- Tab Santuários -->
-                <div class="tab-content" id="tab-santuarios">
-                    <div class="dashboard-actions">
-                        <div class="santuarios-add-form">
-                            <input type="text" id="santuarioNomeInput" placeholder="Nome do santuário" class="form-input santuario-input">
-                            <button type="button" id="addSantuarioBtn" class="btn btn-primary">+ Adicionar Santuário</button>
-                        </div>
-                    </div>
-                    <p class="form-hint" style="margin-bottom: 1rem;">Os santuários cadastrados aqui aparecem como opções no checkout, na etapa de finalizar compra.</p>
-                    <div id="santuariosList" class="jornais-grid"></div>
-                </div>
-
-                <!-- Tab Verificar Banco -->
-                <div class="tab-content" id="tab-verificar-banco">
-                    <div class="dashboard-actions">
-                        <button id="verificarBancoBtn" class="btn btn-primary" onclick="if(typeof window.verificarBancoDados === 'function') { window.verificarBancoDados(); } else { console.error('verificarBancoDados não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">
-                            <i class='bx bx-search-alt'></i> Verificar Banco de Dados
-                        </button>
-                        <button id="refreshVerificarBtn" class="btn btn-secondary" onclick="if(typeof window.verificarBancoDados === 'function') { window.verificarBancoDados(); } else { console.error('verificarBancoDados não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">
-                            <i class='bx bx-refresh'></i> Atualizar
-                        </button>
-                    </div>
-                    
-                    <div id="verificarBancoLoading" class="loading" style="display: none; text-align: center; padding: 2rem; color: #666;">
-                        <p>⏳ Verificando banco de dados...</p>
-                    </div>
-                    
-                    <div id="verificarBancoResults" style="display: none;">
-                        <!-- Informações de Conexão -->
-                        <div class="info-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #007bff;">
-                            <h2 style="color: #007bff; margin-bottom: 1rem; font-size: 1.5rem;">
-                                <i class='bx bx-server'></i> Informações de Conexão
-                            </h2>
-                            <table id="conexaoTable" style="width: 100%; border-collapse: collapse;">
-                                <thead>
-                                    <tr style="background: #e9ecef;">
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Propriedade</th>
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Valor</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Status de Transação -->
-                        <div class="info-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #28a745;">
-                            <h2 style="color: #28a745; margin-bottom: 1rem; font-size: 1.5rem;">
-                                <i class='bx bx-lock'></i> Status de Transação
-                            </h2>
-                            <table id="transacaoTable" style="width: 100%; border-collapse: collapse;">
-                                <thead>
-                                    <tr style="background: #e9ecef;">
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Propriedade</th>
-                                        <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6;">Valor</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Lista de Jornais -->
-                        <div class="info-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #ffc107;">
-                            <h2 style="color: #ffc107; margin-bottom: 1rem; font-size: 1.5rem;">
-                                <i class='bx bx-book'></i> Jornais no Banco (<span id="totalJornaisVerificar">0</span>)
-                            </h2>
-                            <div id="jornaisVerificarList" class="jornais-grid"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="verificarBancoError" class="error-message" style="display: none; background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545; margin-top: 1rem;"></div>
-                    
-                    <div id="verificarBancoSuccess" class="success-message" style="display: none; background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; border-left: 4px solid #28a745; margin-top: 1rem;"></div>
-                </div>
-                    </main>
-                </div>
-            </div>
+            </main>
         </div>
     </div>
 
@@ -838,9 +592,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="carrosselLink">Link (opcional)</label>
-                    <input type="url" id="carrosselLink" name="link" placeholder="https://exemplo.com/jornal-compra.html?id=1">
-                    <small class="form-help">URL para onde o usuário será direcionado ao clicar no banner. Deixe em branco se não quiser link.</small>
+                    <label for="carrosselLink">Link (Opcional)</label>
+                    <input type="url" id="carrosselLink" name="link" placeholder="https://exemplo.com">
+                    <small class="form-help">URL para onde o usuário será redirecionado ao clicar na imagem do carrossel</small>
                 </div>
 
                 <div class="modal-actions">
@@ -1069,78 +823,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="noticiaContent">Conteúdo (HTML/CSS) *</label>
-                    <div class="html-editor-wrapper">
-                        <div class="editor-toolbar">
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('h1', 'Título Principal')" title="Título H1">
-                                <i class='bx bx-heading'></i> H1
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('h2', 'Subtítulo')" title="Título H2">
-                                <i class='bx bx-heading'></i> H2
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('p', 'Parágrafo')" title="Parágrafo">
-                                <i class='bx bx-text'></i> P
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('strong', 'Texto em Negrito')" title="Negrito">
-                                <i class='bx bx-bold'></i> B
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('em', 'Texto em Itálico')" title="Itálico">
-                                <i class='bx bx-italic'></i> I
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('ul', 'Lista')" title="Lista">
-                                <i class='bx bx-list-ul'></i> Lista
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="openImageUploadModal()" title="Inserir Imagem">
-                                <i class='bx bx-image'></i> Imagem
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="insertHTMLTag('style', '/* Seus estilos CSS aqui */')" title="CSS">
-                                <i class='bx bx-code-alt'></i> CSS
-                            </button>
-                            <button type="button" class="toolbar-btn" onclick="previewHTMLContent()" title="Visualizar">
-                                <i class='bx bx-show'></i> Visualizar
-                            </button>
-                        </div>
-                        <textarea id="noticiaContent" name="content" rows="15" required placeholder="Digite ou cole seu HTML aqui. Use os botões acima para inserir tags comuns." style="font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5;"></textarea>
-                        <small class="form-help" style="margin-top: 8px; display: block;">
-                            💡 Dica: Você pode usar HTML completo, incluindo &lt;img&gt;, &lt;figure&gt;, &lt;style&gt;, etc. O conteúdo será renderizado exatamente como você escrever.
-                        </small>
-                    </div>
-                </div>
-                
-                <!-- Modal para Upload de Imagens -->
-                <div id="imageUploadModal" class="modal hidden">
-                    <div class="modal-content" style="max-width: 600px;">
-                        <div class="modal-header">
-                            <h2>Inserir Imagem</h2>
-                            <button type="button" class="modal-close" onclick="closeImageUploadModal()">&times;</button>
-                        </div>
-                        <div class="form-group">
-                            <label for="contentImageUpload">Selecione uma ou mais imagens</label>
-                            <input type="file" id="contentImageUpload" name="images" accept="image/*" multiple>
-                            <small class="form-help">Você pode selecionar múltiplas imagens de uma vez</small>
-                        </div>
-                        <div id="imageUploadPreview" style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;"></div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-secondary" onclick="closeImageUploadModal()">Cancelar</button>
-                            <button type="button" class="btn btn-primary" onclick="insertUploadedImages()">Inserir no Conteúdo</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Modal de Preview -->
-                <div id="htmlPreviewModal" class="modal hidden">
-                    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-                        <div class="modal-header">
-                            <h2>Visualização do Conteúdo</h2>
-                            <button type="button" class="modal-close" onclick="closeHTMLPreview()">&times;</button>
-                        </div>
-                        <div id="htmlPreviewContent" style="padding: 20px; background: #fff; border-radius: 8px; min-height: 200px;">
-                            <!-- Preview será inserido aqui -->
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-secondary" onclick="closeHTMLPreview()">Fechar</button>
-                        </div>
-                    </div>
+                    <label for="noticiaContent">Conteúdo *</label>
+                    <textarea id="noticiaContent" name="content" rows="10" required placeholder="Conteúdo completo da notícia"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -1325,294 +1009,6 @@
                 });
             }
         }, 500);
-    </script>
-    
-    <!-- Scripts para Editor HTML -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    
-    <script>
-        // Variáveis globais para o editor
-        let contentEditor = null;
-        let uploadedImages = [];
-        
-        // Inicializar CodeMirror quando o modal for aberto
-        function initHTMLEditor() {
-            const textarea = document.getElementById('noticiaContent');
-            if (textarea && !contentEditor) {
-                contentEditor = CodeMirror.fromTextArea(textarea, {
-                    mode: 'htmlmixed',
-                    theme: 'default',
-                    lineNumbers: true,
-                    lineWrapping: true,
-                    indentUnit: 2,
-                    tabSize: 2,
-                    autoCloseTags: true,
-                    matchTags: true,
-                    foldGutter: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
-                });
-                
-                contentEditor.setSize('100%', '400px');
-                console.log('✅ Editor HTML inicializado');
-            }
-        }
-        
-        // Função para inserir tags HTML
-        window.insertHTMLTag = function(tag, placeholder) {
-            if (!contentEditor) {
-                const textarea = document.getElementById('noticiaContent');
-                if (textarea) {
-                    const cursorPos = textarea.selectionStart;
-                    const text = textarea.value;
-                    let insertText = '';
-                    
-                    switch(tag) {
-                        case 'h1':
-                            insertText = `<h1>${placeholder}</h1>\n\n`;
-                            break;
-                        case 'h2':
-                            insertText = `<h2>${placeholder}</h2>\n\n`;
-                            break;
-                        case 'p':
-                            insertText = `<p>${placeholder}</p>\n\n`;
-                            break;
-                        case 'strong':
-                            insertText = `<strong>${placeholder}</strong>`;
-                            break;
-                        case 'em':
-                            insertText = `<em>${placeholder}</em>`;
-                            break;
-                        case 'ul':
-                            insertText = `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n\n`;
-                            break;
-                        case 'style':
-                            insertText = `<style>\n  /* ${placeholder} */\n  .minha-classe {\n    color: #000;\n  }\n</style>\n\n`;
-                            break;
-                    }
-                    
-                    const newText = text.substring(0, cursorPos) + insertText + text.substring(cursorPos);
-                    textarea.value = newText;
-                    textarea.focus();
-                    textarea.setSelectionRange(cursorPos + insertText.length, cursorPos + insertText.length);
-                }
-            } else {
-                const cursor = contentEditor.getCursor();
-                let insertText = '';
-                
-                switch(tag) {
-                    case 'h1':
-                        insertText = `<h1>${placeholder}</h1>\n\n`;
-                        break;
-                    case 'h2':
-                        insertText = `<h2>${placeholder}</h2>\n\n`;
-                        break;
-                    case 'p':
-                        insertText = `<p>${placeholder}</p>\n\n`;
-                        break;
-                    case 'strong':
-                        insertText = `<strong>${placeholder}</strong>`;
-                        break;
-                    case 'em':
-                        insertText = `<em>${placeholder}</em>`;
-                        break;
-                    case 'ul':
-                        insertText = `<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n\n`;
-                        break;
-                    case 'style':
-                        insertText = `<style>\n  /* ${placeholder} */\n  .minha-classe {\n    color: #000;\n  }\n</style>\n\n`;
-                        break;
-                }
-                
-                contentEditor.replaceRange(insertText, cursor);
-                contentEditor.focus();
-            }
-        };
-        
-        // Função para abrir modal de upload de imagens
-        window.openImageUploadModal = function() {
-            const modal = document.getElementById('imageUploadModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                document.getElementById('contentImageUpload').value = '';
-                uploadedImages = [];
-                document.getElementById('imageUploadPreview').innerHTML = '';
-            }
-        };
-        
-        // Função para fechar modal de upload
-        window.closeImageUploadModal = function() {
-            const modal = document.getElementById('imageUploadModal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        };
-        
-        // Processar upload de imagens
-        document.addEventListener('DOMContentLoaded', function() {
-            const imageInput = document.getElementById('contentImageUpload');
-            if (imageInput) {
-                imageInput.addEventListener('change', function(e) {
-                    const files = Array.from(e.target.files);
-                    const preview = document.getElementById('imageUploadPreview');
-                    preview.innerHTML = '';
-                    uploadedImages = [];
-                    
-                    files.forEach((file, index) => {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const imgData = {
-                                file: file,
-                                dataUrl: e.target.result,
-                                name: file.name
-                            };
-                            uploadedImages.push(imgData);
-                            
-                            const imgDiv = document.createElement('div');
-                            imgDiv.style.cssText = 'position: relative; border: 2px solid #e2e8f0; border-radius: 8px; overflow: hidden;';
-                            imgDiv.innerHTML = `
-                                <img src="${e.target.result}" style="width: 100%; height: 150px; object-fit: cover; display: block;">
-                                <div style="padding: 8px; background: #f8fafc; font-size: 12px; color: #64748b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                                    ${file.name}
-                                </div>
-                            `;
-                            preview.appendChild(imgDiv);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                });
-            }
-        });
-        
-        // Função para inserir imagens no conteúdo
-        window.insertUploadedImages = async function() {
-            if (uploadedImages.length === 0) {
-                showToast('Selecione pelo menos uma imagem', 'error');
-                return;
-            }
-            
-            // Upload das imagens para o servidor (uma por vez para garantir que todas sejam processadas)
-            const imageUrls = [];
-            
-            try {
-                showToast(`Enviando ${uploadedImages.length} imagem(ns)...`, 'info');
-                
-                // Fazer upload de cada imagem individualmente
-                for (let i = 0; i < uploadedImages.length; i++) {
-                    const img = uploadedImages[i];
-                    const formData = new FormData();
-                    formData.append('materia', img.file);
-                    
-                    console.log(`📤 Enviando imagem ${i + 1}/${uploadedImages.length}:`, img.file.name);
-                    
-                    const response = await fetch('/api/site/upload-materia', {
-                        method: 'POST',
-                        credentials: 'include',
-                        body: formData
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-                        throw new Error(errorData.error || `Erro ao fazer upload da imagem ${i + 1}`);
-                    }
-                    
-                    const data = await response.json();
-                    console.log('📥 Resposta do upload:', data);
-                    
-                    // Suportar diferentes formatos de resposta
-                    let url = null;
-                    if (data.url) {
-                        url = data.url;
-                    } else if (data.image) {
-                        url = Array.isArray(data.image) ? data.image[0] : data.image;
-                    } else if (data.images && data.images.length > 0) {
-                        url = data.images[0];
-                    } else if (data.urls && data.urls.length > 0) {
-                        url = data.urls[0];
-                    }
-                    
-                    if (url) {
-                        imageUrls.push(url);
-                        console.log(`✅ Imagem ${i + 1} enviada:`, url);
-                    } else {
-                        console.warn('⚠️ Formato de resposta inesperado:', data);
-                    }
-                }
-                
-                if (imageUrls.length === 0) {
-                    throw new Error('Nenhuma imagem foi enviada com sucesso');
-                }
-                
-                // Inserir tags <img> no editor
-                let imgTags = '';
-                imageUrls.forEach((url, index) => {
-                    const imgTag = `<figure style="margin: 20px 0;">
-  <img src="${url}" alt="Imagem ${index + 1}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-  <figcaption style="margin-top: 8px; font-size: 14px; color: #64748b; text-align: center; font-style: italic;">Legenda da imagem ${index + 1}</figcaption>
-</figure>\n\n`;
-                    imgTags += imgTag;
-                });
-                
-                if (contentEditor) {
-                    const cursor = contentEditor.getCursor();
-                    contentEditor.replaceRange(imgTags, cursor);
-                    contentEditor.focus();
-                } else {
-                    const textarea = document.getElementById('noticiaContent');
-                    if (textarea) {
-                        const cursorPos = textarea.selectionStart;
-                        const text = textarea.value;
-                        const newText = text.substring(0, cursorPos) + imgTags + text.substring(cursorPos);
-                        textarea.value = newText;
-                        textarea.focus();
-                    }
-                }
-                
-                closeImageUploadModal();
-                showToast(`${imageUrls.length} imagem(ns) inserida(s) com sucesso!`, 'success');
-            } catch (error) {
-                console.error('❌ Erro ao fazer upload:', error);
-                showToast('Erro ao fazer upload das imagens: ' + error.message, 'error');
-            }
-        };
-        
-        // Função para visualizar HTML
-        window.previewHTMLContent = function() {
-            const content = contentEditor ? contentEditor.getValue() : document.getElementById('noticiaContent').value;
-            const previewDiv = document.getElementById('htmlPreviewContent');
-            const modal = document.getElementById('htmlPreviewModal');
-            
-            if (previewDiv && modal) {
-                previewDiv.innerHTML = content;
-                modal.classList.remove('hidden');
-            }
-        };
-        
-        window.closeHTMLPreview = function() {
-            const modal = document.getElementById('htmlPreviewModal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        };
-        
-        // Modificar openNoticiaModal para inicializar o editor
-        const originalOpenNoticiaModal = window.openNoticiaModal;
-        if (typeof originalOpenNoticiaModal === 'function') {
-            window.openNoticiaModal = function(noticia) {
-                originalOpenNoticiaModal(noticia);
-                setTimeout(() => {
-                    initHTMLEditor();
-                    if (noticia && noticia.content) {
-                        if (contentEditor) {
-                            contentEditor.setValue(noticia.content);
-                        }
-                    }
-                }, 100);
-            };
-        }
     </script>
 </body>
 </html>

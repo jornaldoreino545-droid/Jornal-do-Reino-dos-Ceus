@@ -1,13 +1,7 @@
-// Primeiros logs para aparecer no Dokploy (se o container rodar este arquivo)
-console.log('=== JORNAL APP INICIANDO ===');
-console.log('Diretório:', process.cwd());
-console.log('Node:', process.version);
-
 const express = require("express");
 const path = require("path");
 const app = express();
 require('dotenv').config();
-console.log('Express e dotenv carregados');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
@@ -150,12 +144,6 @@ app.get(["/dashboard", "/dashboard/"], (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard-server', 'public', 'index.html'));
 });
 
-// Rota para verificar jornais no banco (ferramenta de diagnóstico)
-app.get('/verificar-jornais', (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.sendFile(path.join(__dirname, 'verificar-jornais-via-api.html'));
-});
-
 // Servir o gerador
 app.get("/gerador", (req, res) => {
   res.sendFile(path.join(__dirname, "gerador", "public", "index.html"));
@@ -213,85 +201,6 @@ app.get("/checkout/success", (req, res) => {
   });
 });
 
-// ==================== ROTA DE DOWNLOAD PROTEGIDA ====================
-// Rota para servir PDFs após verificação de pagamento
-app.get('/api/download-file', async (req, res) => {
-  try {
-    const { payment_intent, file } = req.query;
-    
-    if (!payment_intent || !file) {
-      return res.status(400).json({ error: 'payment_intent e file são obrigatórios' });
-    }
-    
-    // Verificar se Stripe está configurado
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('❌ STRIPE_SECRET_KEY não configurada');
-      return res.status(500).json({ error: 'Sistema de pagamento não configurado' });
-    }
-    
-    // Verificar status do pagamento com Stripe
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent);
-    
-    if (paymentIntent.status !== 'succeeded') {
-      return res.status(403).json({ 
-        error: 'Pagamento não confirmado',
-        status: paymentIntent.status
-      });
-    }
-    
-    console.log('✅ Pagamento confirmado, servindo PDF:', file);
-    
-    const filePath = decodeURIComponent(file);
-    
-    // PDF armazenado no banco (BLOB) - /api/pdfs/:id
-    if (filePath.startsWith('/api/pdfs/')) {
-      const match = filePath.match(/^\/api\/pdfs\/(\d+)$/);
-      if (!match) {
-        return res.status(403).json({ error: 'ID de PDF inválido' });
-      }
-      const pdfId = parseInt(match[1], 10);
-      try {
-        const pool = require('./dashboard-server/config/database');
-        const [rows] = await pool.execute('SELECT dados_pdf, nome_arquivo FROM pdfs WHERE id = ?', [pdfId]);
-        if (!rows.length || !rows[0].dados_pdf) {
-          return res.status(404).json({ error: 'PDF não encontrado no banco' });
-        }
-        const filename = rows[0].nome_arquivo || 'jornal.pdf';
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.send(rows[0].dados_pdf);
-        return;
-      } catch (dbErr) {
-        console.error('❌ Erro ao buscar PDF no banco:', dbErr.message);
-        return res.status(500).json({ error: 'Erro ao carregar PDF' });
-      }
-    }
-    
-    // PDF em disco - /uploads/pdfs/...
-    if (filePath.includes('..') || !filePath.startsWith('/uploads/')) {
-      return res.status(403).json({ error: 'Caminho de arquivo inválido' });
-    }
-    
-    const fullPath = path.join(__dirname, 'dashboard-server', filePath);
-    if (!await fs.pathExists(fullPath)) {
-      console.error('❌ Arquivo não encontrado:', fullPath);
-      return res.status(404).json({ error: 'O arquivo não está disponível no site. O PDF pode ter sido perdido após um deploy; use a opção de salvar PDF no banco.' });
-    }
-    
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${path.basename(fullPath)}"`);
-    res.sendFile(fullPath);
-    
-  } catch (error) {
-    console.error('❌ Erro ao servir PDF:', error);
-    res.status(500).json({ 
-      error: 'Erro ao servir PDF',
-      message: error.message 
-    });
-  }
-});
-
 // ==================== ROTAS DE API - SITE PRINCIPAL ====================
 // (Colocadas antes das rotas do dashboard para ter prioridade nas rotas públicas)
 
@@ -345,41 +254,24 @@ app.post('/api/verificar', async (req, res) => {
 
 // ==================== ROTAS DE API - DASHBOARD ====================
 
-let dashboardLoadError = null;
-try {
-  console.log('📦 Carregando rotas do dashboard...');
-  const dashboardRoutes = require('./dashboard-server/routes');
-  app.use('/api', dashboardRoutes);
-  console.log('✅ Rotas do dashboard carregadas');
-} catch (err) {
-  dashboardLoadError = err;
-  console.error('❌ ERRO ao carregar dashboard:', err.message);
-  console.error(err.stack);
-  app.use('/api', (req, res) => {
-    res.status(503).json({
-      error: 'API em manutenção',
-      detalhe: process.env.NODE_ENV === 'production' ? 'Serviço temporariamente indisponível.' : err.message
-    });
-  });
-}
+// Importar rotas do dashboard (montadas em /api)
+console.log('📦 Carregando rotas do dashboard...');
+const dashboardRoutes = require('./dashboard-server/routes');
+console.log('✅ Rotas do dashboard carregadas');
+
+// Montar rotas do dashboard em /api
+app.use('/api', dashboardRoutes);
+console.log('✅ Rotas do dashboard montadas em /api');
+
+// Log de teste para verificar se as rotas estão sendo registradas
+console.log('🔍 Verificando rotas registradas...');
+console.log('   Rotas disponíveis no router:', Object.keys(dashboardRoutes.stack || {}).length > 0 ? 'Sim' : 'Não');
 
 // ==================== ROTAS DE API - CHECKOUT ====================
 
-let checkoutLoadError = null;
-try {
-  console.log('📦 Carregando rotas do checkout...');
-  const checkoutRoutes = require('./checkout/routes');
-  app.use('/', checkoutRoutes);
-  console.log('✅ Rotas do checkout carregadas');
-} catch (err) {
-  checkoutLoadError = err;
-  console.error('❌ ERRO ao carregar checkout:', err.message);
-  console.error(err.stack);
-}
-
-if (dashboardLoadError || checkoutLoadError) {
-  console.log('⚠️  App subiu com erros. Site principal deve funcionar; API/checkout podem estar limitados.');
-}
+// Importar rotas do checkout
+const checkoutRoutes = require('./checkout/routes');
+app.use('/', checkoutRoutes);
 
 // ==================== ROTAS ADMIN ====================
 function requireAuth(req, res, next){

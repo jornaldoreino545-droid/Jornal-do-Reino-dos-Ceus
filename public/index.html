@@ -2,7 +2,8 @@
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"rel="stylesheet"/>
 
     <link rel="stylesheet" href="./reset.css" />
@@ -61,94 +62,6 @@
           transform: translateY(0);
         }
       }
-      /* Modal "Em breve" */
-      .modal-em-breve-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 9, 91, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        animation: modalEmBreveFadeIn 0.3s ease-out;
-      }
-      @keyframes modalEmBreveFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      .modal-em-breve-box {
-        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        max-width: 420px;
-        width: 100%;
-        padding: 32px 28px;
-        text-align: center;
-        box-shadow: 0 25px 50px rgba(0, 9, 91, 0.25), 0 0 0 1px rgba(255,255,255,0.1);
-        position: relative;
-        animation: modalEmBreveSlide 0.35s ease-out;
-      }
-      @keyframes modalEmBreveSlide {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .modal-em-breve-fechar {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        width: 36px;
-        height: 36px;
-        border: none;
-        background: rgba(0, 9, 91, 0.08);
-        color: #00095b;
-        font-size: 1.5rem;
-        line-height: 1;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .modal-em-breve-fechar:hover {
-        background: rgba(0, 9, 91, 0.15);
-      }
-      .modal-em-breve-icone {
-        margin-bottom: 16px;
-      }
-      .modal-em-breve-titulo {
-        font-family: 'Roboto', sans-serif;
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #00095b;
-        margin: 0 0 12px 0;
-      }
-      .modal-em-breve-texto {
-        font-size: 1rem;
-        line-height: 1.6;
-        color: #334155;
-        margin: 0 0 8px 0;
-      }
-      .modal-em-breve-sub {
-        font-size: 0.9rem;
-        color: #64748b;
-        margin: 0 0 24px 0;
-      }
-      .modal-em-breve-btn {
-        display: inline-block;
-        padding: 14px 32px;
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-      }
-      .modal-em-breve-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
-      }
     </style>
     <link rel="stylesheet" href="./Carrosselpagina1/style.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
@@ -157,7 +70,7 @@
     
     <link rel="icon" href="./Imagem/logo jornal.png">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-    <title>Jornal do Reino</title>
+    <title>Igreja Reino dos Céus</title>
   </head>
   <body>
     <!-- Loanding-->
@@ -187,45 +100,6 @@
         </div>
       </div>
 
-      <!-- Modal "Em breve" — jornal disponível em 7 dias -->
-      <div id="modalEmBreve" class="modal-em-breve-overlay" role="dialog" aria-modal="true" aria-labelledby="modalEmBreveTitulo" style="display: none;">
-        <div class="modal-em-breve-box">
-          <button type="button" class="modal-em-breve-fechar" onclick="window.fecharModalEmBreve && window.fecharModalEmBreve();" aria-label="Fechar">&times;</button>
-          <div class="modal-em-breve-icone">
-            <i class='bx bx-time-five' style="font-size: 4rem; color: #059669;"></i>
-          </div>
-          <h2 id="modalEmBreveTitulo" class="modal-em-breve-titulo">Em breve</h2>
-          <p class="modal-em-breve-texto">Este jornal estará disponível para compra em <strong>7 dias</strong>. Agradecemos sua expectativa e interesse pelo conteúdo do Jornal do Reino dos Céus.</p>
-          <p class="modal-em-breve-sub">Volte em breve para garantir a sua edição.</p>
-          <button type="button" class="modal-em-breve-btn" onclick="window.fecharModalEmBreve && window.fecharModalEmBreve();">Entendi</button>
-        </div>
-      </div>
-      <script>
-        (function() {
-          window.abrirModalEmBreve = function() {
-            var el = document.getElementById('modalEmBreve');
-            if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-          };
-          window.fecharModalEmBreve = function() {
-            var el = document.getElementById('modalEmBreve');
-            if (el) { el.style.display = 'none'; document.body.style.overflow = ''; }
-          };
-          document.body.addEventListener('click', function(e) {
-            var btn = e.target.closest('#jornaisContainer .jornal-card-btn');
-            if (!btn) return;
-            e.preventDefault();
-            if (btn.getAttribute('data-ativo') === 'false') {
-              window.abrirModalEmBreve();
-            } else {
-              var link = btn.getAttribute('data-link');
-              if (link) window.location.href = link;
-            }
-          });
-          document.getElementById('modalEmBreve').addEventListener('click', function(e) {
-            if (e.target === this) window.fecharModalEmBreve();
-          });
-        })();
-      </script>
 
 <!--============================================================================
 ============================================================================
@@ -237,37 +111,9 @@
 
       <script>
         async function loadPart(id, file) {
-          try {
-            const res = await fetch(file, {
-              method: 'GET',
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn(`Erro de rede ao carregar ${file} (pode ser extensão do navegador):`, err.message);
-                return null;
-              }
-              throw err;
-            });
-            
-            if (!res || !res.ok) {
-              if (res) {
-                console.error(`Erro ao carregar ${file}: HTTP ${res.status}`);
-              } else {
-                console.warn(`Não foi possível carregar ${file}. Usando conteúdo padrão.`);
-              }
-              return;
-            }
-            
-            const html = await res.text();
-            const element = document.getElementById(id);
-            if (element) {
-              element.innerHTML = html;
-            }
-          } catch (error) {
-            console.error(`Erro ao carregar ${file}:`, error);
-          }
+          const res = await fetch(file);
+          const html = await res.text();
+          document.getElementById(id).innerHTML = html;
         }
         // volta uma pasta com "../"
         loadPart("header", "haader,footer-principal/header.html");
@@ -305,7 +151,7 @@
             JORNAL CONSAGRADO PARA LEVAR A PALAVRA
           </h1>
           <h2 id="videoSubtituloContainer">
-            Bispos e Pastores consagram o Jornal do Reino dos Céus
+            O Bispo Rodrigo e os pastores consagram o Jornais das Igrejas
           </h2>
         </div>
 
@@ -411,10 +257,6 @@ Por isso, o Jornal do Reino dos Céus é tão importante: porque ele não apenas
 
       <section class="carrossel-medio" id="carrossel-medio">
         <div class="carrossel-medio-container">
-          <div class="carrossel-medio-header">
-            <h2 class="carrossel-medio-title">Campeões no Evangelismo com o Jornal do Reino</h2>
-            <p class="carrossel-medio-subtitle">Parabéns a todos os pastores e evangelistas</p>
-          </div>
           <div class="carrossel-medio-wrapper">
             <button class="carrossel-medio-nav carrossel-medio-nav-anterior" id="carrossel-medio-btn-anterior" aria-label="Slide anterior">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -531,7 +373,7 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
           </div>
 
           <!-- Complete form with reCAPTCHA and custom fields -->
-          <form id="contactForm" action="https://api.staticforms.xyz/submit" method="POST">
+          <form action="https://api.staticforms.xyz/submit" method="POST">
             <!-- Required: Your Static Forms API key -->
             <input
               type="hidden"
@@ -601,28 +443,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               value="https://www.testeigreja.store/pag-Obrigado.html"
             />
 
-            <button type="submit" id="submitBtn">
-              <span class="btn-text">Envie menssagem</span>
-              <span class="btn-loading" style="display: none;">
-                <span class="spinner"></span> Enviando...
-              </span>
-            </button>
+            <button type="submit">Envie menssagem</button>
           </form>
         </div>
       </section>
-
-      <!-- Modal de Sucesso -->
-      <div id="successModal" class="success-modal" style="display: none;">
-        <div class="success-modal-overlay"></div>
-        <div class="success-modal-content">
-          <div class="success-icon">
-            <i class='bx bx-check-circle'></i>
-          </div>
-          <h2>Mensagem enviada com sucesso!</h2>
-          <p>Recebemos seu contato e retornaremos o mais rápido possível.</p>
-          <button class="success-modal-close" onclick="closeSuccessModal()">Fechar</button>
-        </div>
-      </div>
 
 <!--============================================================================
 ============================================================================
@@ -655,8 +479,8 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         
         <div class="eighth-elemet">
         <div data-aos="fade-down"class="eighth-titulos">
-          <h1>CONHEÇA MAIS SOBRE NOSSA IGREJA</h1>
-          <h2>Conheça os sites da Igreja Reino dos Céus</h2>
+          <h1>CONHEÇA MAIS SOBRE NOSSO IGREJA</h1>
+          <h2>Tire suas dúvidas de forma simples e rápida</h2>
         </div>
 
         <div data-aos="fade-up" class="todos-site-igreja">
@@ -701,113 +525,6 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
 
     <div id="footer"></div>
 
-    <!-- Handler global para erros não tratados de extensões do navegador -->
-    <script>
-      // Capturar erros de promise não tratados (principalmente de extensões do Chrome)
-      window.addEventListener('unhandledrejection', function(event) {
-        const error = event.reason;
-        
-        // Verificar se é um erro de extensão do Chrome
-        if (error && typeof error === 'object') {
-          const errorString = JSON.stringify(error).toLowerCase();
-          const errorMessage = (error.message || '').toLowerCase();
-          const errorName = (error.name || '').toLowerCase();
-          const errorCode = error.code;
-          const httpStatus = error.httpStatus;
-          
-          // Verificar stack trace se disponível
-          let originalErrorStack = '';
-          if (error.originalError && error.originalError.stack) {
-            originalErrorStack = error.originalError.stack.toLowerCase();
-          }
-          
-          // Verificar reqInfo se disponível
-          let reqPath = '';
-          let reqPathPrefix = '';
-          if (error.reqInfo) {
-            reqPath = (error.reqInfo.path || '').toLowerCase();
-            reqPathPrefix = (error.reqInfo.pathPrefix || '').toLowerCase();
-          }
-          
-          // Verificar data.error se disponível
-          let dataError = '';
-          if (error.data && error.data.error) {
-            dataError = String(error.data.error).toLowerCase();
-          }
-          
-          // Ignorar erros de extensões do Chrome (permission errors, template_list, etc)
-          if (
-            errorCode === 403 ||
-            (httpStatus === 200 && errorCode === 403) ||
-            originalErrorStack.includes('background.js') ||
-            originalErrorStack.includes('chrome-extension') ||
-            reqPath.includes('/writing/') ||
-            reqPath.includes('/site_integration/') ||
-            reqPathPrefix.includes('/writing') ||
-            reqPathPrefix.includes('/site_integration') ||
-            reqPathPrefix === '/writing' ||
-            reqPathPrefix === '/site_integration' ||
-            errorMessage.includes('permission error') ||
-            errorMessage.includes('userautherror') ||
-            errorMessage.includes('userauth') ||
-            reqPath.includes('get_template_list') ||
-            reqPath.includes('template_list') ||
-            reqPath === '/template_list' ||
-            reqPath === '/get_template_list' ||
-            dataError.includes('userauth') ||
-            dataError.includes('permission') ||
-            errorString.includes('site_integration') ||
-            errorString.includes('template_list') ||
-            errorString.includes('permission error') ||
-            errorString.includes('background.js') ||
-            errorString.includes('userautherror') ||
-            errorString.includes('writing') ||
-            (error.data && error.data.code === 403) ||
-            (error.data && error.data.msg && error.data.msg.toLowerCase().includes('permission'))
-          ) {
-            // Silenciar completamente - é de extensão do navegador
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-          }
-        }
-        
-        // Para outros erros, apenas logar sem mostrar no console como erro não tratado
-        // (já que adicionamos .catch() em todos os fetches)
-        console.warn('Promise rejeitada (já tratada):', error);
-        event.preventDefault();
-      });
-      
-      // Também capturar erros gerais não tratados
-      window.addEventListener('error', function(event) {
-        const error = event.error;
-        const errorSource = (event.filename || '').toLowerCase();
-        const errorMessage = (event.message || '').toLowerCase();
-        const errorStack = (event.error && event.error.stack ? event.error.stack : '').toLowerCase();
-        
-        // Ignorar erros de extensões
-        if (
-          errorSource.includes('chrome-extension') ||
-          errorSource.includes('background.js') ||
-          errorSource.includes('extension://') ||
-          errorMessage.includes('permission error') ||
-          errorMessage.includes('template_list') ||
-          errorMessage.includes('get_template_list') ||
-          errorMessage.includes('userautherror') ||
-          errorMessage.includes('userauth') ||
-          errorStack.includes('chrome-extension') ||
-          errorStack.includes('background.js') ||
-          errorStack.includes('site_integration') ||
-          errorStack.includes('writing') ||
-          errorStack.includes('template_list')
-        ) {
-          event.preventDefault();
-          event.stopPropagation();
-          return;
-        }
-      });
-    </script>
-    
     <script src="./gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
     <script src="./style_efeitos.js"></script>
@@ -823,31 +540,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarCarrossel() {
           try {
             console.log('Iniciando carregamento do carrossel...');
-            const response = await fetch('/api/site/carrossel', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              // Ignorar erros de CORS de extensões do navegador
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar carrossel (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/carrossel');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar carrossel. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const carrosselItems = await response.json();
@@ -876,17 +572,13 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             console.log('Itens ativos do carrossel:', itensAtivos.length);
             
             // Gerar slides do carrossel
-            wrapper.innerHTML = itensAtivos.map(item => {
+            wrapper.innerHTML = itensAtivos.map((item, index) => {
               // Normalizar caminho da imagem
               let imagemUrl = item.imagem || '';
               
               // Se começa com /uploads, manter (arquivo enviado pelo dashboard)
               if (imagemUrl.startsWith('/uploads/')) {
                 // Já está correto
-              }
-              // Se é imagem no banco (BLOB) - servida por GET /api/fotos/:id
-              else if (imagemUrl.startsWith('/api/fotos/')) {
-                // Manter como está
               }
               // Se começa com http, manter (URL externa)
               else if (imagemUrl.startsWith('http')) {
@@ -907,48 +599,48 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
                 imagemUrl = '/uploads/materias/' + imagemUrl;
               }
               
-              // Verificar se há link para tornar a imagem clicável
-              const link = item.link || '';
+              // Debug: verificar se o link está presente
+              const temLink = item.link && item.link.trim();
+              const linkUrl = temLink ? item.link.trim() : '';
               
-              console.log('Item do carrossel:', { id: item.id, link: link, imagem: item.imagem });
+              console.log(`Item ${index} do carrossel:`, { 
+                id: item.id, 
+                imagem: imagemUrl, 
+                link: item.link,
+                linkUrl: linkUrl,
+                temLink: !!temLink
+              });
               
-              // Escapar aspas no link para evitar problemas no HTML
-              const escapedLink = link ? link.replace(/'/g, "&#39;").replace(/"/g, "&quot;") : '';
-              
-              const slideContent = link 
-                ? `<a href="${escapedLink}" class="carrossel-link" style="display: block; width: 100%; height: 100%; cursor: pointer; position: relative; z-index: 10;" ${link.startsWith('http') || link.startsWith('//') ? 'target="_blank" rel="noopener noreferrer"' : ''} onclick="event.stopPropagation(); console.log('Link clicado:', '${escapedLink}'); return true;">
-                    <img src="${imagemUrl}" alt="Carrossel" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">
-                  </a>`
-                : `<img src="${imagemUrl}" alt="Carrossel" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">`;
-              
-              return `
-                <div class="swiper-slide">
-                  ${slideContent}
-                </div>
-              `;
+              // Se tiver link, tornar a imagem clicável
+              if (temLink) {
+                return `
+                  <div class="swiper-slide" style="position: relative; width: 100%; height: 100%;">
+                    <a href="${linkUrl}" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       style="display: block; width: 100%; height: 100%; cursor: pointer; text-decoration: none;"
+                       onclick="event.stopPropagation(); console.log('🔗 Link do carrossel clicado:', '${linkUrl}'); return true;">
+                      <img src="${imagemUrl}" 
+                           alt="Carrossel" 
+                           style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;" 
+                           onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">
+                    </a>
+                  </div>
+                `;
+              } else {
+                return `
+                  <div class="swiper-slide">
+                    <img src="${imagemUrl}" 
+                         alt="Carrossel" 
+                         style="width: 100%; height: 100%; object-fit: cover; display: block;" 
+                         onerror="console.error('Erro ao carregar imagem do carrossel:', '${imagemUrl}'); this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27400%27 height=%27300%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3EImagem não encontrada%3C/text%3E%3C/svg%3E';">
+                  </div>
+                `;
+              }
             }).join('');
             
             // Inicializar Swiper após carregar conteúdo dinâmico
             inicializarSwiper();
-            
-            // Adicionar event listeners para links do carrossel após renderizar
-            setTimeout(() => {
-              const carrosselLinks = document.querySelectorAll('.carrossel-link');
-              carrosselLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                  // Permitir que o link funcione normalmente
-                  const href = this.getAttribute('href');
-                  if (href) {
-                    // Se for link externo, já tem target="_blank"
-                    // Se for link interno, navegar normalmente
-                    if (!href.startsWith('http') && !href.startsWith('//')) {
-                      e.preventDefault();
-                      window.location.href = href;
-                    }
-                  }
-                });
-              });
-            }, 100);
             
             console.log('✅ Carrossel carregado e Swiper inicializado');
           } catch (error) {
@@ -973,6 +665,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             window.carrosselSwiper = new Swiper(".mySwiper", {
               spaceBetween: 30,
               centeredSlides: true,
+              allowTouchMove: true,
+              simulateTouch: true,
+              allowSlideNext: true,
+              allowSlidePrev: true,
               autoplay: {
                 delay: 2500,
                 disableOnInteraction: false,
@@ -988,29 +684,21 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               // Permitir cliques em links dentro dos slides
               preventClicks: false,
               preventClicksPropagation: false,
+              // Permitir interação com elementos clicáveis
               touchEventsTarget: 'container',
             });
             
-            // Adicionar event listener para garantir que links funcionem após Swiper inicializar
-            setTimeout(() => {
-              const carrosselLinks = document.querySelectorAll('.carrossel-link');
-              console.log('Links encontrados no carrossel:', carrosselLinks.length);
-              carrosselLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                  const href = this.getAttribute('href');
-                  if (href) {
-                    console.log('Link do carrossel clicado:', href);
-                    // Permitir navegação normal
-                    if (!href.startsWith('http') && !href.startsWith('//')) {
-                      // Link interno - navegar normalmente
-                      e.preventDefault();
-                      window.location.href = href;
-                    }
-                    // Links externos já têm target="_blank" e funcionam normalmente
-                  }
-                }, true); // Usar capture phase para garantir que o evento seja capturado antes do Swiper
+            // Adicionar event listener para garantir que os links funcionem
+            if (window.carrosselSwiper) {
+              window.carrosselSwiper.on('click', function(swiper, event) {
+                // Se o clique foi em um link, permitir navegação
+                const link = event.target.closest('a');
+                if (link && link.href) {
+                  console.log('Link clicado no carrossel:', link.href);
+                  // O navegador já vai seguir o link automaticamente
+                }
               });
-            }, 300);
+            }
           } else {
             console.error('Swiper não está disponível!');
           }
@@ -1031,19 +719,7 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
     <script src="./Loanding/Loanding.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-      // Aguardar o AOS carregar antes de inicializar
-      if (typeof AOS !== 'undefined') {
-        AOS.init();
-      } else {
-        // Se o AOS ainda não carregou, aguardar o evento de carregamento
-        window.addEventListener('load', function() {
-          if (typeof AOS !== 'undefined') {
-            AOS.init();
-          } else {
-            console.warn('AOS não foi carregado. Verifique a conexão com o CDN.');
-          }
-        });
-      }
+      AOS.init();
     </script>
 
     <!-- Script para carregar jornais dinamicamente -->
@@ -1054,36 +730,16 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarJornais() {
           try {
             console.log('Iniciando carregamento de jornais...');
-            const response = await fetch('/api/jornais', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar jornais (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/jornais');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar jornais. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const data = await response.json();
             console.log('Dados recebidos:', data);
             
-            // Obter o ano atual — na página inicial mostramos apenas jornais do ano corrente
+            // Obter o ano atual
             const anoAtual = new Date().getFullYear();
             console.log(`Ano atual: ${anoAtual}`);
             
@@ -1107,9 +763,9 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               return;
             }
             
-            // Apenas jornais do ano atual na página inicial; anos anteriores ficam em "Conheça mais"
+            // Filtrar apenas jornais ativos do ano atual e ordenar
             const jornaisAtivos = todosJornais
-              .filter(j => Number(j.ano) === anoAtual)
+              .filter(j => j.ativo !== false && j.ano === anoAtual)
               .sort((a, b) => {
                 // 1. Ordenar por ordem (se existir) - menor ordem primeiro
                 if (a.ordem && b.ordem) {
@@ -1146,14 +802,14 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
             const jornais = jornaisAtivos.slice(0, 12);
             
             console.log(`Total de jornais no banco: ${todosJornais.length}`);
-            console.log(`Jornais de ${anoAtual} (página inicial): ${jornaisAtivos.length}`);
+            console.log(`Jornais ativos do ano ${anoAtual}: ${jornaisAtivos.length}`);
             console.log(`Mostrando ${jornais.length} jornais na página inicial (máximo 12)`);
             if (jornaisAtivos.length > 12) {
-              console.log(`💡 Para ver todos os ${jornaisAtivos.length} jornais de ${anoAtual}, clique em "Conheça mais"`);
+              console.log(`💡 Dica: Para ver todos os ${jornaisAtivos.length} jornais de ${anoAtual}, clique no botão "Conheça mais" abaixo`);
             }
             if (jornaisAtivos.length === 0) {
-              console.log(`⚠️ Nenhum jornal de ${anoAtual} no momento. Outros anos em "Conheça mais".`);
-              container.innerHTML = `<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal de ${anoAtual} no momento. Clique em "Conheça mais" para ver edições de outros anos.</div>`;
+              console.log(`⚠️ Nenhum jornal publicado em ${anoAtual} no momento`);
+              container.innerHTML = `<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum jornal publicado em ${anoAtual} no momento.</div>`;
               return;
             }
             
@@ -1197,15 +853,14 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
               // Formatar data
               const dataFormatada = dataCriacao ? dataCriacao.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '';
               
-              // Verificar se está ativo (MySQL pode enviar 0 ou 1)
-              const isAtivo = jornal.ativo === true || jornal.ativo === 1;
+              // Verificar se está ativo
+              const isAtivo = jornal.ativo !== false;
               
               const classeEffect = index === 0 ? 'card effect card01 loaded' : 'card effect loaded';
-              const classeEmBreve = !isAtivo ? ' card-em-breve' : '';
               
               return `
-                <div class="${classeEffect}${classeEmBreve}" style="opacity: 1 !important; visibility: visible !important; display: flex !important;">
-                  <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: ${!isAtivo ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #00095b 0%, #001a7a 100%)'};">
+                <div class="${classeEffect}" style="opacity: 1 !important; visibility: visible !important; display: flex !important;">
+                  <div class="card-image-wrapper" style="position: relative; width: 100%; height: 400px; overflow: hidden; background: linear-gradient(135deg, #00095b 0%, #001a7a 100%);">
                     <img src="${imagemCapa}" 
                          alt="${jornal.nome}"
                          style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease; filter: brightness(0.95) contrast(1.05);"
@@ -1213,9 +868,8 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
                     
                     <!-- Badges no canto superior -->
                     <div class="card-badges" style="position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 3;">
-                      ${!isAtivo ? '<span class="badge badge-em-breve" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Em breve</span>' : ''}
-                      ${isNovo && isAtivo ? '<span class="badge badge-novo" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Novo</span>' : ''}
-                      ${jornal.ordem <= 3 && isAtivo ? '<span class="badge badge-destaque" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Destaque</span>' : ''}
+                      ${isNovo ? '<span class="badge badge-novo" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Novo</span>' : ''}
+                      ${jornal.ordem <= 3 ? '<span class="badge badge-destaque" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">Destaque</span>' : ''}
                     </div>
                     
                     <!-- Data no canto superior direito -->
@@ -1238,23 +892,23 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
                       <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; line-height: 1.6; margin: 0; text-align: center; font-family: 'Roboto', sans-serif; font-weight: 400;">${jornal.descricao.length > 120 ? jornal.descricao.substring(0, 120) + '...' : jornal.descricao}</p>
                     </div>` : ''}
                     
-                    <!-- Meta informações (mês, ano, PDF, status) -->
-                    <div class="card-meta-info jornal-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
-                      <span class="jornal-meta-item" style="display: flex; align-items: center; gap: 6px; color: #ffffff; font-size: 1rem; font-weight: 600; font-family: 'Roboto', sans-serif; letter-spacing: 0.02em;">
+                    <!-- Meta informações -->
+                    <div class="card-meta-info" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                      <span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
                         <span>${jornal.mes} ${jornal.ano}</span>
                       </span>
-                      ${jornal.pdf ? `<span class="jornal-meta-item" style="display: flex; align-items: center; gap: 6px; color: #ffffff; font-size: 1rem; font-weight: 600; font-family: 'Roboto', sans-serif; letter-spacing: 0.02em;">
+                      ${jornal.pdf ? `<span style="display: flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 500;">
                         <span>PDF</span>
                       </span>` : ''}
-                      ${isAtivo ? `<span class="jornal-meta-status jornal-meta-disponivel" style="display: flex; align-items: center; gap: 6px; color: #34d399; font-size: 1rem; font-weight: 700; font-family: 'Roboto', sans-serif; letter-spacing: 0.03em; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">
+                      ${isAtivo ? `<span style="display: flex; align-items: center; gap: 6px; color: #10b981; font-size: 0.85rem; font-weight: 600;">
                         <span>Disponível</span>
-                      </span>` : '<span class="jornal-meta-status jornal-meta-em-breve" style="display: flex; align-items: center; gap: 6px; color: #c4b5fd; font-size: 1rem; font-weight: 700; font-family: \'Roboto\', sans-serif; letter-spacing: 0.03em; text-shadow: 0 1px 2px rgba(0,0,0,0.2);"><span>Em breve</span></span>'}
+                      </span>` : '<span style="display: flex; align-items: center; gap: 6px; color: #ef4444; font-size: 0.85rem; font-weight: 600;"><span>Indisponível</span></span>'}
                     </div>
                     
-                    <button type="button" class="jornal-card-btn ${!isAtivo ? 'btn-em-breve' : ''}" data-ativo="${isAtivo}" data-link="${linkCompra.replace(/"/g, '&quot;')}" style="outline: none; cursor: ${isAtivo ? 'pointer' : 'pointer'}; border: none; width: 100%; margin-top: auto; padding: 16px 24px; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.8px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(255, 192, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); font-weight: 600; ${!isAtivo ? 'background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);' : ''}">
-                      <span style="color: #000000; font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1rem; position: relative; z-index: 10;">
-                        ${isAtivo ? 'Adquira o seu' : 'Em breve — Clique para mais informações'}
-                      </span>
+                    <button style="outline: none; cursor: pointer; border: none; width: 100%; margin-top: auto; padding: 16px 24px; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.8px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #ffc014 0%, #ffdb3c 100%); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(255, 192, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); font-weight: 600;" ${!isAtivo ? 'disabled' : ''}>
+                      <a href="${linkCompra}" style="color: #000000; font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1rem; text-decoration: none; position: relative; z-index: 10;">
+                        ${isAtivo ? 'Adquira o seu' : 'Indisponível'}
+                      </a>
                     </button>
                   </div>
                 </div>
@@ -1386,30 +1040,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarResponsaveis() {
           try {
             console.log('Iniciando carregamento de responsáveis...');
-            const response = await fetch('/api/site/responsaveis', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar responsáveis (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/responsaveis');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar responsáveis. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const responsaveis = await response.json();
@@ -1538,30 +1172,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarTextos() {
           try {
             console.log('Iniciando carregamento de textos...');
-            const response = await fetch('/api/site/textos', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar textos (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/textos');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar textos. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const textos = await response.json();
@@ -1666,30 +1280,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarTextoIgreja() {
           try {
             console.log('Iniciando carregamento de texto da igreja...');
-            const response = await fetch('/api/site/textos', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar texto da igreja (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/textos');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar texto da igreja. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const textos = await response.json();
@@ -1800,30 +1394,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarBannerModal() {
           try {
             console.log('Iniciando carregamento de banner modal...');
-            const response = await fetch('/api/site/banner-modal', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar banner modal (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/banner-modal');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar banner modal. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const banner = await response.json();
@@ -1950,30 +1524,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarFAQ() {
           try {
             console.log('Iniciando carregamento de FAQ...');
-            const response = await fetch('/api/site/faq', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar FAQ (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/faq');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar FAQ. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const faqs = await response.json();
@@ -2081,30 +1635,10 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         async function carregarVideo() {
           try {
             console.log('Iniciando carregamento de vídeo...');
-            const response = await fetch('/api/site/video', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              mode: 'cors',
-              credentials: 'same-origin'
-            }).catch(err => {
-              // Se for erro de rede (provavelmente extensão do Chrome), ignorar silenciosamente
-              if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('network error'))) {
-                console.warn('Erro de rede ao carregar vídeo (pode ser extensão do navegador):', err.message);
-                return null;
-              }
-              throw err;
-            });
+            const response = await fetch('/api/site/video');
             
-            if (!response || !response.ok) {
-              if (response) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-              } else {
-                // Se response é null, foi erro de rede - usar dados padrão
-                console.warn('Não foi possível carregar vídeo. Usando conteúdo padrão.');
-                return;
-              }
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
             }
             
             const video = await response.json();
@@ -2247,253 +1781,6 @@ Se você está em busca de um milagre, de um recomeço ou de uma experiência ve
         // Tentar após delays progressivos para garantir
         setTimeout(() => carregarVideo(), 500);
         setTimeout(() => carregarVideo(), 1000);
-      })();
-    </script>
-
-    <!-- Script do Formulário de Contato -->
-    <script>
-      (function() {
-        'use strict';
-        
-        const form = document.getElementById('contactForm');
-        if (!form) return;
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const btnLoading = submitBtn.querySelector('.btn-loading');
-        
-        // Validação de telefone brasileiro
-        function validatePhone(phone) {
-          const phoneRegex = /^[\d\s\(\)\-]+$/;
-          const digitsOnly = phone.replace(/\D/g, '');
-          return phoneRegex.test(phone) && digitsOnly.length >= 10 && digitsOnly.length <= 11;
-        }
-        
-        // Validação de email
-        function validateEmail(email) {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          return emailRegex.test(email);
-        }
-        
-        // Mostrar erro
-        function showError(input, message) {
-          const formGroup = input.closest('.form-group');
-          let errorMsg = formGroup.querySelector('.error-message');
-          
-          if (!errorMsg) {
-            errorMsg = document.createElement('span');
-            errorMsg.className = 'error-message';
-            formGroup.appendChild(errorMsg);
-          }
-          
-          errorMsg.textContent = message;
-          errorMsg.style.display = 'block';
-          input.classList.add('error');
-        }
-        
-        // Remover erro
-        function removeError(input) {
-          const formGroup = input.closest('.form-group');
-          const errorMsg = formGroup.querySelector('.error-message');
-          
-          if (errorMsg) {
-            errorMsg.style.display = 'none';
-          }
-          input.classList.remove('error');
-        }
-        
-        // Validar formulário
-        function validateForm() {
-          const name = document.getElementById('name');
-          const email = document.getElementById('email');
-          const tel = document.getElementById('tel');
-          const message = document.getElementById('message');
-          
-          let isValid = true;
-          
-          // Validar nome
-          if (!name.value.trim()) {
-            showError(name, 'Nome é obrigatório');
-            isValid = false;
-          } else {
-            removeError(name);
-          }
-          
-          // Validar email
-          if (!email.value.trim()) {
-            showError(email, 'Email é obrigatório');
-            isValid = false;
-          } else if (!validateEmail(email.value.trim())) {
-            showError(email, 'Email inválido');
-            isValid = false;
-          } else {
-            removeError(email);
-          }
-          
-          // Validar telefone (se preenchido)
-          if (tel.value.trim() && !validatePhone(tel.value.trim())) {
-            showError(tel, 'Telefone inválido. Use o formato (99) 99999-9999');
-            isValid = false;
-          } else {
-            removeError(tel);
-          }
-          
-          // Validar mensagem
-          if (!message.value.trim()) {
-            showError(message, 'Mensagem é obrigatória');
-            isValid = false;
-          } else {
-            removeError(message);
-          }
-          
-          return isValid;
-        }
-        
-        // Limpar formulário
-        function clearForm() {
-          form.reset();
-          const errorMessages = form.querySelectorAll('.error-message');
-          errorMessages.forEach(msg => msg.style.display = 'none');
-          const errorInputs = form.querySelectorAll('.error');
-          errorInputs.forEach(input => input.classList.remove('error'));
-        }
-        
-        // Mostrar modal de sucesso
-        function showSuccessModal() {
-          const modal = document.getElementById('successModal');
-          if (modal) {
-            modal.style.display = 'flex';
-            
-            // Fechar automaticamente após 5 segundos
-            setTimeout(() => {
-              closeSuccessModal();
-            }, 5000);
-          }
-        }
-        
-        // Fechar modal de sucesso
-        window.closeSuccessModal = function() {
-          const modal = document.getElementById('successModal');
-          if (modal) {
-            modal.style.display = 'none';
-          }
-        };
-        
-        // Fechar modal ao clicar no overlay
-        document.addEventListener('DOMContentLoaded', function() {
-          const modalOverlay = document.querySelector('.success-modal-overlay');
-          if (modalOverlay) {
-            modalOverlay.addEventListener('click', closeSuccessModal);
-          }
-        });
-        
-        // Remover validação em tempo real
-        const inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-          input.addEventListener('input', function() {
-            if (this.classList.contains('error')) {
-              removeError(this);
-            }
-          });
-        });
-        
-        // Interceptar submit
-        form.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          
-          // Validar formulário
-          if (!validateForm()) {
-            return;
-          }
-          
-          // Desabilitar botão e mostrar loading
-          submitBtn.disabled = true;
-          btnText.style.display = 'none';
-          btnLoading.style.display = 'inline-flex';
-          
-          try {
-            console.log('📤 Enviando formulário...');
-            
-            // Remover o redirectTo para evitar redirecionamento
-            const redirectInput = form.querySelector('input[name="redirectTo"]');
-            const originalRedirectValue = redirectInput ? redirectInput.value : null;
-            if (redirectInput) {
-              redirectInput.remove();
-            }
-            
-            // Criar um iframe oculto para enviar o formulário sem sair da página
-            const iframe = document.createElement('iframe');
-            iframe.name = 'hidden_iframe_' + Date.now();
-            iframe.style.display = 'none';
-            iframe.style.width = '0';
-            iframe.style.height = '0';
-            document.body.appendChild(iframe);
-            
-            // Configurar o form para enviar ao iframe
-            form.target = iframe.name;
-            
-            // Adicionar listener para quando o iframe carregar (form enviado)
-            iframe.onload = function() {
-              console.log('✅ Formulário enviado com sucesso!');
-              
-              // Limpar formulário e mostrar modal
-              clearForm();
-              showSuccessModal();
-              
-              // Reabilitar botão
-              submitBtn.disabled = false;
-              btnText.style.display = 'inline';
-              btnLoading.style.display = 'none';
-              
-              // Remover iframe após um tempo
-              setTimeout(() => {
-                if (iframe.parentNode) {
-                  iframe.parentNode.removeChild(iframe);
-                }
-              }, 3000);
-              
-              // Restaurar redirectTo se existia
-              if (redirectInput && originalRedirectValue) {
-                redirectInput.value = originalRedirectValue;
-                form.appendChild(redirectInput);
-              }
-            };
-            
-            // Mostrar loading
-            submitBtn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-flex';
-            
-            // Submeter o formulário normalmente (vai para o iframe)
-            form.submit();
-            
-            // Timeout de segurança caso o iframe não carregue
-            setTimeout(() => {
-              if (submitBtn.disabled) {
-                console.log('⏱️ Timeout - assumindo sucesso');
-                clearForm();
-                showSuccessModal();
-                submitBtn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
-                
-                if (iframe.parentNode) {
-                  iframe.parentNode.removeChild(iframe);
-                }
-              }
-            }, 5000);
-            
-          } catch (error) {
-            console.error('❌ Erro ao enviar formulário:', error);
-            
-            // Reabilitar botão em caso de erro
-            submitBtn.disabled = false;
-            btnText.style.display = 'inline';
-            btnLoading.style.display = 'none';
-            
-            alert('Erro ao enviar mensagem. Por favor, verifique sua conexão e tente novamente.');
-          }
-        });
       })();
     </script>
   </body>
