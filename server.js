@@ -16,6 +16,10 @@ app.use(cors({
   credentials: true
 }));
 
+// Webhook do Stripe: precisa do corpo "cru" para conferir a assinatura,
+// por isso vem ANTES do leitor de JSON (ver checkout/routes/index.js)
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), require('./checkout/routes').webhook);
+
 // Body parser
 app.use(bodyParser.json({ type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true, type: 'application/x-www-form-urlencoded' }));
@@ -27,7 +31,6 @@ app.use((req, res, next) => {
     console.log('📥 Método:', req.method);
     console.log('📥 Path:', req.path);
     console.log('📥 URL original:', req.originalUrl);
-    console.log('📥 Body:', JSON.stringify(req.body));
     console.log('🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n');
     console.log('⏭️ Passando para o próximo middleware...');
   }
@@ -84,6 +87,10 @@ app.use(express.static(path.join(__dirname, "public"), {
 }));
 
 // Servir uploads do dashboard-server (para as capas dos jornais)
+app.use('/uploads/pdfs', (req, res, next) => {
+  if (req.session && req.session.authenticated) return next();
+  res.status(403).send('Acesso restrito. O PDF do jornal é liberado depois do pagamento.');
+});
 app.use('/uploads', express.static(path.join(__dirname, "dashboard-server", "uploads")));
 
 // Servir arquivos estáticos do dashboard
@@ -112,7 +119,7 @@ app.use('/dashboard', express.static(path.join(__dirname, 'dashboard-server', 'p
 }));
 
 // Servir arquivos estáticos do checkout PRIMEIRO (CSS, JS, imagens, etc)
-app.use('/checkout', express.static(path.join(__dirname, "checkout", "public")));
+app.use('/checkout', express.static(path.join(__dirname, "checkout", "public"), { redirect: false }));
 
 // Servir o gerador
 app.use('/gerador', express.static(path.join(__dirname, "gerador", "public")));
@@ -131,7 +138,7 @@ app.use('/checkout/download', express.static(downloadPath));
 // Rota principal do site
 app.get("/", (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile('index.html', { root: path.join(__dirname, 'public') });
 });
 
 // Rota principal do dashboard (apenas para a rota exata, não para subcaminhos)
@@ -141,7 +148,7 @@ app.get(["/dashboard", "/dashboard/"], (req, res) => {
     return res.status(404).send('Arquivo não encontrado');
   }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.sendFile(path.join(__dirname, 'dashboard-server', 'public', 'index.html'));
+  res.sendFile('index.html', { root: path.join(__dirname, 'dashboard-server', 'public') });
 });
 
 // Servir o gerador
@@ -149,57 +156,24 @@ app.get("/gerador", (req, res) => {
   res.sendFile(path.join(__dirname, "gerador", "public", "index.html"));
 });
 
-// Rota específica para checkout.html
-app.get("/checkout", (req, res) => {
-  if (req.path.includes('.')) {
-    return res.status(404).send('Arquivo não encontrado');
-  }
-  
-  const filePath = path.join(__dirname, "checkout", "public", "checkout.html");
-  console.log('📄 Servindo checkout.html de:', filePath);
-  
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error('❌ Erro ao servir checkout.html:', err);
-      res.status(500).send(`
-        <html>
-          <head><title>Erro</title></head>
-          <body style="font-family: Arial; padding: 2rem;">
-            <h1>Erro ao carregar checkout</h1>
-            <p><strong>Erro:</strong> ${err.message}</p>
-            <p><strong>Caminho tentado:</strong> ${filePath}</p>
-          </body>
-        </html>
-      `);
-    } else {
-      console.log('✅ checkout.html servido com sucesso');
-    }
-  });
-});
+// Páginas do checkout (pagamento) e de sucesso (download)
+// Usamos "root" no sendFile: assim funciona mesmo se o caminho do projeto tiver
+// uma pasta que começa com ponto (o Express recusa esses caminhos por padrão).
+const PASTA_CHECKOUT = path.join(__dirname, 'checkout', 'public');
 
-// Rota para página de sucesso do checkout
-app.get("/checkout/success", (req, res) => {
-  const filePath = path.join(__dirname, "checkout", "public", "success.html");
-  console.log('📄 Servindo success.html de:', filePath);
-  
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error('❌ Erro ao servir success.html:', err);
-      res.status(500).send(`
-        <html>
-          <head><title>Erro</title></head>
-          <body style="font-family: Arial; padding: 2rem;">
-            <h1>Erro ao carregar página de sucesso</h1>
-            <p><strong>Erro:</strong> ${err.message}</p>
-            <p><strong>Caminho tentado:</strong> ${filePath}</p>
-          </body>
-        </html>
-      `);
-    } else {
-      console.log('✅ success.html servido com sucesso');
+function enviarPagina(res, arquivo) {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(arquivo, { root: PASTA_CHECKOUT }, (err) => {
+    if (err && !res.headersSent) {
+      console.error('Erro ao servir ' + arquivo + ':', err.message);
+      res.status(500).send('<h1>Erro ao carregar a página</h1><p>Tente novamente em instantes.</p>');
     }
   });
-});
+}
+
+app.get('/checkout', (req, res) => enviarPagina(res, 'checkout.html'));
+app.get('/checkout/success', (req, res) => enviarPagina(res, 'success.html'));
 
 // ==================== ROTAS DE API - SITE PRINCIPAL ====================
 // (Colocadas antes das rotas do dashboard para ter prioridade nas rotas públicas)

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs-extra');
 const path = require('path');
+const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
 const { uploadCapa, uploadCapaOptional, uploadMateria, uploadJornalFiles, uploadVideo } = require('../config/upload');
 const pool = require('../config/database');
@@ -17,7 +18,6 @@ router.use((req, res, next) => {
     console.log('📥 Método:', req.method);
     console.log('📥 Path:', req.path);
     console.log('📥 URL original:', req.originalUrl);
-    console.log('📥 Body:', JSON.stringify(req.body));
   }
   next();
 });
@@ -98,218 +98,42 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Rotas funcionando!', timestamp: new Date().toISOString() });
 });
 
-// Login - REGISTRAR A ROTA COM LOG IMEDIATO
-console.log('🔐 Registrando rota POST /login...');
+// Login do painel
 router.post('/login', async (req, res) => {
-  // Log IMEDIATO no início da função - PRIMEIRA COISA A EXECUTAR
-  console.log('\n\n\n');
-  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
-  console.log('🔐 ===== ROTA DE LOGIN CHAMADA =====');
-  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
-  console.log('⏰ Timestamp:', new Date().toISOString());
-  console.log('📧 Email recebido:', req.body.email);
-  console.log('🔑 Password recebido (comprimento):', req.body.password ? req.body.password.length + ' caracteres' : 'NÃO FORNECIDO');
-  console.log('🔑 Password recebido (valor completo):', req.body.password);
-  console.log('📦 Body completo:', JSON.stringify(req.body));
-  console.log('🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐');
-  console.log('\n\n');
-  
   try {
-    
-    const { username, email, password } = req.body;
-    
-    // Aceita tanto username quanto email no campo de login
+    const { username, email, password } = req.body || {};
     const loginValue = email || username;
-    
     if (!loginValue || !password) {
-      console.log('❌ Campos vazios');
       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
-    
-    // Credenciais fixas - APENAS essas credenciais permitem acesso ao dashboard
-    // Email: jornaldoreino545@gmail.com
-    // Senha: Igrejareinodosceus1313
-    const ADMIN_EMAIL = 'jornaldoreino545@gmail.com';
-    const ADMIN_PASS = 'Igrejareinodosceus1313';
-    
-    // Permitir override via variável de ambiente, mas usar os valores fixos como padrão
-    const adminEmail = (process.env.ADMIN_EMAIL || ADMIN_EMAIL).trim().toLowerCase();
-    // IMPORTANTE: Não fazer trim na senha esperada, manter exatamente como está
-    const adminPass = (process.env.ADMIN_PASS || ADMIN_PASS);
 
-    // Normalizar entrada do usuário (remover espaços no início e fim, converter email para lowercase)
-    const normalizedEmail = loginValue.trim().toLowerCase();
-    // Remover TODOS os espaços (início, fim e meio) da senha fornecida
-    // Mas manter case-sensitive
-    const normalizedPassword = password.replace(/\s+/g, ''); // Remove todos os espaços
-    
-    console.log('\n📋 === DADOS NORMALIZADOS ===');
-    console.log('📧 Email normalizado:', normalizedEmail);
-    console.log('🔑 Senha normalizada (completa):', normalizedPassword);
-    console.log('📏 Senha normalizada (comprimento):', normalizedPassword.length);
+    // Acesso do painel. Para trocar, defina ADMIN_EMAIL e ADMIN_PASS no arquivo .env
+    // (recomendado no servidor de produção). Os valores abaixo são o padrão antigo.
+    const adminEmail = (process.env.ADMIN_EMAIL || 'jornaldoreino545@gmail.com').trim().toLowerCase();
+    const adminPass = process.env.ADMIN_PASS || 'Igrejareinodosceus1313';
 
-    console.log('\n🔍 === COMPARANDO CREDENCIAIS ===');
-    console.log('📧 Email fornecido:', normalizedEmail);
-    console.log('📧 Email esperado:', adminEmail);
-    console.log('✅ Emails coincidem?', normalizedEmail === adminEmail);
-    console.log('🔑 Senha fornecida (comprimento):', normalizedPassword.length, 'caracteres');
-    console.log('🔑 Senha esperada (comprimento):', adminPass.length, 'caracteres');
-    console.log('🔑 Senha fornecida (primeiros 5 chars):', normalizedPassword.substring(0, 5));
-    console.log('🔑 Senha esperada (primeiros 5 chars):', adminPass.substring(0, 5));
-    console.log('🔑 Senha fornecida (últimos 5 chars):', normalizedPassword.substring(normalizedPassword.length - 5));
-    console.log('🔑 Senha esperada (últimos 5 chars):', adminPass.substring(adminPass.length - 5));
-    console.log('🔑 Senhas coincidem (exata)?', normalizedPassword === adminPass);
+    const emailOk = String(loginValue).trim().toLowerCase() === adminEmail;
+    // Mantém a regra antiga: espaços digitados por engano na senha são ignorados
+    const senhaDigitada = Buffer.from(String(password).replace(/\s+/g, ''));
+    const senhaCerta = Buffer.from(adminPass);
+    const senhaOk = senhaDigitada.length === senhaCerta.length && crypto.timingSafeEqual(senhaDigitada, senhaCerta);
 
-    // Comparação de email - verificar se coincide (já está normalizado para lowercase)
-    const emailMatch = normalizedEmail === adminEmail;
-    
-    console.log('\n📧 === VERIFICAÇÃO DE EMAIL ===');
-    console.log('📧 Email fornecido:', normalizedEmail);
-    console.log('📧 Email esperado:', adminEmail);
-    console.log('✅ Emails coincidem?', emailMatch);
-    
-    // Se email não coincidir, retornar erro imediatamente
-    if (!emailMatch) {
-      console.log('\n❌❌❌ EMAIL INCORRETO ❌❌❌\n');
-      return res.status(401).json({ 
-        error: 'Credenciais inválidas',
-        message: 'Email ou senha incorretos.'
-      });
+    if (!emailOk || !senhaOk) {
+      console.log('Login do painel recusado para', String(loginValue).trim().toLowerCase());
+      return res.status(401).json({ error: 'Credenciais inválidas', message: 'Email ou senha incorretos.' });
     }
-    
-    console.log('✅ Email correto! Verificando senha...\n');
-    
-    // Comparação de senha - COMPARAÇÃO EXATA COM DEBUG COMPLETO
-    let passwordMatch = false;
-    
-    console.log('🔑 === VERIFICAÇÃO DE SENHA ===');
-    console.log('🔑 Senha fornecida (raw):', JSON.stringify(normalizedPassword));
-    console.log('🔑 Senha esperada (raw):', JSON.stringify(adminPass));
-    console.log('📏 Comprimento fornecido:', normalizedPassword.length);
-    console.log('📏 Comprimento esperado:', adminPass.length);
-    
-    // Verificar se os comprimentos são iguais
-    if (normalizedPassword.length !== adminPass.length) {
-      console.log('❌ COMPRIMENTOS DIFERENTES!');
-      console.log(`   Fornecida: ${normalizedPassword.length} caracteres`);
-      console.log(`   Esperada: ${adminPass.length} caracteres`);
-    }
-    
-    // Comparação byte a byte para debug COMPLETO
-    console.log('\n🔍 Comparação byte a byte (TODOS os caracteres):');
-    const maxLen = Math.max(normalizedPassword.length, adminPass.length);
-    let allMatch = true;
-    let firstMismatch = -1;
-    
-    for (let i = 0; i < maxLen; i++) {
-      const charInput = normalizedPassword[i] || 'MISSING';
-      const charExpected = adminPass[i] || 'MISSING';
-      const match = charInput === charExpected;
-      
-      if (!match) {
-        allMatch = false;
-        if (firstMismatch === -1) {
-          firstMismatch = i;
-        }
-      }
-      
-      // Mostrar todos os caracteres ou apenas os que não coincidem
-      if (i < 30 || !match) {
-        const inputCode = charInput !== 'MISSING' ? charInput.charCodeAt(0) : 'N/A';
-        const expectedCode = charExpected !== 'MISSING' ? charExpected.charCodeAt(0) : 'N/A';
-        console.log(`  [${i}] '${charInput}' (${inputCode}) === '${charExpected}' (${expectedCode}) ? ${match ? '✅' : '❌'}`);
-      }
-    }
-    
-    if (firstMismatch !== -1) {
-      console.log(`\n⚠️ Primeira diferença encontrada na posição ${firstMismatch}`);
-    }
-    
-    // Comparação exata (case-sensitive)
-    if (normalizedPassword === adminPass) {
-      passwordMatch = true;
-      console.log('\n✅✅✅ SENHA CORRETA (comparação exata) ✅✅✅');
-    } else {
-      console.log('\n❌❌❌ SENHA INCORRETA - comparação exata falhou ❌❌❌');
-      console.log('🔍 Diferenças detectadas na comparação byte a byte');
-      
-      // Tentar comparação case-insensitive como fallback (apenas para debug)
-      if (normalizedPassword.toLowerCase() === adminPass.toLowerCase()) {
-        console.log('\n⚠️⚠️⚠️ ATENÇÃO: Senhas coincidem em minúsculas, mas diferem em maiúsculas/minúsculas!');
-        console.log('   Isso indica que a senha é case-sensitive e há diferença de capitalização.');
-        console.log(`   Fornecida: "${normalizedPassword}"`);
-        console.log(`   Esperada: "${adminPass}"`);
-      } else {
-        console.log('\n⚠️ Senhas também diferem em minúsculas (não é apenas problema de capitalização)');
-      }
-    }
-    
-    console.log('\n🎯 === RESULTADO FINAL ===');
-    console.log('📧 Email correto?', emailMatch);
-    console.log('🔑 Senha correta?', passwordMatch);
-    console.log('🎯 Acesso autorizado?', emailMatch && passwordMatch);
-    console.log('===========================\n');
-    
-    if (emailMatch && passwordMatch) {
-      // Credenciais válidas - criar sessão autenticada
-      req.session.authenticated = true;
-      req.session.user = adminEmail;
-      req.session.loginTime = new Date().toISOString();
-      
-      console.log('✅✅✅ CREDENCIAIS VÁLIDAS - ACESSO AUTORIZADO ✅✅✅');
-      console.log('🔐 Criando sessão...');
-      console.log('🆔 Session ID:', req.sessionID);
-      console.log('👤 Usuário:', adminEmail);
-      
-      // Salvar sessão explicitamente antes de responder
-      console.log('💾 Salvando sessão...');
-      req.session.save((err) => {
-        if (err) {
-          console.error('❌ Erro ao salvar sessão:', err);
-          return res.status(500).json({ error: 'Erro ao criar sessão' });
-        }
-        console.log('✅ Sessão salva com sucesso!');
-        console.log('Verificando sessão salva:', req.session.authenticated);
-        console.log('📤 Enviando resposta de sucesso...');
-        const responseData = { ok: true, user: adminEmail, message: 'Login realizado com sucesso' };
-        console.log('📦 Dados da resposta:', JSON.stringify(responseData));
-        res.json(responseData);
-        console.log('✅ Resposta enviada com sucesso!');
-      });
-      return; // Importante: não continuar após iniciar o save
-    }
-    
-    console.log('\n❌❌❌ CREDENCIAIS INVÁLIDAS - ACESSO NEGADO ❌❌❌');
-    console.log('📧 Email correto?', emailMatch);
-    console.log('🔑 Senha correta?', passwordMatch);
-    console.log('\n🔍 === DIAGNÓSTICO FINAL ===');
-    console.log('📧 Email fornecido:', normalizedEmail);
-    console.log('📧 Email esperado:', adminEmail);
-    console.log('🔑 Senha fornecida (completa):', normalizedPassword);
-    console.log('🔑 Senha esperada (completa):', adminPass);
-    console.log('📏 Senha fornecida (comprimento):', normalizedPassword.length);
-    console.log('📏 Senha esperada (comprimento):', adminPass.length);
-    console.log('\n🔤 Senha fornecida (caractere por caractere):');
-    normalizedPassword.split('').forEach((c, i) => {
-      console.log(`  [${i}] '${c}' (código: ${c.charCodeAt(0)})`);
-    });
-    console.log('\n🔤 Senha esperada (caractere por caractere):');
-    adminPass.split('').forEach((c, i) => {
-      console.log(`  [${i}] '${c}' (código: ${c.charCodeAt(0)})`);
-    });
-    console.log('==========================================\n');
-    
-    res.status(401).json({ 
-      error: 'Credenciais inválidas',
-      message: 'Email ou senha incorretos. Verifique o console do servidor para mais detalhes.'
+
+    req.session.authenticated = true;
+    req.session.user = adminEmail;
+    req.session.loginTime = new Date().toISOString();
+    req.session.save((err) => {
+      if (err) return res.status(500).json({ error: 'Erro ao criar sessão' });
+      console.log('Login do painel realizado:', adminEmail);
+      res.json({ ok: true, user: adminEmail, message: 'Login realizado com sucesso' });
     });
   } catch (error) {
-    console.error('\n\n❌❌❌ ERRO NO LOGIN ❌❌❌');
-    console.error('Tipo do erro:', error.constructor.name);
-    console.error('Mensagem:', error.message);
-    console.error('Stack:', error.stack);
-    console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌\n');
-    res.status(500).json({ error: 'Erro interno do servidor', message: error.message });
+    console.error('Erro no login do painel:', error.message);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
@@ -405,7 +229,6 @@ router.post('/jornais', requireAuth, (req, res, next) => {
 }, async (req, res) => {
   try {
     console.log('Processando criação do jornal...');
-    console.log('Body recebido:', req.body);
     console.log('Arquivos recebidos:', req.files);
     
     const { nome, mes, ano, descricao, linkCompra, ordem, ativo, preco } = req.body;
@@ -502,7 +325,6 @@ router.put('/jornais/:id', requireAuth, (req, res, next) => {
 }, async (req, res) => {
   try {
     console.log('Processando atualização do jornal...');
-    console.log('Body recebido:', req.body);
     console.log('Arquivos recebidos:', req.files);
     const { nome, mes, ano, descricao, linkCompra, ordem, ativo, preco } = req.body;
     const id = parseInt(req.params.id);

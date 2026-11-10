@@ -45,10 +45,6 @@ window.handleLogin = async function(e) {
     const password = passwordInput.value; // NÃO fazer trim aqui, pode ter espaços intencionais
     
     console.log('📧 Email fornecido:', email);
-    console.log('🔑 Senha fornecida (comprimento):', password ? password.length + ' caracteres' : 'vazia');
-    console.log('🔑 Senha fornecida (primeiros 5):', password ? password.substring(0, 5) + '...' : 'vazia');
-    console.log('🔑 Senha fornecida (últimos 5):', password && password.length > 5 ? '...' + password.substring(password.length - 5) : 'vazia');
-    console.log('🔑 Senha completa (JSON):', JSON.stringify(password));
     
     // Validação básica
     if (!email || !password) {
@@ -78,7 +74,6 @@ window.handleLogin = async function(e) {
         });
         
         const requestBody = { email, password };
-        console.log('📦 Request body (JSON):', JSON.stringify(requestBody));
         
         const response = await fetch(`${API_BASE}/login`, {
             method: 'POST',
@@ -2465,7 +2460,7 @@ function renderCarrossel() {
             }
             // Usar URL completa do site principal (porta 3000)
             // Ou usar proxy se configurado
-            imagemUrl = `http://localhost:3000${imagemUrl}`;
+            imagemUrl = `${imagemUrl}`;
         }
         // Caso contrário, assumir que está em /uploads/materias/
         else {
@@ -2957,13 +2952,13 @@ function renderCarrosselMedio() {
         }
         
         if (imagemUrl.startsWith('/uploads/')) {
-            imagemUrl = `http://localhost:3000${imagemUrl}`;
+            imagemUrl = `${imagemUrl}`;
         } else if (imagemUrl.startsWith('http')) {
             // URL externa
         } else if (imagemUrl.startsWith('uploads/')) {
-            imagemUrl = `http://localhost:3000/${imagemUrl}`;
+            imagemUrl = `/${imagemUrl}`;
         } else {
-            imagemUrl = `http://localhost:3000/uploads/materias/${imagemUrl}`;
+            imagemUrl = `/uploads/materias/${imagemUrl}`;
         }
         
         return `
@@ -3034,7 +3029,7 @@ window.openCarrosselMedioModal = function(item = null) {
         
         if (item.imagem && imagemPreview) {
             let imgUrl = item.imagem.startsWith('/uploads/') 
-                ? `http://localhost:3000${item.imagem}` 
+                ? `${item.imagem}` 
                 : item.imagem;
             imagemPreview.innerHTML = `<img src="${imgUrl}" alt="Preview" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">`;
         }
@@ -3520,7 +3515,7 @@ function renderResponsaveis() {
                 imagemUrl = '/' + imagemUrl;
             }
             // Usar URL completa do site principal (porta 3000)
-            imagemUrl = `http://localhost:3000${imagemUrl}`;
+            imagemUrl = `${imagemUrl}`;
         }
         // Caso contrário, assumir que está em /uploads/materias/
         else {
@@ -4469,14 +4464,14 @@ async function loadTextos() {
         let jornalImagemUrl = textos.sobreJornal?.imagem || '';
         if (jornalImagemUrl) {
             if (jornalImagemUrl.startsWith('./')) {
-                jornalImagemUrl = `http://localhost:3000${jornalImagemUrl.substring(1)}`;
+                jornalImagemUrl = `${jornalImagemUrl.substring(1)}`;
             } else if (jornalImagemUrl.startsWith('/uploads')) {
                 jornalImagemUrl = `${API_BASE.replace('/api', '')}${jornalImagemUrl}`;
             } else if (jornalImagemUrl.startsWith('/') && !jornalImagemUrl.startsWith('//')) {
-                jornalImagemUrl = `http://localhost:3000${jornalImagemUrl}`;
+                jornalImagemUrl = `${jornalImagemUrl}`;
             } else if (!jornalImagemUrl.startsWith('http')) {
                 // Se não tem prefixo, assumir que é relativo ao site principal (ex: "Imagem/testesimagem.gif")
-                jornalImagemUrl = `http://localhost:3000/${jornalImagemUrl}`;
+                jornalImagemUrl = `/${jornalImagemUrl}`;
             }
         }
         
@@ -4485,18 +4480,18 @@ async function loadTextos() {
         let mostrarImagemPadraoIgreja = false;
         if (igrejaImagemUrl) {
             if (igrejaImagemUrl.startsWith('./')) {
-                igrejaImagemUrl = `http://localhost:3000${igrejaImagemUrl.substring(1)}`;
+                igrejaImagemUrl = `${igrejaImagemUrl.substring(1)}`;
             } else if (igrejaImagemUrl.startsWith('/uploads')) {
                 igrejaImagemUrl = `${API_BASE.replace('/api', '')}${igrejaImagemUrl}`;
             } else if (igrejaImagemUrl.startsWith('/') && !igrejaImagemUrl.startsWith('//')) {
-                igrejaImagemUrl = `http://localhost:3000${igrejaImagemUrl}`;
+                igrejaImagemUrl = `${igrejaImagemUrl}`;
             } else if (!igrejaImagemUrl.startsWith('http')) {
-                igrejaImagemUrl = `http://localhost:3000/${igrejaImagemUrl}`;
+                igrejaImagemUrl = `/${igrejaImagemUrl}`;
             }
         } else {
             // Se não há imagem no config, usar imagem padrão do site
             mostrarImagemPadraoIgreja = true;
-            igrejaImagemUrl = 'http://localhost:3000/Imagem/igreja-.png';
+            igrejaImagemUrl = '/Imagem/igreja-.png';
         }
         
         configDiv.innerHTML = `
@@ -4704,16 +4699,16 @@ async function loadBanner() {
         if (imagemUrl) {
             if (imagemUrl.startsWith('./')) {
                 // Converter caminho relativo para URL completa do site principal
-                imagemUrl = `http://localhost:3000${imagemUrl.substring(1)}`;
+                imagemUrl = `${imagemUrl.substring(1)}`;
             } else if (imagemUrl.startsWith('/uploads')) {
                 // Se começar com /uploads, usar a URL do dashboard-server
                 imagemUrl = `${API_BASE.replace('/api', '')}${imagemUrl}`;
             } else if (imagemUrl.startsWith('/') && !imagemUrl.startsWith('//')) {
                 // Caminho absoluto começando com / (ex: /Imagem/...)
-                imagemUrl = `http://localhost:3000${imagemUrl}`;
+                imagemUrl = `${imagemUrl}`;
             } else if (!imagemUrl.startsWith('http')) {
                 // Caminho sem prefixo, assumir que é relativo ao site principal
-                imagemUrl = `http://localhost:3000/${imagemUrl}`;
+                imagemUrl = `/${imagemUrl}`;
             }
         }
         
@@ -5219,16 +5214,16 @@ function renderColunistas() {
         if (imagem.startsWith('./')) {
             // Remover o ./ e adicionar o caminho do servidor principal
             const cleanPath = imagem.replace('./', '');
-            return `http://localhost:3000/${cleanPath}`;
+            return `/${cleanPath}`;
         }
         
         // Se começa com /, adicionar o servidor principal
         if (imagem.startsWith('/')) {
-            return `http://localhost:3000${imagem}`;
+            return `${imagem}`;
         }
         
         // Caso contrário, assumir que é relativo ao servidor principal
-        return `http://localhost:3000/${imagem}`;
+        return `/${imagem}`;
     };
     
     listDiv.innerHTML = sortedColunistas.map(colunista => {

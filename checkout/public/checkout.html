@@ -1,172 +1,164 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Jornal do Reino dos Céus</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/checkout/styles/checkout.css">
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pagamento — Jornal do Reino</title>
+    <meta name="theme-color" content="#00095b" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/Imagem/logo%20jornal.png" />
+    <link rel="preload" href="/assets/fonts/Sandra.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/tema.css" />
+    <link rel="stylesheet" href="/checkout/styles/checkout.css" />
     <script src="https://js.stripe.com/v3/"></script>
-</head>
-<body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay hidden">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p>Processando pagamento...</p>
-            <small>Por favor, aguarde</small>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="checkout-header">
-        <div class="header-container">
-            <a href="/" class="back-link">
-                <i class='bx bx-arrow-back'></i>
-                <span>Voltar</span>
-            </a>
-            <div class="header-logo">
-                <h1>Jornal do Reino dos Céus</h1>
-            </div>
-        </div>
+  </head>
+  <body class="ck-pagina">
+    <!-- Topo simples (no checkout não há menu, para a pessoa focar no pagamento) -->
+    <header class="ck-topo">
+      <div class="container ck-topo__inner">
+        <a class="ck-marca" href="/">
+          <img src="/Imagem/logo%20jornal.png" alt="" width="46" height="36" />
+          <span>Jornal do <em>Reino</em></span>
+        </a>
+        <span class="ck-seguro"><i class="bx bxs-lock-alt"></i> Pagamento 100% seguro</span>
+      </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="checkout-main">
-        <div class="checkout-container">
-            <!-- Left Side - Product Info -->
-            <div class="product-section">
-                <div class="product-card">
-                    <div class="product-badge">
-                        <i class='bx bx-book-open'></i>
-                        <span>Edição Especial</span>
-                    </div>
-                    
-                    <div class="product-image-wrapper">
-                        <div class="product-image-placeholder" id="productImagePlaceholder">
-                            <i class='bx bx-image'></i>
-                        </div>
-                        <img id="productImage" class="product-image" src="" alt="Capa do Jornal" style="display: none;">
-                    </div>
-                    
-                    <div class="product-info">
-                        <h1 id="productName" class="product-name">Carregando informações do jornal...</h1>
-                        <p id="productDescription" class="product-description">Aguarde enquanto carregamos as informações do produto.</p>
-                        
-                        <div class="product-features">
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <i class='bx bx-check-circle'></i>
-                                </div>
-                                <div class="feature-text">
-                                    <strong>PDF Digital</strong>
-                                    <span>Acesso imediato</span>
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <i class='bx bx-check-circle'></i>
-                                </div>
-                                <div class="feature-text">
-                                    <strong>Entrega Imediata</strong>
-                                    <span>Após confirmação</span>
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <i class='bx bx-check-circle'></i>
-                                </div>
-                                <div class="feature-text">
-                                    <strong>Acesso Completo</strong>
-                                    <span>Todas as páginas</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="product-price">
-                            <span class="price-label">Valor Total</span>
-                            <span class="price-value" id="productPrice">R$ 0,00</span>
-                        </div>
-                    </div>
-                </div>
+    <div class="ck-aviso-teste" id="avisoTeste" hidden>
+      <i class="bx bx-test-tube"></i>
+      <span><strong>Modo de teste</strong> — nenhum valor é cobrado. Cartão de teste: <code>4242 4242 4242 4242</code>, qualquer validade futura e qualquer CVC. No PIX, use o botão "Simular pagamento".</span>
+    </div>
+
+    <main class="ck">
+      <div class="container ck__grade">
+        <!-- ============ FORMULÁRIO ============ -->
+        <section class="ck-form" id="areaFormulario">
+          <a class="ck-voltar" href="/pag-saibaMais.html" id="linkVoltar"><i class="bx bx-left-arrow-alt"></i> Voltar</a>
+          <h1 class="ck-titulo">Finalizar compra</h1>
+
+          <form id="formPagamento" novalidate>
+            <!-- Passo 1 -->
+            <div class="ck-bloco">
+              <h2><span>1</span> Seus dados</h2>
+              <div class="ck-campos">
+                <label class="ck-campo">
+                  <span>Nome completo</span>
+                  <input type="text" id="nome" autocomplete="name" placeholder="Como está no seu documento" required />
+                </label>
+                <label class="ck-campo">
+                  <span>E-mail</span>
+                  <input type="email" id="email" autocomplete="email" placeholder="voce@email.com" required />
+                  <small>Enviamos o comprovante para este e-mail.</small>
+                </label>
+              </div>
             </div>
 
-            <!-- Right Side - Checkout Form -->
-            <div class="checkout-section">
-                <div class="checkout-card">
-                    <div class="checkout-header-card">
-                        <h2 class="checkout-title">Finalizar Compra</h2>
-                        <p class="checkout-subtitle">Preencha os dados abaixo para concluir sua compra</p>
-                    </div>
-                    
-                    <div id="errorMessage" class="error-message-general" style="display: none;"></div>
-                    
-                    <form id="checkoutForm">
-                        <div class="form-group">
-                            <label for="nome">
-                                <i class='bx bx-user'></i>
-                                Nome Completo
-                            </label>
-                            <input type="text" id="nome" name="nome" required placeholder="Digite seu nome completo" autocomplete="name">
-                        </div>
+            <!-- Passo 2 -->
+            <div class="ck-bloco">
+              <h2><span>2</span> Forma de pagamento</h2>
+              <div class="ck-metodos" role="radiogroup" aria-label="Forma de pagamento">
+                <label class="ck-metodo">
+                  <input type="radio" name="metodo" value="pix" checked />
+                  <span class="ck-metodo__caixa">
+                    <i class="bx bx-qr"></i>
+                    <span><strong>PIX</strong><small>Aprovação na hora</small></span>
+                    <em class="ck-metodo__selo">Recomendado</em>
+                  </span>
+                </label>
+                <label class="ck-metodo">
+                  <input type="radio" name="metodo" value="card" />
+                  <span class="ck-metodo__caixa">
+                    <i class="bx bx-credit-card"></i>
+                    <span><strong>Cartão</strong><small>Crédito ou débito</small></span>
+                  </span>
+                </label>
+              </div>
 
-                        <div class="form-group">
-                            <label for="email">
-                                <i class='bx bx-envelope'></i>
-                                E-mail
-                            </label>
-                            <input type="email" id="email" name="email" required placeholder="seu@email.com" autocomplete="email">
-                            <small class="form-hint">Você será direcionado para a página de download após o pagamento</small>
-                        </div>
+              <!-- PIX -->
+              <div class="ck-painel" id="painelPix">
+                <ul class="ck-lista">
+                  <li><i class="bx bx-check-circle"></i> Geramos um QR Code e um código "copia e cola".</li>
+                  <li><i class="bx bx-check-circle"></i> Pague pelo app do seu banco em poucos segundos.</li>
+                  <li><i class="bx bx-check-circle"></i> Assim que o PIX cair, o download do jornal é liberado aqui mesmo.</li>
+                </ul>
+              </div>
 
-                        <div class="form-group">
-                            <label for="cardElement">
-                                <i class='bx bx-credit-card'></i>
-                                Dados do Cartão
-                            </label>
-                            <div id="cardElement" class="card-element">
-                                <!-- Stripe Elements será inserido aqui -->
-                            </div>
-                            <div id="cardErrors" class="error-message" role="alert"></div>
-                        </div>
-
-                        <button type="submit" id="submitButton" class="submit-button">
-                            <span class="button-content">
-                                <span class="button-text">Finalizar Pagamento</span>
-                                <span class="button-amount" id="buttonAmount">R$ 0,00</span>
-                            </span>
-                            <i class='bx bx-lock-alt button-icon'></i>
-                        </button>
-                    </form>
-
-                    <div class="security-info">
-                        <div class="security-header">
-                            <i class='bx bx-shield-quarter'></i>
-                            <span>Pagamento 100% Seguro</span>
-                        </div>
-                        <div class="security-items">
-                            <div class="security-item">
-                                <i class='bx bx-check-double'></i>
-                                <span>Processado pela Stripe</span>
-                            </div>
-                            <div class="security-item">
-                                <i class='bx bx-lock-alt'></i>
-                                <span>Criptografia SSL</span>
-                            </div>
-                            <div class="security-item">
-                                <i class='bx bx-time'></i>
-                                <span>Entrega imediata</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              <!-- Cartão (formulário seguro do Stripe) -->
+              <div class="ck-painel" id="painelCartao" hidden>
+                <div id="elementoCartao" class="ck-stripe"></div>
+              </div>
             </div>
-        </div>
+
+            <p class="ck-erro" id="erro" role="alert" hidden></p>
+
+            <button type="submit" class="btn btn--gold btn--bloco ck-pagar" id="botaoPagar" disabled>
+              <i class="bx bx-loader-alt bx-spin"></i> Carregando…
+            </button>
+
+            <p class="ck-rodape-form"><i class="bx bxs-lock-alt"></i> Seus dados de pagamento são processados pelo <strong>Stripe</strong> e não ficam salvos no nosso site.</p>
+          </form>
+        </section>
+
+        <!-- ============ PIX GERADO ============ -->
+        <section class="ck-form ck-pix" id="areaPix" hidden>
+          <h1 class="ck-titulo">Pague com PIX</h1>
+          <p class="ck-pix__intro">Abra o app do seu banco, escolha <strong>PIX</strong> e escaneie o QR Code ou cole o código.</p>
+
+          <div class="ck-pix__grade">
+            <div class="ck-pix__qr">
+              <img id="pixImagem" alt="QR Code do PIX" />
+              <span class="ck-pix__valor" id="pixValor"></span>
+            </div>
+            <div class="ck-pix__lado">
+              <label class="ck-campo">
+                <span>PIX copia e cola</span>
+                <textarea id="pixCodigo" rows="4" readonly></textarea>
+              </label>
+              <button type="button" class="btn btn--azul btn--bloco" id="copiarPix"><i class="bx bx-copy"></i> <span>Copiar código PIX</span></button>
+              <div class="ck-pix__status" id="pixStatus">
+                <span class="ck-pulso"></span>
+                <div><strong>Aguardando pagamento…</strong><small>Esta página atualiza sozinha quando o PIX for pago.</small></div>
+              </div>
+              <p class="ck-pix__tempo"><i class="bx bx-time-five"></i> O código expira em <strong id="pixTempo">30:00</strong></p>
+              <a class="btn btn--contorno-azul btn--bloco" id="pixSimular" href="#" target="_blank" rel="noopener" hidden><i class="bx bx-test-tube"></i> Simular pagamento (modo teste)</a>
+            </div>
+          </div>
+
+          <ol class="ck-passos">
+            <li><span>1</span> Abra o app do seu banco</li>
+            <li><span>2</span> Escolha pagar com PIX (QR Code ou copia e cola)</li>
+            <li><span>3</span> Confirme o pagamento — pronto!</li>
+          </ol>
+
+          <button type="button" class="ck-trocar" id="trocarMetodo"><i class="bx bx-left-arrow-alt"></i> Escolher outra forma de pagamento</button>
+        </section>
+
+        <!-- ============ RESUMO DO PEDIDO ============ -->
+        <aside class="ck-resumo" id="resumo">
+          <h2>Resumo do pedido</h2>
+          <div class="ck-produto">
+            <div class="ck-produto__capa skeleton" id="resumoCapa"></div>
+            <div>
+              <strong id="resumoNome">Carregando…</strong>
+              <span id="resumoEdicao"></span>
+              <span class="ck-produto__tipo"><i class="bx bxs-file-pdf"></i> Jornal digital em PDF</span>
+            </div>
+          </div>
+          <dl class="ck-valores">
+            <div><dt>Subtotal</dt><dd id="resumoSubtotal">—</dd></div>
+            <div><dt>Entrega</dt><dd class="ck-gratis">Grátis (download)</dd></div>
+            <div class="ck-total"><dt>Total</dt><dd id="resumoTotal">—</dd></div>
+          </dl>
+          <ul class="ck-garantias">
+            <li><i class="bx bx-download"></i> Download liberado logo após o pagamento</li>
+            <li><i class="bx bx-shield-quarter"></i> Pagamento protegido pelo Stripe</li>
+            <li><i class="bx bx-mobile-alt"></i> Leia no celular, tablet ou computador</li>
+          </ul>
+        </aside>
+      </div>
     </main>
 
     <script src="/checkout/scripts/checkout.js"></script>
-</body>
+  </body>
 </html>
