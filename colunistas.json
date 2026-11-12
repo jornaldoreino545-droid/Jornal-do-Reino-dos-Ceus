@@ -2,75 +2,15 @@
   "colunistas": [
     {
       "id": 1,
-      "nome": "Bispo Rodrigo de Carvalho",
+      "nome": "Bispo Rodrigo de Carvalho Maria",
       "coluna": "CULTURA DO REINO",
-      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
-      "instagram": "@Instagram",
+      "conteudo": "Por que é tão importante terminar bem o ano?\nPorque a maneira como encerramos um ciclo influencia a disposição com que começamos o próximo. O fim do ano é uma oportunidade de reflexão, renovação da fé e preparação para o futuro.\nNeste fim de ano, vamos consagrar a Deus, dentro da Arca Sagrada, os nossos projetos e sonhos, olhando para a frente com fé e esperança. Mas, para avançar, é necessário romper com as barreiras e amarras do passado que nos impedem de progredir.\nDiz a Palavra de Deus:\n“Irmãos, quanto a mim, não julgo que o haja alcançado; mas uma coisa faço, e é que, esquecendo-me das coisas que atrás ficam, e avançando para as que estão diante de mim, prossigo para o alvo, pelo prêmio da soberana vocação de Deus em Cristo Jesus.” (Filipenses 3:13-14)\nDevemos deixar para trás aquilo que pertence ao passado e prosseguir para o alvo. O apóstolo Paulo compreendeu que não poderia permitir que as experiências anteriores o impedissem de avançar em sua missão.\nEssa é uma lição para todos nós: não podemos permitir que as frustrações, os conflitos e as dificuldades vividas durante o ano determinem como enfrentaremos o futuro.\nExistem lembranças que precisam ser compreendidas, situações que precisam ser resolvidas e ciclos que precisam ser encerrados para seguirmos adiante com sabedoria, fé e esperança.\nTermine bem este ano, deixando para trás aquilo que impede o seu progresso, e prepare-se para um novo ano de grandes conquistas!\nQue Deus abençoe você e o faça prosperar rica e abundantemente, em nome de Jesus!",
+      "instagram": "https://www.instagram.com/bisporodrigodecarvalho/",
       "ordem": 1,
       "ativo": true,
-      "imagem": "./Colunistas/capa-culuna-Bispo-Rodrigo.png",
-      "dataCriacao": "2024-01-01T00:00:00.000Z",
-      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "id": 2,
-      "nome": "Bispo Gilberto Gomes",
-      "coluna": "FÉ E JUSTIÇA",
-      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
-      "instagram": "@Instagram",
-      "ordem": 2,
-      "ativo": true,
-      "imagem": "./Colunistas/capa-culuna-Bispo-Gilberto.png",
-      "dataCriacao": "2024-01-01T00:00:00.000Z",
-      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "id": 3,
-      "nome": "Bispo Dom Luiz de Carvalho",
-      "coluna": "SUBMISSÃO À AUTORIDADE",
-      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
-      "instagram": "@Instagram",
-      "ordem": 3,
-      "ativo": true,
-      "imagem": "./Colunistas/capa-culuna-Bispo-Dom-luiz.png",
-      "dataCriacao": "2024-01-01T00:00:00.000Z",
-      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "id": 4,
-      "nome": "Bispo Welligton Ribeiro",
-      "coluna": "RIO SAGRADO",
-      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
-      "instagram": "@Instagram",
-      "ordem": 4,
-      "ativo": true,
-      "imagem": "./Colunistas/capa-culuna-Bispo-weligton.png",
-      "dataCriacao": "2024-01-01T00:00:00.000Z",
-      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "id": 5,
-      "nome": "Missionário Lucas Gomes",
-      "coluna": "FÉ E MISSÃO",
-      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
-      "instagram": "@Instagram",
-      "ordem": 5,
-      "ativo": true,
-      "imagem": "./Colunistas/heliatam.png",
-      "dataCriacao": "2024-01-01T00:00:00.000Z",
-      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
-    },
-    {
-      "id": 6,
-      "nome": "Presbítero Mesquita",
-      "coluna": "PALAVRA E SABEDORIA",
-      "conteudo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus. fugit, distinctio accusamus. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, doloribus laboriosam. Magni maiores qui laboriosam omnis, reiciendis ducimus perspiciatis doloremque? Optio aliquid cupiditate perferendis rerum soluta accusantium fugit, distinctio accusamus.",
-      "instagram": "@Instagram",
-      "ordem": 6,
-      "ativo": true,
-      "imagem": "./Colunistas/capa-culuna-Bispo-presbitero.png",
-      "dataCriacao": "2024-01-01T00:00:00.000Z",
-      "dataAtualizacao": "2024-01-01T00:00:00.000Z"
+      "imagem": "/uploads/materias/materia-1794420309193-159493915.png",
+      "dataCriacao": "2026-11-11T18:05:09.279Z",
+      "dataAtualizacao": "2026-11-11T18:05:09.279Z"
     }
   ]
 }

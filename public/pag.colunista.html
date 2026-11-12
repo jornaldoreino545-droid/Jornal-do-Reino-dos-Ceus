@@ -80,7 +80,7 @@
               '<div class="coluna__acoes">' +
                 '<button class="btn btn--azul btn--sm" data-expandir="' + id + '-texto" aria-expanded="false">Ler coluna completa <i class="bx bx-chevron-down"></i></button>' +
                 '<button class="btn btn--contorno-azul btn--sm" data-compartilhar="' + id + '" data-titulo="' + JR.escapar((c.coluna || 'Coluna') + ' — ' + (c.nome || '')) + '"><i class="bx bx-share-alt"></i> Compartilhar</button>' +
-                (insta ? '<a class="coluna__insta" href="' + JR.escapar(insta) + '" target="_blank" rel="noopener"><i class="bx bxl-instagram"></i> ' + JR.escapar(c.instagram) + '</a>' : '') +
+                (insta ? '<a class="coluna__insta" href="' + JR.escapar(insta) + '" target="_blank" rel="noopener" title="Instagram de ' + JR.escapar(c.nome || 'colunista') + '" aria-label="Instagram de ' + JR.escapar(c.nome || 'colunista') + '"><i class="bx bxl-instagram"></i></a>' : '') +
               '</div>' +
             '</div>' +
           '</article>';
