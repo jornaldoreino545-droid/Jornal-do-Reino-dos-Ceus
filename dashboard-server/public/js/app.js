@@ -1816,188 +1816,136 @@ function calcularTempoDecorrido(data) {
     }
 }
 
+// Estado da busca/filtro da lista de edições
+let edicoesBusca = '';
+let edicoesFiltro = 'todos';
+
+function edEscapar(texto) {
+    return String(texto == null ? '' : texto)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function edFormatarData(valor) {
+    if (!valor) return '';
+    const data = new Date(valor);
+    if (isNaN(data.getTime())) return '';
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '');
+}
+
 // Renderizar jornais
 function renderJornais() {
-    console.log('🎨 Iniciando renderização dos jornais...');
     const listDiv = document.getElementById('jornaisList');
-    
     if (!listDiv) {
         console.error('❌ Elemento jornaisList não encontrado!');
         return;
     }
-    
+
     if (jornais.length === 0) {
-        console.log('⚠️ Nenhum jornal para renderizar');
         listDiv.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📰</div>
-                <div class="empty-state-title">Nenhum jornal cadastrado</div>
-                <div class="empty-state-message">Clique em "Novo Jornal" para começar</div>
+            <div class="ed-vazio">
+                <i class='bx bx-news'></i>
+                <strong>Nenhuma edição cadastrada</strong>
+                <span>Clique em "+ Novo Jornal" para adicionar a primeira.</span>
             </div>
         `;
         return;
     }
-    
-    console.log(`🔄 Renderizando ${jornais.length} jornais...`);
-    const html = jornais.map(jornal => {
-        const dataCriacao = jornal.dataCriacao ? new Date(jornal.dataCriacao).toLocaleDateString('pt-BR', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric' 
-        }) : '-';
-        const dataAtualizacao = jornal.dataAtualizacao ? new Date(jornal.dataAtualizacao).toLocaleDateString('pt-BR', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric' 
-        }) : '-';
-        const descricaoPreview = jornal.descricao ? (jornal.descricao.length > 120 ? jornal.descricao.substring(0, 120) + '...' : jornal.descricao) : 'Sem descrição disponível';
-        const tempoDecorrido = jornal.dataCriacao ? calcularTempoDecorrido(new Date(jornal.dataCriacao)) : '';
-        
+
+    const total = jornais.length;
+    const ativos = jornais.filter(j => j.ativo).length;
+    const inativos = total - ativos;
+
+    const termo = edicoesBusca.trim().toLowerCase();
+    const lista = jornais
+        .filter(j => edicoesFiltro === 'todos' || (edicoesFiltro === 'ativos' ? j.ativo : !j.ativo))
+        .filter(j => !termo || [j.nome, j.mes, j.ano, j.descricao].join(' ').toLowerCase().includes(termo))
+        .slice()
+        .sort((a, b) => (Number(a.ordem) || 9999) - (Number(b.ordem) || 9999) || (a.id - b.id));
+
+    const filtroBtn = (valor, rotulo, qtd) =>
+        `<button type="button" class="ed-filtro${edicoesFiltro === valor ? ' is-ativo' : ''}" data-ed-filtro="${valor}">${rotulo} <span>${qtd}</span></button>`;
+
+    const placeholder = "data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27400%27%3E%3Crect fill=%27%23eef0f7%27 width=%27300%27 height=%27400%27/%3E%3Ctext fill=%27%239aa0b8%27 font-family=%27sans-serif%27 font-size=%2716%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27%3ESem capa%3C/text%3E%3C/svg%3E";
+
+    const cards = lista.map(jornal => {
+        const atualizado = edFormatarData(jornal.dataAtualizacao) || edFormatarData(jornal.dataCriacao);
+        const periodo = [jornal.mes, jornal.ano].filter(Boolean).join(' ');
+        const id = Number(jornal.id);
+
         return `
-        <div class="jornal-card">
-            <div class="jornal-card-image-wrapper">
-                <img src="${jornal.capa || '/uploads/capas/placeholder.png'}" 
-                     alt="${jornal.nome}" 
-                     class="jornal-card-image"
-                     loading="lazy"
-                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27200%27 height=%27200%27%3E%3Crect fill=%27%23ecf0f1%27 width=%27200%27 height=%27200%27/%3E%3Ctext fill=%27%23999%27 font-family=%27sans-serif%27 font-size=%2714%27 x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27%3ESem Imagem%3C/text%3E%3C/svg%3E'">
-                <div class="jornal-card-overlay">
-                    <div class="jornal-card-badge-group">
-                        <span class="jornal-card-badge ${jornal.ativo ? 'ativo' : 'inativo'}">
-                            <span class="badge-icon">${jornal.ativo ? '✓' : '✕'}</span>
-                            <span class="badge-text">${jornal.ativo ? 'Ativo' : 'Inativo'}</span>
-                        </span>
-                        ${jornal.ordem ? `<span class="jornal-card-order">#${jornal.ordem}</span>` : ''}
-                    </div>
-                </div>
-                ${jornal.capa ? `<div class="jornal-card-image-hover">
-                    <span class="hover-text">👁️ Visualizar</span>
-                </div>` : ''}
+        <article class="ed-card${jornal.ativo ? '' : ' is-inativo'}">
+            <div class="ed-card__capa">
+                <img src="${edEscapar(jornal.capa || placeholder)}" alt="Capa: ${edEscapar(jornal.nome)}" loading="lazy"
+                     onerror="this.onerror=null;this.src='${placeholder}'">
+                <span class="ed-status ${jornal.ativo ? 'ed-status--on' : 'ed-status--off'}">
+                    ${jornal.ativo ? 'Publicado' : 'Oculto'}
+                </span>
+                ${jornal.ordem ? `<span class="ed-ordem" title="Ordem de exibição">${edEscapar(jornal.ordem)}º</span>` : ''}
             </div>
-            <div class="jornal-card-body">
-                <div class="jornal-card-header">
-                    <div class="jornal-card-title-wrapper">
-                        <h3 class="jornal-card-title" title="${jornal.nome}">${jornal.nome}</h3>
-                        ${tempoDecorrido ? `<span class="jornal-card-time" title="Criado há ${tempoDecorrido}">${tempoDecorrido}</span>` : ''}
-                    </div>
-                    <div class="jornal-card-meta">
-                        <div class="meta-item">
-                            <span class="meta-icon">📅</span>
-                            <span class="meta-text">${jornal.mes} ${jornal.ano}</span>
-                        </div>
-                        <div class="meta-divider">•</div>
-                        <div class="meta-item">
-                            <span class="meta-icon">🆔</span>
-                            <span class="meta-text">ID: ${jornal.id}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                ${jornal.descricao ? `
-                <div class="jornal-card-description">
-                    <div class="description-icon">📄</div>
-                    <p>${descricaoPreview}</p>
-                </div>
-                ` : ''}
-                
-                <div class="jornal-card-info-section">
-                    <div class="info-section-title">
-                        <span class="section-icon">ℹ️</span>
-                        <span>Informações</span>
-                    </div>
-                    <div class="jornal-card-info-grid">
-                        <div class="jornal-card-info-item">
-                            <span class="info-icon">🔢</span>
-                            <div class="info-content">
-                                <span class="info-label">Ordem de Exibição</span>
-                                <span class="info-value">${jornal.ordem || 'Não definida'}</span>
-                            </div>
-                        </div>
-                        <div class="jornal-card-info-item">
-                            <span class="info-icon">📅</span>
-                            <div class="info-content">
-                                <span class="info-label">Data de Criação</span>
-                                <span class="info-value">${dataCriacao}</span>
-                            </div>
-                        </div>
-                        <div class="jornal-card-info-item">
-                            <span class="info-icon">🔄</span>
-                            <div class="info-content">
-                                <span class="info-label">Última Atualização</span>
-                                <span class="info-value">${dataAtualizacao}</span>
-                            </div>
-                        </div>
-                        <div class="jornal-card-info-item">
-                            <span class="info-icon">${jornal.capa ? '🖼️' : '📷'}</span>
-                            <div class="info-content">
-                                <span class="info-label">Capa</span>
-                                <span class="info-value">${jornal.capa ? 'Configurada' : 'Não configurada'}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="jornal-card-footer-info">
-                    ${jornal.linkCompra ? `
-                    <div class="jornal-card-link success">
-                        <span class="link-icon">🔗</span>
-                        <span class="link-text">Link de compra configurado</span>
-                    </div>
-                    ` : `
-                    <div class="jornal-card-link warning">
-                        <span class="link-icon">⚠️</span>
-                        <span class="link-text">Link de compra não configurado</span>
-                    </div>
-                    `}
-                </div>
+            <div class="ed-card__corpo">
+                ${periodo ? `<span class="ed-card__periodo">${edEscapar(periodo)}</span>` : ''}
+                <h3 class="ed-card__titulo" title="${edEscapar(jornal.nome)}">${edEscapar(jornal.nome)}</h3>
+                <p class="ed-card__desc">${jornal.descricao ? edEscapar(jornal.descricao) : '<em>Sem descrição</em>'}</p>
+                <ul class="ed-checks">
+                    <li class="${jornal.capa ? 'ok' : 'falta'}"><i class='bx ${jornal.capa ? 'bx-check' : 'bx-x'}'></i>Capa</li>
+                    <li class="${jornal.linkCompra ? 'ok' : 'falta'}"><i class='bx ${jornal.linkCompra ? 'bx-check' : 'bx-x'}'></i>Link de compra</li>
+                </ul>
             </div>
-            <div class="jornal-card-actions">
-                <button class="btn btn-primary btn-small btn-icon" onclick="editJornal(${jornal.id})" title="Editar jornal">
-                    <span class="btn-icon-left">✏️</span>
-                    <span>Editar</span>
-                </button>
-                <button class="btn btn-danger btn-small btn-icon" onclick="deleteJornal(${jornal.id})" title="Excluir jornal">
-                    <span class="btn-icon-left">🗑️</span>
-                    <span>Excluir</span>
-                </button>
-            </div>
-        </div>
-        `;
+            <footer class="ed-card__rodape">
+                <span class="ed-card__data">${atualizado ? `Atualizado em ${atualizado}` : `ID ${id}`}</span>
+                <div class="ed-card__acoes">
+                    <button type="button" class="ed-btn ed-btn--editar" onclick="editJornal(${id})" title="Editar">
+                        <i class='bx bx-edit-alt'></i><span>Editar</span>
+                    </button>
+                    <button type="button" class="ed-btn ed-btn--excluir" onclick="deleteJornal(${id})" title="Excluir" aria-label="Excluir ${edEscapar(jornal.nome)}">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>
+            </footer>
+        </article>`;
     }).join('');
-    
-    listDiv.innerHTML = html;
-    console.log('✅ Jornais renderizados com sucesso!');
-    console.log(`📊 HTML gerado: ${html.length} caracteres`);
-    
-    // Aguardar um frame para garantir que o DOM foi atualizado
-    requestAnimationFrame(() => {
-        // Verificar se os cards foram criados
-        const cards = listDiv.querySelectorAll('.jornal-card');
-        console.log(`🎴 Cards criados no DOM: ${cards.length}`);
-        
-        if (cards.length > 0) {
-            console.log('✅ Cards estão visíveis no DOM!');
-            // Forçar reflow para garantir que os estilos sejam aplicados
-            cards.forEach(card => {
-                card.style.display = 'flex';
-                card.style.opacity = '1';
-                card.style.visibility = 'visible';
-                // Forçar reflow
-                card.offsetHeight;
-            });
-            console.log('✅ Estilos aplicados aos cards!');
-        } else {
-            console.error('❌ Nenhum card foi encontrado no DOM!');
-            console.log('HTML inserido:', listDiv.innerHTML.substring(0, 200));
-        }
-        
-        // Verificar se o grid está visível
-        const grid = document.querySelector('.jornais-grid');
-        if (grid) {
-            grid.style.display = 'grid';
-            console.log('✅ Grid está visível!');
-        }
+
+    listDiv.innerHTML = `
+        <div class="ed-barra">
+            <div class="ed-filtros" role="group" aria-label="Filtrar edições">
+                ${filtroBtn('todos', 'Todas', total)}
+                ${filtroBtn('ativos', 'Publicadas', ativos)}
+                ${filtroBtn('inativos', 'Ocultas', inativos)}
+            </div>
+            <label class="ed-busca">
+                <i class='bx bx-search'></i>
+                <input type="search" id="edBusca" placeholder="Buscar edição..." value="${edEscapar(edicoesBusca)}">
+            </label>
+        </div>
+        ${lista.length
+            ? `<div class="ed-grade">${cards}</div>`
+            : `<div class="ed-vazio"><i class='bx bx-search-alt'></i><strong>Nenhuma edição encontrada</strong><span>Tente outra busca ou filtro.</span></div>`}
+    `;
+
+    listDiv.querySelectorAll('[data-ed-filtro]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            edicoesFiltro = btn.dataset.edFiltro;
+            renderJornais();
+        });
     });
+
+    const busca = document.getElementById('edBusca');
+    if (busca) {
+        busca.addEventListener('input', () => {
+            edicoesBusca = busca.value;
+            const pos = busca.selectionStart;
+            renderJornais();
+            const nova = document.getElementById('edBusca');
+            if (nova) {
+                nova.focus();
+                nova.setSelectionRange(pos, pos);
+            }
+        });
+    }
 }
 
 // Abrir modal para novo jornal (disponível globalmente)
@@ -4809,6 +4757,8 @@ async function loadBanner() {
 
 // ==================== NOTÍCIAS ====================
 let noticias = [];
+let noticiasBusca = '';
+let noticiasCategoria = 'todas';
 
 async function loadNoticias() {
     const listDiv = document.getElementById('noticiasList');
@@ -4827,23 +4777,107 @@ async function loadNoticias() {
 function renderNoticias() {
     const listDiv = document.getElementById('noticiasList');
     
-    if (noticias.length === 0) {
-        listDiv.innerHTML = '<div class="loading">Nenhuma notícia cadastrada</div>';
+    if (!listDiv) return;
+
+    if (!Array.isArray(noticias) || noticias.length === 0) {
+        listDiv.innerHTML = `
+            <div class="ed-vazio">
+                <i class='bx bx-news'></i>
+                <strong>Nenhuma notícia cadastrada</strong>
+                <span>Clique em "+ Nova Notícia" para publicar a primeira.</span>
+            </div>`;
         return;
     }
-    
-    listDiv.innerHTML = noticias.map(noticia => `
-        <div class="noticia-item">
-            ${noticia.image ? `<img src="${noticia.image}" alt="${noticia.title}" class="noticia-item-image">` : ''}
-            <div class="noticia-item-title">${noticia.title}</div>
-            <div class="noticia-item-meta">${noticia.date} | ${noticia.category}</div>
-            <div class="noticia-item-content">${noticia.excerpt || noticia.content.substring(0, 200)}...</div>
-            <div class="jornal-card-actions">
-                <button class="btn btn-primary btn-small" onclick="editNoticia(${noticia.id})">Editar</button>
-                <button class="btn btn-danger btn-small" onclick="deleteNoticia(${noticia.id})">Excluir</button>
+
+    const categorias = [...new Set(noticias.map(n => (n.category || '').trim()).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    if (noticiasCategoria !== 'todas' && !categorias.includes(noticiasCategoria)) noticiasCategoria = 'todas';
+
+    const termo = noticiasBusca.trim().toLowerCase();
+    const lista = noticias
+        .filter(n => noticiasCategoria === 'todas' || (n.category || '').trim() === noticiasCategoria)
+        .filter(n => !termo || [n.title, n.category, n.excerpt, n.date].join(' ').toLowerCase().includes(termo))
+        .slice()
+        .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || (Number(b.id) - Number(a.id)));
+
+    const formatarDataNoticia = (valor) => {
+        if (!valor) return 'Sem data';
+        const m = String(valor).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(valor);
+        if (isNaN(d.getTime())) return edEscapar(valor);
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '');
+    };
+
+    const resumo = (n) => {
+        const texto = n.excerpt || String(n.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        return texto ? edEscapar(texto) : '<em>Sem resumo</em>';
+    };
+
+    const itens = lista.map(n => {
+        const id = Number(n.id);
+        return `
+        <article class="nt-item">
+            <div class="nt-item__img">
+                ${n.image
+                    ? `<img src="${edEscapar(n.image)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('is-vazio');this.remove()">`
+                    : ''}
+                <i class='bx bx-image'></i>
             </div>
+            <div class="nt-item__texto">
+                <div class="nt-item__meta">
+                    ${n.category ? `<span class="nt-tag">${edEscapar(n.category)}</span>` : ''}
+                    <span class="nt-data"><i class='bx bx-calendar'></i>${formatarDataNoticia(n.date)}</span>
+                </div>
+                <h3 class="nt-item__titulo" title="${edEscapar(n.title)}">${edEscapar(n.title || 'Sem título')}</h3>
+                <p class="nt-item__resumo">${resumo(n)}</p>
+            </div>
+            <div class="nt-item__acoes">
+                <button type="button" class="ed-btn ed-btn--editar" onclick="editNoticia(${id})" title="Editar">
+                    <i class='bx bx-edit-alt'></i><span>Editar</span>
+                </button>
+                <button type="button" class="ed-btn ed-btn--excluir" onclick="deleteNoticia(${id})" title="Excluir" aria-label="Excluir notícia">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        </article>`;
+    }).join('');
+
+    listDiv.innerHTML = `
+        <div class="ed-barra">
+            <div class="ed-filtros" role="group" aria-label="Filtrar por categoria">
+                <button type="button" class="ed-filtro${noticiasCategoria === 'todas' ? ' is-ativo' : ''}" data-nt-cat="todas">Todas <span>${noticias.length}</span></button>
+                ${categorias.map(c => `<button type="button" class="ed-filtro${noticiasCategoria === c ? ' is-ativo' : ''}" data-nt-cat="${edEscapar(c)}">${edEscapar(c)} <span>${noticias.filter(n => (n.category || '').trim() === c).length}</span></button>`).join('')}
+            </div>
+            <label class="ed-busca">
+                <i class='bx bx-search'></i>
+                <input type="search" id="ntBusca" placeholder="Buscar notícia..." value="${edEscapar(noticiasBusca)}">
+            </label>
         </div>
-    `).join('');
+        ${lista.length
+            ? `<div class="nt-lista">${itens}</div>`
+            : `<div class="ed-vazio"><i class='bx bx-search-alt'></i><strong>Nenhuma notícia encontrada</strong><span>Tente outra busca ou categoria.</span></div>`}
+    `;
+
+    listDiv.querySelectorAll('[data-nt-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            noticiasCategoria = btn.dataset.ntCat;
+            renderNoticias();
+        });
+    });
+
+    const busca = document.getElementById('ntBusca');
+    if (busca) {
+        busca.addEventListener('input', () => {
+            noticiasBusca = busca.value;
+            const pos = busca.selectionStart;
+            renderNoticias();
+            const nova = document.getElementById('ntBusca');
+            if (nova) {
+                nova.focus();
+                nova.setSelectionRange(pos, pos);
+            }
+        });
+    }
 }
 
 function editNoticia(id) {

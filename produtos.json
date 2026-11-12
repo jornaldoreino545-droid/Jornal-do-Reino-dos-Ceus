@@ -2,14 +2,447 @@
   "produtos": [
     {
       "id": 1,
-      "criadoEm": "2026-11-06T17:35:25.612Z",
-      "nome": "livro novo",
+      "criadoEm": "2026-11-10T21:31:45.006Z",
+      "nome": "O AMOR É UMA DECISÃO",
       "categoria": "Livros",
-      "descricao": "wetertweryerywrtertuwrtyuetyuetyuety",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO\nADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
       "preco": 10,
       "precoAntigo": 15,
       "imagens": [
-        "/uploads/materias/materia-1793986475901-274352047.png"
+        "/uploads/materias/materia-1794346140872-628338647.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 2,
+      "criadoEm": "2026-11-10T21:40:35.214Z",
+      "nome": "LIÇÕES QUE A VIDA ME ENSINOU",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO\nADELINO DE CARVALHO.\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794346795299-92535997.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 3,
+      "criadoEm": "2026-11-10T21:41:45.793Z",
+      "nome": "O MELHOR ESTÁ POR VIR",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO.\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794346865268-544318823.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 4,
+      "criadoEm": "2026-11-10T21:42:49.366Z",
+      "nome": "OS MISTÉRIOS DO REINO DOS CÉUS",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO.\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794346938090-947567514.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 5,
+      "criadoEm": "2026-11-10T21:43:33.788Z",
+      "nome": "SEGREDOS ESPIRITUAIS",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794346994333-439963822.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 6,
+      "criadoEm": "2026-11-10T21:44:33.200Z",
+      "nome": "COM DEUS TODAS AS COISAS POSSÍVEIS",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO.\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347043535-520341841.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 7,
+      "criadoEm": "2026-11-10T21:45:23.338Z",
+      "nome": "A CIÊNCIA DA FÉ",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347094593-615031869.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 8,
+      "criadoEm": "2026-11-10T21:46:10.401Z",
+      "nome": "A visão que mudou minha vida!",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347144675-595363081.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 9,
+      "criadoEm": "2026-11-10T21:46:47.782Z",
+      "nome": "EU  VOU TE SURPREENDER",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347184417-614004087.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 10,
+      "criadoEm": "2026-11-10T21:47:35.263Z",
+      "nome": "A VIDA NÃO É UM JOGO É UMA GUERRA",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347226476-348009272.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 11,
+      "criadoEm": "2026-11-10T21:48:17.831Z",
+      "nome": "PARA QUEM NÃO DESISTIU DE VIVER",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347308755-456760608.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0,
+      "atualizadoEm": "2026-11-10T21:48:30.138Z"
+    },
+    {
+      "id": 12,
+      "criadoEm": "2026-11-10T21:49:24.548Z",
+      "nome": "NÃO PARE DE LUTAR",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347334984-880899763.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 13,
+      "criadoEm": "2026-11-10T21:50:02.542Z",
+      "nome": "O  AMOR NUNCA FALHA",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347381887-231665335.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 14,
+      "criadoEm": "2026-11-10T21:50:36.649Z",
+      "nome": "A UM PASSO DA FELICIDADE",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347421412-979313866.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 15,
+      "criadoEm": "2026-11-10T21:51:20.500Z",
+      "nome": "ENFRENTANDO DESAFIOS",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347458756-683739833.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 16,
+      "criadoEm": "2026-11-10T21:52:00.872Z",
+      "nome": "LIVRE PARA SER FELIZ",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347495564-248023679.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 17,
+      "criadoEm": "2026-11-10T21:52:50.892Z",
+      "nome": "DESISÕES NO AMOR",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347545229-442455039.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 18,
+      "criadoEm": "2026-11-10T21:53:18.736Z",
+      "nome": "SUCESSO NÃO SE EXPLICA",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347580371-503127910.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 19,
+      "criadoEm": "2026-11-10T21:54:03.463Z",
+      "nome": "VENCENDO AS ARMADILHAS DO INIMIGO",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347619510-233803724.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 20,
+      "criadoEm": "2026-11-10T21:54:49.986Z",
+      "nome": "FOCO FORÇA E FÉ",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347668252-262092110.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 21,
+      "criadoEm": "2026-11-10T21:55:32.340Z",
+      "nome": "MEU VIZINHO FEITICEIRO",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347703484-28055608.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 22,
+      "criadoEm": "2026-11-10T21:56:15.184Z",
+      "nome": "O PODER DA CONQUISTA PELA ESPIRITUALIDADE",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347754544-267613888.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 23,
+      "criadoEm": "2026-11-10T21:56:54.531Z",
+      "nome": "O  PODER DO DOMÍNIO",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347795142-624924882.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 24,
+      "criadoEm": "2026-11-10T21:57:45.991Z",
+      "nome": "O ANJO DA JUSTIÇA",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347843553-431185449.png"
+      ],
+      "tamanhos": [],
+      "cores": [],
+      "destaque": false,
+      "esgotado": false,
+      "ativo": true,
+      "ordem": 0
+    },
+    {
+      "id": 25,
+      "criadoEm": "2026-11-10T21:58:41.812Z",
+      "nome": "O  QUE NÃO TE MATOU, TE FEZ MAIS FORTE!",
+      "categoria": "Livros",
+      "descricao": "CONHEÇA O LIVRO DO APÓSTOLO ADELINO DE CARVALHO\nUma leitura que fortalecerá sua fé e transformara sua caminhada com Deus.",
+      "preco": 10,
+      "precoAntigo": 15,
+      "imagens": [
+        "/uploads/materias/materia-1794347903752-82729685.png"
       ],
       "tamanhos": [],
       "cores": [],

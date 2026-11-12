@@ -363,14 +363,24 @@
 .coluna__insta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  color: var(--vermelho);
-  font-weight: 600;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #f9a825, #e1306c 45%, #833ab4);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(225, 48, 108, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.coluna__insta:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(225, 48, 108, 0.4);
 }
 
 .coluna__insta i {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
 }
 
 /* Janela de compartilhar */
@@ -939,6 +949,34 @@
 .materia__corpo ol {
   padding-left: 1.4em;
   list-style: disc;
+}
+
+.materia__corpo ol {
+  list-style: decimal;
+}
+
+.materia__corpo li + li {
+  margin-top: 0.3em;
+}
+
+.materia__corpo * + ol,
+.materia__corpo * + blockquote,
+.materia__corpo blockquote + * {
+  margin-top: 1.2em;
+}
+
+.materia__corpo blockquote {
+  padding: 0.6em 0 0.6em 1.1em;
+  border-left: 4px solid var(--vermelho);
+  color: var(--azul);
+  font-size: 1.1em;
+  font-style: italic;
+}
+
+.materia__corpo hr {
+  margin: 2em 0;
+  border: 0;
+  border-top: 1px solid rgba(0, 9, 91, 0.15);
 }
 
 .materia__corpo img {

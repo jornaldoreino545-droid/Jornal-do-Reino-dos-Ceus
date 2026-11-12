@@ -459,7 +459,7 @@
                     <div class="dashboard-actions">
                         <button id="newJornalBtn" class="btn btn-primary" onclick="if(typeof openJornalModal === 'function') { openJornalModal(); } else { console.error('openJornalModal não está disponível!'); alert('Erro: Função não disponível. Recarregue a página.'); }">+ Novo Jornal</button>
                     </div>
-                    <div id="jornaisList" class="jornais-grid"></div>
+                    <div id="jornaisList" class="ed-area"></div>
                 </div>
 
                 <!-- Tab Carrossel -->
@@ -839,7 +839,7 @@
 
     <!-- Modal para Criar/Editar Notícia -->
     <div id="noticiaModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-content modal-content--largo">
             <div class="modal-header">
                 <h2 id="noticiaModalTitle">Nova Notícia</h2>
                 <button type="button" class="modal-close" id="closeNoticiaModal" onclick="if(typeof window.closeNoticiaModal === 'function') { window.closeNoticiaModal(); } else { console.error('closeNoticiaModal não está disponível!'); const modal = document.getElementById('noticiaModal'); if(modal) { modal.classList.add('hidden'); modal.style.display = 'none'; } }">&times;</button>
@@ -848,11 +848,11 @@
                 <input type="hidden" id="noticiaId">
                 
                 <div class="form-group">
-                    <label for="noticiaTitle">Título *</label>
-                    <input type="text" id="noticiaTitle" name="title" required>
+                    <label for="noticiaTitle">Título da matéria *</label>
+                    <input type="text" id="noticiaTitle" name="title" class="campo-titulo" required placeholder="Escreva o título da matéria">
                 </div>
 
-                <div class="form-row">
+                <div class="form-row form-row--3">
                     <div class="form-group">
                         <label for="noticiaDate">Data</label>
                         <input type="date" id="noticiaDate" name="date">
@@ -868,28 +868,31 @@
                             <option value="politica">Política</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="noticiaTag">Tags</label>
+                        <input type="text" id="noticiaTag" name="tag" placeholder="Separe por vírgula">
+                    </div>
+                </div>
+
+                <div class="form-capa-resumo">
+                    <div class="form-group">
+                        <label for="noticiaImage">Imagem de capa</label>
+                        <label class="zona-imagem" for="noticiaImage">
+                            <i class='bx bx-image-add'></i>
+                            <span><strong>Clique para escolher</strong> ou arraste a imagem aqui</span>
+                            <input type="file" id="noticiaImage" name="image" accept="image/*">
+                        </label>
+                        <div id="noticiaImagePreview" class="image-preview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="noticiaExcerpt">Resumo <span class="rotulo-dica">(aparece na lista de notícias)</span></label>
+                        <textarea id="noticiaExcerpt" name="excerpt" rows="5" placeholder="Uma ou duas frases que resumem a matéria"></textarea>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="noticiaExcerpt">Resumo/Excerpt</label>
-                    <textarea id="noticiaExcerpt" name="excerpt" rows="3" placeholder="Breve descrição da notícia que aparecerá na lista"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="noticiaContent">Conteúdo *</label>
-                    <textarea id="noticiaContent" name="content" rows="10" required placeholder="Conteúdo completo da notícia"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="noticiaTag">Tag</label>
-                    <input type="text" id="noticiaTag" name="tag" placeholder="Tags separadas por vírgula">
-                </div>
-
-                <div class="form-group">
-                    <label for="noticiaImage">Imagem</label>
-                    <input type="file" id="noticiaImage" name="image" accept="image/*">
-                    <small class="form-help">A imagem será exibida na lista de notícias</small>
-                    <div id="noticiaImagePreview" class="image-preview"></div>
+                    <label for="noticiaContent">Texto da matéria *</label>
+                    <textarea id="noticiaContent" name="content" rows="10" required data-editor="materia" placeholder="Conteúdo completo da notícia"></textarea>
                 </div>
 
                 <div class="modal-actions">
@@ -1065,5 +1068,6 @@
     </script>
     <script src="/dashboard/js/painel.js"></script>
     <script src="/dashboard/js/painel-loja.js"></script>
+    <script src="/dashboard/js/editor-materia.js"></script>
 </body>
 </html>
